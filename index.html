@@ -428,12 +428,12 @@
       align-items: start;
     }
 
-    .score-section, .real-games-section {
+    .score-section, .real-games-section, .ranking-section {
       display: grid;
       gap: 18px;
     }
 
-    .score-hero, .score-card, .real-games-card {
+    .score-hero, .score-card, .real-games-card, .ranking-card {
       background: var(--card);
       border: 1px solid var(--line);
       border-radius: 18px;
@@ -465,6 +465,41 @@
       gap: 18px;
     }
 
+    .ranking-summary {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .ranking-stat {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      box-shadow: var(--shadow);
+      padding: 14px;
+      display: grid;
+      gap: 4px;
+    }
+
+    .ranking-stat strong {
+      font-size: 24px;
+      color: var(--text);
+    }
+
+    .ranking-stat span {
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .ranking-position {
+      font-weight: 900;
+      font-size: 16px;
+    }
+
+    .ranking-leader {
+      background: linear-gradient(135deg, #ffffff, #fffaeb);
+    }
+
     .real-games-toolbar {
       display: flex;
       flex-wrap: wrap;
@@ -485,6 +520,7 @@
       line-height: 1.4;
     }
 
+    .ranking-card h3,
     .real-games-card h3,
     .score-card h3 {
       margin: 0;
@@ -706,7 +742,7 @@
     }
 
     @media (max-width: 900px) {
-      .grid, .stages-grid, .participants-layout, .score-grid, .real-games-grid { grid-template-columns: 1fr; }
+      .grid, .stages-grid, .participants-layout, .score-grid, .real-games-grid, .ranking-summary { grid-template-columns: 1fr; }
       .match, .ko-line {
         grid-template-columns: 1fr 48px 18px 48px 1fr;
         gap: 6px;
@@ -728,6 +764,7 @@
       <div class="nav-actions">
         <button class="btn-secondary btn-active" type="button" id="navPalpiteBtn">Fazer palpite</button>
         <button class="btn-secondary" type="button" id="navPontuacaoBtn">Pontuação</button>
+        <button class="btn-secondary" type="button" id="navClassificacaoBtn">Classificação</button>
         <button class="btn-secondary" type="button" id="navJogosReaisBtn">Jogos reais</button>
         <button class="btn-secondary" type="button" id="navParticipantesBtn">Ver participantes</button>
       </div>
@@ -783,6 +820,51 @@
       <section class="champion-card" id="championCard">
         <h2>Campeão: —</h2>
         <p>Preencha os grupos. O mata-mata começará a aparecer automaticamente aqui embaixo conforme os grupos forem concluídos. Depois complete todos os jogos até campeão e terceiro lugar para liberar o envio final.</p>
+      </section>
+    </section>
+
+    <section class="page hidden" id="rankingPage">
+      <section class="ranking-section">
+        <div class="score-hero">
+          <h2>Classificação do bolão</h2>
+          <p>Ranking calculado automaticamente comparando os palpites enviados com os resultados preenchidos na aba <strong>JogosReais</strong>.</p>
+        </div>
+
+        <div class="real-games-toolbar">
+          <p>Atualize os resultados reais na planilha e clique no botão ao lado para recalcular a pontuação.</p>
+          <button class="btn-secondary" type="button" id="refreshRankingBtn">Atualizar classificação</button>
+        </div>
+
+        <div class="ranking-summary" id="rankingSummary">
+          <div class="ranking-stat"><strong>—</strong><span>Participantes</span></div>
+          <div class="ranking-stat"><strong>—</strong><span>Jogos reais finalizados</span></div>
+          <div class="ranking-stat"><strong>—</strong><span>Líder atual</span></div>
+          <div class="ranking-stat"><strong>—</strong><span>Maior pontuação</span></div>
+        </div>
+
+        <article class="ranking-card">
+          <h3>Ranking geral</h3>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Pos.</th>
+                  <th class="team">Participante</th>
+                  <th>Total</th>
+                  <th>Jogos</th>
+                  <th>Grupos</th>
+                  <th>Mata-mata</th>
+                  <th>Campanha</th>
+                  <th>Finais</th>
+                  <th>Bônus</th>
+                </tr>
+              </thead>
+              <tbody id="rankingTableBody">
+                <tr><td colspan="9" class="viewer-message">Clique em “Atualizar classificação” para calcular o ranking.</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </article>
       </section>
     </section>
 
@@ -1039,7 +1121,8 @@
       currentPage: "groups",
       currentMode: "simulator",
       publicData: {
-        participantes: []
+        participantes: [],
+        jogosReais: []
       },
       matches: [],
       standingsByGroup: {},
@@ -1057,6 +1140,7 @@
 
     const navPalpiteBtn = document.getElementById("navPalpiteBtn");
     const navPontuacaoBtn = document.getElementById("navPontuacaoBtn");
+    const navClassificacaoBtn = document.getElementById("navClassificacaoBtn");
     const navJogosReaisBtn = document.getElementById("navJogosReaisBtn");
     const navParticipantesBtn = document.getElementById("navParticipantesBtn");
     const simulatorActions = document.getElementById("simulatorActions");
@@ -1068,6 +1152,10 @@
     const randomFillBtn = document.getElementById("randomFillBtn");
     const groupPage = document.getElementById("groupPage");
     const knockoutPage = document.getElementById("knockoutPage");
+    const rankingPage = document.getElementById("rankingPage");
+    const rankingTableBody = document.getElementById("rankingTableBody");
+    const rankingSummary = document.getElementById("rankingSummary");
+    const refreshRankingBtn = document.getElementById("refreshRankingBtn");
     const realGamesPage = document.getElementById("realGamesPage");
     const realGamesContainer = document.getElementById("realGamesContainer");
     const refreshRealGamesBtn = document.getElementById("refreshRealGamesBtn");
@@ -1165,6 +1253,10 @@
     function bindEvents() {
       navPalpiteBtn.addEventListener("click", () => showMainMode("simulator"));
       navPontuacaoBtn.addEventListener("click", () => showMainMode("score"));
+      navClassificacaoBtn.addEventListener("click", () => {
+        showMainMode("ranking");
+        loadRankingData();
+      });
       navJogosReaisBtn.addEventListener("click", () => {
         showMainMode("realGames");
         loadRealGamesData();
@@ -1175,6 +1267,7 @@
       });
       refreshParticipantsBtn.addEventListener("click", loadParticipantsData);
       refreshRealGamesBtn.addEventListener("click", loadRealGamesData);
+      refreshRankingBtn.addEventListener("click", loadRankingData);
 
       document.querySelectorAll("input[data-match-id]").forEach(input => {
         input.addEventListener("input", handleScoreInput);
@@ -1823,22 +1916,25 @@
       appState.currentMode = mode;
       const isSimulator = mode === "simulator";
       const isScore = mode === "score";
+      const isRanking = mode === "ranking";
       const isRealGames = mode === "realGames";
       const isParticipants = mode === "participants";
 
       groupPage.classList.toggle("hidden", !isSimulator);
       knockoutPage.classList.toggle("hidden", !isSimulator);
       scorePage.classList.toggle("hidden", !isScore);
+      rankingPage.classList.toggle("hidden", !isRanking);
       realGamesPage.classList.toggle("hidden", !isRealGames);
       participantsPage.classList.toggle("hidden", !isParticipants);
       progressText.classList.toggle("hidden", !isSimulator);
       simulatorActions.classList.toggle("hidden", !isSimulator);
       navPalpiteBtn.classList.toggle("btn-active", isSimulator);
       navPontuacaoBtn.classList.toggle("btn-active", isScore);
+      navClassificacaoBtn.classList.toggle("btn-active", isRanking);
       navJogosReaisBtn.classList.toggle("btn-active", isRealGames);
       navParticipantesBtn.classList.toggle("btn-active", isParticipants);
 
-      const target = isSimulator ? groupPage : isScore ? scorePage : isRealGames ? realGamesPage : participantsPage;
+      const target = isSimulator ? groupPage : isScore ? scorePage : isRanking ? rankingPage : isRealGames ? realGamesPage : participantsPage;
       target.scrollIntoView({ behavior: "smooth", block: "start" });
     }
 
@@ -1871,6 +1967,525 @@
 
     function fetchRealGamesJsonp() {
       return fetchJsonpAction("jogos_reais", "bolaoJogosReais");
+    }
+
+    async function loadRankingData() {
+      rankingTableBody.innerHTML = `<tr><td colspan="9" class="viewer-message">Calculando classificação...</td></tr>`;
+      refreshRankingBtn.disabled = true;
+      refreshRankingBtn.textContent = "Calculando...";
+
+      try {
+        const [participantsData, realGamesData] = await Promise.all([
+          fetchParticipantsJsonp(),
+          fetchRealGamesJsonp()
+        ]);
+
+        if (!participantsData || participantsData.status !== "sucesso") {
+          throw new Error(participantsData?.message || "Não foi possível carregar participantes.");
+        }
+
+        if (!realGamesData || realGamesData.status !== "sucesso") {
+          throw new Error(realGamesData?.message || "Não foi possível carregar jogos reais.");
+        }
+
+        appState.publicData.participantes = participantsData.participantes || [];
+        appState.publicData.jogosReais = realGamesData.jogos || [];
+
+        const ranking = calculateRanking(appState.publicData.participantes, appState.publicData.jogosReais);
+        renderRanking(ranking, appState.publicData.jogosReais);
+      } catch (error) {
+        console.error(error);
+        rankingTableBody.innerHTML = `<tr><td colspan="9" class="viewer-message">Erro ao calcular classificação: ${escapeHtml(error.message)}</td></tr>`;
+      } finally {
+        refreshRankingBtn.disabled = false;
+        refreshRankingBtn.textContent = "Atualizar classificação";
+      }
+    }
+
+    function renderRanking(ranking, jogosReais) {
+      const finalizedGames = jogosReais.filter(isRealGameFinalized).length;
+      const leader = ranking[0];
+
+      rankingSummary.innerHTML = `
+        <div class="ranking-stat"><strong>${ranking.length}</strong><span>Participantes</span></div>
+        <div class="ranking-stat"><strong>${finalizedGames}</strong><span>Jogos reais finalizados</span></div>
+        <div class="ranking-stat"><strong>${escapeHtml(leader?.nome || "—")}</strong><span>Líder atual</span></div>
+        <div class="ranking-stat"><strong>${leader ? leader.total : "—"}</strong><span>Maior pontuação</span></div>
+      `;
+
+      if (!ranking.length) {
+        rankingTableBody.innerHTML = `<tr><td colspan="9" class="viewer-message">Nenhum participante enviado ainda.</td></tr>`;
+        return;
+      }
+
+      rankingTableBody.innerHTML = ranking.map((item, index) => `
+        <tr class="${index === 0 ? "ranking-leader" : ""}">
+          <td class="ranking-position">${index + 1}º</td>
+          <td class="team">${escapeHtml(item.nome)}</td>
+          <td><strong>${item.total}</strong></td>
+          <td>${item.breakdown.jogos}</td>
+          <td>${item.breakdown.grupos}</td>
+          <td>${item.breakdown.mataMata}</td>
+          <td>${item.breakdown.campanha}</td>
+          <td>${item.breakdown.finais}</td>
+          <td>${item.breakdown.bonus}</td>
+        </tr>
+      `).join("");
+    }
+
+    function calculateRanking(participantes, jogosReais) {
+      const context = buildScoringContext(jogosReais);
+
+      return participantes.map(participante => {
+        const breakdown = {
+          jogos: scoreGroupGames(participante, context),
+          grupos: scoreGroupClassifications(participante, context),
+          mataMata: scoreKnockoutConfrontations(participante, context),
+          campanha: scoreCampaign(participante, context),
+          finais: scoreFinalPositions(participante, context),
+          bonus: scoreQualifiedBonuses(participante, context)
+        };
+
+        const total = Object.values(breakdown).reduce((sum, value) => sum + value, 0);
+
+        return {
+          id: participante.id_participante,
+          nome: participante.nome || "Participante",
+          total,
+          breakdown
+        };
+      }).sort((a, b) => {
+        if (b.total !== a.total) return b.total - a.total;
+        return String(a.nome).localeCompare(String(b.nome), "pt-BR", { sensitivity: "base" });
+      });
+    }
+
+    function buildScoringContext(jogosReais) {
+      const finalized = jogosReais.filter(isRealGameFinalized);
+      const groupGames = finalized.filter(jogo => normalizePhase(jogo.fase) === "fase de grupos");
+      const knockoutGames = finalized.filter(jogo => normalizePhase(jogo.fase) !== "fase de grupos");
+      const realGroupStandings = {};
+
+      Object.keys(groups).forEach(groupKey => {
+        const games = groupGames.filter(jogo => jogo.grupo === groupKey);
+        if (games.length === 6) {
+          realGroupStandings[groupKey] = calculateStandingsFromRealGames(groupKey, games);
+        }
+      });
+
+      const completedGroups = Object.keys(realGroupStandings);
+      const realThirds = completedGroups
+        .map(groupKey => realGroupStandings[groupKey].find(team => team.posicao === 3))
+        .filter(Boolean);
+      const realBestThirds = sortThirdPlaces(realThirds).slice(0, 8);
+      const realQualifiedTeams = getQualifiedTeamsFromStandings(realGroupStandings, realBestThirds);
+      const realCampaign = buildRealCampaignMap(knockoutGames);
+      const finalPositions = getFinalPositionsFromGames(knockoutGames);
+
+      return {
+        jogosReais,
+        finalized,
+        groupGames,
+        knockoutGames,
+        realGroupStandings,
+        completedGroups,
+        realBestThirds,
+        realQualifiedTeams,
+        realCampaign,
+        finalPositions
+      };
+    }
+
+    function isRealGameFinalized(jogo) {
+      return String(jogo.status || "").toLowerCase() === "finalizado"
+        && jogo.gols_casa !== "" && jogo.gols_casa !== null && jogo.gols_casa !== undefined
+        && jogo.gols_fora !== "" && jogo.gols_fora !== null && jogo.gols_fora !== undefined;
+    }
+
+    function normalizePhase(value) {
+      return String(value || "").trim().toLowerCase();
+    }
+
+    function calculateStandingsFromRealGames(groupKey, games) {
+      const table = groups[groupKey].map(team => ({
+        grupo: groupKey,
+        selecao: team,
+        pontos: 0,
+        jogos: 0,
+        vitorias: 0,
+        empates: 0,
+        derrotas: 0,
+        gols_pro: 0,
+        gols_contra: 0,
+        saldo_gols: 0
+      }));
+
+      const teamMap = Object.fromEntries(table.map(team => [normalizeTeam(team.selecao), team]));
+
+      games.forEach(jogo => {
+        const home = teamMap[normalizeTeam(jogo.time_casa)];
+        const away = teamMap[normalizeTeam(jogo.time_fora)];
+        if (!home || !away) return;
+
+        const homeGoals = Number(jogo.gols_casa);
+        const awayGoals = Number(jogo.gols_fora);
+
+        home.jogos += 1;
+        away.jogos += 1;
+        home.gols_pro += homeGoals;
+        home.gols_contra += awayGoals;
+        away.gols_pro += awayGoals;
+        away.gols_contra += homeGoals;
+
+        if (homeGoals > awayGoals) {
+          home.vitorias += 1;
+          home.pontos += 3;
+          away.derrotas += 1;
+        } else if (awayGoals > homeGoals) {
+          away.vitorias += 1;
+          away.pontos += 3;
+          home.derrotas += 1;
+        } else {
+          home.empates += 1;
+          away.empates += 1;
+          home.pontos += 1;
+          away.pontos += 1;
+        }
+      });
+
+      table.forEach(team => {
+        team.saldo_gols = team.gols_pro - team.gols_contra;
+      });
+
+      return sortGroupStandingsForScoring(table).map((team, index) => ({ ...team, posicao: index + 1 }));
+    }
+
+    function sortGroupStandingsForScoring(table) {
+      return [...table].sort((a, b) => {
+        if (b.pontos !== a.pontos) return b.pontos - a.pontos;
+        if (b.saldo_gols !== a.saldo_gols) return b.saldo_gols - a.saldo_gols;
+        if (b.gols_pro !== a.gols_pro) return b.gols_pro - a.gols_pro;
+        return getInitialTeamOrder(a.grupo, a.selecao) - getInitialTeamOrder(b.grupo, b.selecao);
+      });
+    }
+
+    function getQualifiedTeamsFromStandings(standingsByGroup, bestThirds) {
+      const qualified = new Set();
+      Object.values(standingsByGroup).forEach(standings => {
+        standings.filter(team => team.posicao <= 2).forEach(team => qualified.add(normalizeTeam(team.selecao)));
+      });
+      bestThirds.forEach(team => qualified.add(normalizeTeam(team.selecao)));
+      return qualified;
+    }
+
+    function scoreGroupGames(participante, context) {
+      return context.groupGames.reduce((total, realGame) => {
+        const prediction = (participante.palpites || []).find(item => item.jogo_id === realGame.jogo_id);
+        return total + scoreSingleGroupGame(prediction, realGame);
+      }, 0);
+    }
+
+    function scoreSingleGroupGame(prediction, realGame) {
+      if (!prediction) return 0;
+
+      const predHome = Number(prediction.gols_casa);
+      const predAway = Number(prediction.gols_fora);
+      const realHome = Number(realGame.gols_casa);
+      const realAway = Number(realGame.gols_fora);
+
+      if (predHome === realHome && predAway === realAway) return 10;
+
+      const sameOutcome = getOutcome(predHome, predAway) === getOutcome(realHome, realAway);
+      const oneTeamGoals = predHome === realHome || predAway === realAway;
+
+      if (sameOutcome && oneTeamGoals) return 7;
+      if (sameOutcome) return 5;
+      if (oneTeamGoals) return 2;
+      return 0;
+    }
+
+    function getOutcome(home, away) {
+      if (home > away) return "home";
+      if (away > home) return "away";
+      return "draw";
+    }
+
+    function scoreGroupClassifications(participante, context) {
+      const predictedStandingsByGroup = getParticipantStandingsByGroup(participante);
+      const predictedBestThirdGroups = getParticipantBestThirdGroups(predictedStandingsByGroup);
+      const realBestThirdGroups = new Set(context.realBestThirds.map(team => team.grupo));
+
+      return context.completedGroups.reduce((total, groupKey) => {
+        const real = context.realGroupStandings[groupKey] || [];
+        const pred = predictedStandingsByGroup[groupKey] || [];
+        if (real.length < 4 || pred.length < 4) return total;
+
+        const real1 = normalizeTeam(real[0].selecao);
+        const real2 = normalizeTeam(real[1].selecao);
+        const real3 = normalizeTeam(real[2].selecao);
+        const pred1 = normalizeTeam(pred[0].selecao);
+        const pred2 = normalizeTeam(pred[1].selecao);
+        const pred3 = normalizeTeam(pred[2].selecao);
+        const predTop2 = new Set([pred1, pred2]);
+
+        let points = 0;
+        points += pred1 === real1 ? 8 : predTop2.has(real1) ? 4 : 0;
+        points += pred2 === real2 ? 6 : predTop2.has(real2) ? 4 : 0;
+        points += pred3 === real3 ? 3 : 0;
+        points += realBestThirdGroups.has(groupKey) && predictedBestThirdGroups.has(groupKey) ? 3 : 0;
+
+        return total + points;
+      }, 0);
+    }
+
+    function getParticipantStandingsByGroup(participante) {
+      const result = {};
+      Object.keys(groups).forEach(groupKey => {
+        result[groupKey] = (participante.classificacao || [])
+          .filter(item => item.grupo === groupKey)
+          .sort((a, b) => Number(a.posicao) - Number(b.posicao));
+      });
+      return result;
+    }
+
+    function getParticipantBestThirdGroups(predictedStandingsByGroup) {
+      const thirds = Object.entries(predictedStandingsByGroup)
+        .map(([groupKey, standings]) => {
+          const third = standings.find(team => Number(team.posicao) === 3) || standings[2];
+          return third ? {
+            grupo: groupKey,
+            selecao: third.selecao,
+            pontos: Number(third.pontos || 0),
+            saldo_gols: Number(third.saldo_gols || 0),
+            gols_pro: Number(third.gols_pro || 0)
+          } : null;
+        })
+        .filter(Boolean);
+
+      return new Set(sortThirdPlaces(thirds).slice(0, 8).map(team => team.grupo));
+    }
+
+    function scoreQualifiedBonuses(participante, context) {
+      const predictedStandingsByGroup = getParticipantStandingsByGroup(participante);
+      const predictedBestThirdGroups = getParticipantBestThirdGroups(predictedStandingsByGroup);
+      const predictedQualified = new Set();
+
+      Object.entries(predictedStandingsByGroup).forEach(([groupKey, standings]) => {
+        standings.filter(team => Number(team.posicao) <= 2).forEach(team => predictedQualified.add(normalizeTeam(team.selecao)));
+        const third = standings.find(team => Number(team.posicao) === 3) || standings[2];
+        if (third && predictedBestThirdGroups.has(groupKey)) predictedQualified.add(normalizeTeam(third.selecao));
+      });
+
+      let points = 0;
+      context.realQualifiedTeams.forEach(team => {
+        if (predictedQualified.has(team)) points += 2;
+      });
+
+      context.completedGroups.forEach(groupKey => {
+        const realGroupQualified = new Set((context.realGroupStandings[groupKey] || [])
+          .filter(team => team.posicao <= 2 || context.realBestThirds.some(third => third.grupo === groupKey && normalizeTeam(third.selecao) === normalizeTeam(team.selecao)))
+          .map(team => normalizeTeam(team.selecao)));
+
+        const predictedGroupQualified = new Set((predictedStandingsByGroup[groupKey] || [])
+          .filter(team => Number(team.posicao) <= 2 || predictedBestThirdGroups.has(groupKey) && Number(team.posicao) === 3)
+          .map(team => normalizeTeam(team.selecao)));
+
+        if (realGroupQualified.size && setsEqual(realGroupQualified, predictedGroupQualified)) points += 5;
+      });
+
+      const predictedBestThirdTeams = new Set(Object.entries(predictedStandingsByGroup)
+        .filter(([groupKey]) => predictedBestThirdGroups.has(groupKey))
+        .map(([, standings]) => normalizeTeam((standings.find(team => Number(team.posicao) === 3) || standings[2] || {}).selecao))
+        .filter(Boolean));
+      const realBestThirdTeams = new Set(context.realBestThirds.map(team => normalizeTeam(team.selecao)));
+
+      if (realBestThirdTeams.size === 8 && setsEqual(realBestThirdTeams, predictedBestThirdTeams)) points += 15;
+
+      return points;
+    }
+
+    function scoreKnockoutConfrontations(participante, context) {
+      return context.knockoutGames.reduce((total, realGame) => {
+        const prediction = (participante.mata_mata || []).find(item => item.jogo_id === realGame.jogo_id);
+        if (!prediction) return total;
+
+        const realTeams = [normalizeTeam(realGame.time_casa), normalizeTeam(realGame.time_fora)].filter(Boolean);
+        const predTeams = [normalizeTeam(prediction.time_casa), normalizeTeam(prediction.time_fora)].filter(Boolean);
+        if (realTeams.length < 2 || predTeams.length < 2) return total;
+
+        const common = predTeams.filter(team => realTeams.includes(team)).length;
+        const fullConfrontation = common === 2;
+        let points = fullConfrontation ? 8 : common === 1 ? 3 : 0;
+
+        if (fullConfrontation) {
+          if (normalizeTeam(prediction.vencedor) === normalizeTeam(realGame.vencedor)) points += 8;
+          if (isExactKnockoutScore(prediction, realGame)) points += 12;
+        }
+
+        return total + points;
+      }, 0);
+    }
+
+    function isExactKnockoutScore(prediction, realGame) {
+      const predHome = normalizeTeam(prediction.time_casa);
+      const predAway = normalizeTeam(prediction.time_fora);
+      const realHome = normalizeTeam(realGame.time_casa);
+      const realAway = normalizeTeam(realGame.time_fora);
+
+      if (predHome === realHome && predAway === realAway) {
+        return Number(prediction.gols_casa) === Number(realGame.gols_casa)
+          && Number(prediction.gols_fora) === Number(realGame.gols_fora);
+      }
+
+      if (predHome === realAway && predAway === realHome) {
+        return Number(prediction.gols_casa) === Number(realGame.gols_fora)
+          && Number(prediction.gols_fora) === Number(realGame.gols_casa);
+      }
+
+      return false;
+    }
+
+    function scoreCampaign(participante, context) {
+      const predictedCampaign = buildParticipantCampaignMap(participante);
+      const weights = {
+        R32: 2,
+        R16: 4,
+        QF: 6,
+        SF: 10,
+        FINAL: 15,
+        CHAMPION: 30
+      };
+
+      let points = 0;
+      Object.entries(weights).forEach(([stage, weight]) => {
+        const realTeams = context.realCampaign[stage] || new Set();
+        const predTeams = predictedCampaign[stage] || new Set();
+        realTeams.forEach(team => {
+          if (predTeams.has(team)) points += weight;
+        });
+      });
+
+      return points;
+    }
+
+    function buildRealCampaignMap(knockoutGames) {
+      const map = {
+        R32: new Set(),
+        R16: new Set(),
+        QF: new Set(),
+        SF: new Set(),
+        FINAL: new Set(),
+        CHAMPION: new Set()
+      };
+
+      knockoutGames.forEach(game => {
+        const stage = getStageFromGameId(game.jogo_id);
+        if (map[stage]) {
+          addTeamIfConcrete(map[stage], game.time_casa);
+          addTeamIfConcrete(map[stage], game.time_fora);
+        }
+        if (stage === "FINAL" && game.vencedor) addTeamIfConcrete(map.CHAMPION, game.vencedor);
+      });
+
+      return map;
+    }
+
+    function buildParticipantCampaignMap(participante) {
+      const map = {
+        R32: new Set(),
+        R16: new Set(),
+        QF: new Set(),
+        SF: new Set(),
+        FINAL: new Set(),
+        CHAMPION: new Set()
+      };
+
+      (participante.mata_mata || []).forEach(game => {
+        const stage = getStageFromGameId(game.jogo_id);
+        if (map[stage]) {
+          addTeamIfConcrete(map[stage], game.time_casa);
+          addTeamIfConcrete(map[stage], game.time_fora);
+        }
+      });
+
+      const champion = participante.resumo_final?.campeao;
+      if (champion) addTeamIfConcrete(map.CHAMPION, champion);
+
+      return map;
+    }
+
+    function scoreFinalPositions(participante, context) {
+      const real = context.finalPositions;
+      if (!real.campeao) return 0;
+
+      const pred = participante.resumo_final || {};
+      const positions = ["campeao", "vice", "terceiro", "quarto"];
+      const exactPoints = { campeao: 50, vice: 30, terceiro: 20, quarto: 10 };
+      const realTop4 = new Set(positions.map(pos => normalizeTeam(real[pos])).filter(Boolean));
+      let points = 0;
+
+      positions.forEach(pos => {
+        const predicted = normalizeTeam(pred[pos]);
+        const actual = normalizeTeam(real[pos]);
+        if (!predicted || !actual) return;
+
+        if (predicted === actual) {
+          points += exactPoints[pos];
+        } else if (realTop4.has(predicted)) {
+          points += 8;
+        }
+      });
+
+      return points;
+    }
+
+    function getFinalPositionsFromGames(knockoutGames) {
+      const finalGame = knockoutGames.find(game => game.jogo_id === "FINAL-104");
+      const thirdGame = knockoutGames.find(game => game.jogo_id === "THIRD-103");
+
+      return {
+        campeao: finalGame?.vencedor || "",
+        vice: finalGame?.vencedor ? getLoserFromGame(finalGame) : "",
+        terceiro: thirdGame?.vencedor || "",
+        quarto: thirdGame?.vencedor ? getLoserFromGame(thirdGame) : ""
+      };
+    }
+
+    function getLoserFromGame(game) {
+      const winner = normalizeTeam(game.vencedor);
+      const home = normalizeTeam(game.time_casa);
+      const away = normalizeTeam(game.time_fora);
+      if (!winner) return "";
+      return winner === home ? game.time_fora : winner === away ? game.time_casa : "";
+    }
+
+    function getStageFromGameId(jogoId) {
+      return String(jogoId || "").split("-")[0];
+    }
+
+    function addTeamIfConcrete(set, team) {
+      const normalized = normalizeTeam(team);
+      if (normalized && !isPlaceholderTeam(normalized)) set.add(normalized);
+    }
+
+    function isPlaceholderTeam(team) {
+      return /^[0-9]+[a-l]$/.test(team)
+        || team.includes("vencedor")
+        || team.includes("perdedor")
+        || team.includes("3º")
+        || team.includes("3o");
+    }
+
+    function normalizeTeam(value) {
+      return String(value || "").trim().toLowerCase();
+    }
+
+    function setsEqual(a, b) {
+      if (a.size !== b.size) return false;
+      for (const item of a) {
+        if (!b.has(item)) return false;
+      }
+      return true;
     }
 
     function fetchJsonpAction(action, callbackPrefix) {
@@ -1932,47 +2547,138 @@
         return;
       }
 
-      const fases = [...new Set(jogos.map(jogo => jogo.fase || "Sem fase"))];
+      const groupGames = jogos.filter(jogo => normalizePhase(jogo.fase) === "fase de grupos");
+      const knockoutGames = jogos.filter(jogo => normalizePhase(jogo.fase) !== "fase de grupos");
 
-      realGamesContainer.innerHTML = fases.map(fase => {
-        const jogosDaFase = jogos.filter(jogo => (jogo.fase || "Sem fase") === fase);
+      const groupHtml = Object.keys(groups)
+        .map(groupKey => renderRealGroupCard(groupKey, groupGames.filter(jogo => jogo.grupo === groupKey)))
+        .join("");
 
-        return `
-          <article class="real-games-card">
-            <h3>${escapeHtml(fase)}</h3>
-            <div class="table-wrap">
-              <table>
-                <thead>
-                  <tr>
-                    <th>Jogo</th>
-                    <th>Grupo</th>
-                    <th class="team">Mandante</th>
-                    <th></th>
-                    <th></th>
-                    <th class="team">Visitante</th>
-                    <th>Vencedor</th>
-                    <th>Status</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  ${jogosDaFase.map(jogo => `
-                    <tr>
-                      <td>${escapeHtml(jogo.jogo_id || "")}</td>
-                      <td>${escapeHtml(jogo.grupo || "")}</td>
-                      <td class="team">${escapeHtml(jogo.time_casa || "")}</td>
-                      <td><span class="readonly-score">${formatScoreCell(jogo.gols_casa)}</span></td>
-                      <td><span class="readonly-score">${formatScoreCell(jogo.gols_fora)}</span></td>
-                      <td class="team">${escapeHtml(jogo.time_fora || "")}</td>
-                      <td>${escapeHtml(jogo.vencedor || "—")}</td>
-                      <td><span class="tag ${jogo.status === "Finalizado" ? "tag-qualified" : "tag-info"}">${escapeHtml(jogo.status || "Pendente")}</span></td>
-                    </tr>
-                  `).join("")}
-                </tbody>
-              </table>
-            </div>
-          </article>
-        `;
+      const knockoutPhases = [...new Set(knockoutGames.map(jogo => jogo.fase || "Sem fase"))];
+      const knockoutHtml = knockoutPhases.map(fase => {
+        const jogosDaFase = knockoutGames.filter(jogo => (jogo.fase || "Sem fase") === fase);
+        return renderRealGamesPhaseCard(fase, jogosDaFase);
       }).join("");
+
+      realGamesContainer.innerHTML = `
+        <article class="summary-card" style="grid-column: 1 / -1;">
+          <h2>Classificação real dos grupos</h2>
+          <p class="summary-note">A tabela considera apenas jogos com status <strong>Finalizado</strong> e placar preenchido.</p>
+        </article>
+        ${groupHtml}
+        <article class="summary-card" style="grid-column: 1 / -1;">
+          <h2>Mata-mata real</h2>
+          <p class="summary-note">Os confrontos do mata-mata aparecem conforme forem preenchidos na aba JogosReais.</p>
+        </article>
+        ${knockoutHtml || `<div class="viewer-message">Nenhum jogo de mata-mata preenchido ainda.</div>`}
+      `;
+    }
+
+    function renderRealGroupCard(groupKey, jogosDoGrupo) {
+      const finalizedGroupGames = jogosDoGrupo.filter(isRealGameFinalized);
+      const standings = calculateStandingsFromRealGames(groupKey, finalizedGroupGames);
+
+      return `
+        <article class="group-card">
+          <div class="group-header">
+            <div>
+              <h2>Grupo ${groupKey}</h2>
+              <span>${groups[groupKey].join(" • ")}</span>
+            </div>
+          </div>
+          <div class="matches">
+            ${jogosDoGrupo.map(jogo => `
+              <div class="match">
+                <div class="home">${escapeHtml(jogo.time_casa || "")}</div>
+                <div class="readonly-score">${formatScoreCell(jogo.gols_casa)}</div>
+                <div class="versus">x</div>
+                <div class="readonly-score">${formatScoreCell(jogo.gols_fora)}</div>
+                <div class="away">${escapeHtml(jogo.time_fora || "")}</div>
+              </div>
+            `).join("") || `<div class="viewer-message">Sem jogos cadastrados para este grupo.</div>`}
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Pos.</th>
+                  <th class="team">Seleção</th>
+                  <th>Pts</th>
+                  <th>J</th>
+                  <th>V</th>
+                  <th>E</th>
+                  <th>D</th>
+                  <th>GP</th>
+                  <th>GC</th>
+                  <th>SG</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${standings.map(team => {
+                  const status = team.posicao <= 2
+                    ? `<span class="tag tag-qualified">Classifica</span>`
+                    : team.posicao === 3
+                      ? `<span class="tag tag-third">3º lugar</span>`
+                      : `<span class="tag tag-out">Fora</span>`;
+
+                  return `
+                    <tr>
+                      <td>${team.posicao}</td>
+                      <td class="team">${escapeHtml(team.selecao)}</td>
+                      <td>${team.pontos}</td>
+                      <td>${team.jogos}</td>
+                      <td>${team.vitorias}</td>
+                      <td>${team.empates}</td>
+                      <td>${team.derrotas}</td>
+                      <td>${team.gols_pro}</td>
+                      <td>${team.gols_contra}</td>
+                      <td>${team.saldo_gols}</td>
+                      <td>${status}</td>
+                    </tr>
+                  `;
+                }).join("")}
+              </tbody>
+            </table>
+          </div>
+        </article>
+      `;
+    }
+
+    function renderRealGamesPhaseCard(fase, jogosDaFase) {
+      return `
+        <article class="real-games-card">
+          <h3>${escapeHtml(fase)}</h3>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Jogo</th>
+                  <th class="team">Mandante</th>
+                  <th></th>
+                  <th></th>
+                  <th class="team">Visitante</th>
+                  <th>Vencedor</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${jogosDaFase.map(jogo => `
+                  <tr>
+                    <td>${escapeHtml(jogo.jogo_id || "")}</td>
+                    <td class="team">${escapeHtml(jogo.time_casa || "")}</td>
+                    <td><span class="readonly-score">${formatScoreCell(jogo.gols_casa)}</span></td>
+                    <td><span class="readonly-score">${formatScoreCell(jogo.gols_fora)}</span></td>
+                    <td class="team">${escapeHtml(jogo.time_fora || "")}</td>
+                    <td>${escapeHtml(jogo.vencedor || "—")}</td>
+                    <td><span class="tag ${jogo.status === "Finalizado" ? "tag-qualified" : "tag-info"}">${escapeHtml(jogo.status || "Pendente")}</span></td>
+                  </tr>
+                `).join("")}
+              </tbody>
+            </table>
+          </div>
+        </article>
+      `;
     }
 
     function formatScoreCell(value) {
