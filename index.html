@@ -200,7 +200,7 @@
       gap: 18px;
     }
 
-    .group-card, .summary-card, .stage-card, .champion-card {
+    .group-card, .summary-card, .stage-card, .champion-card, .submit-card {
       background: var(--card);
       border: 1px solid var(--line);
       border-radius: 18px;
@@ -463,6 +463,27 @@
     .champion-card p {
       margin: 0;
       color: var(--muted);
+    }
+
+    .submit-card {
+      margin-top: 18px;
+      padding: 18px;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .submit-card h2 {
+      margin: 0 0 4px;
+      font-size: 22px;
+    }
+
+    .submit-card p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.45;
     }
 
     .participants-layout {
@@ -929,14 +950,7 @@
   <section class="toolbar">
     <div class="container toolbar-inner">
       <div class="menu-bar">
-        <div class="menu-group" id="simulatorActions">
-          <button class="btn-secondary menu-title btn-active" type="button" id="menuParticiparBtn">Participar do Bolão ▾</button>
-          <div class="menu-items">
-            <button class="btn-secondary btn-active" type="button" id="navPalpiteBtn">Fazer palpite</button>
-            <button class="btn-secondary" type="button" id="clearBtn">Limpar palpites</button>
-            <button class="btn-primary" type="button" id="openSubmitBtn">Enviar palpite</button>
-          </div>
-        </div>
+        <button class="btn-secondary menu-title btn-active" type="button" id="navPalpiteBtn">Fazer palpite</button>
 
         <div class="menu-group">
           <button class="btn-secondary menu-title" type="button" id="menuParticipantesBtn">Participantes ▾</button>
@@ -955,6 +969,14 @@
 
   <main class="container">
     <section class="page active" id="groupPage">
+      <section class="submit-card">
+        <div>
+          <h2>Fazer palpite</h2>
+          <p>Preencha os resultados da fase de grupos. O mata-mata será montado automaticamente conforme os grupos forem concluídos.</p>
+        </div>
+        <button class="btn-secondary" type="button" id="clearBtn">Limpar palpites</button>
+      </section>
+
       <section class="grid" id="groupsContainer"></section>
 
       <section class="summary-grid">
@@ -996,6 +1018,14 @@
       <section class="champion-card" id="championCard">
         <h2>Campeão: —</h2>
         <p>Preencha os grupos. O mata-mata começará a aparecer automaticamente aqui embaixo conforme os grupos forem concluídos. Depois complete todos os jogos até campeão e terceiro lugar para liberar o envio final.</p>
+      </section>
+
+      <section class="submit-card">
+        <div>
+          <h2>Enviar palpite</h2>
+          <p>Quando todos os jogos estiverem preenchidos até campeão e terceiro lugar, envie seu palpite completo.</p>
+        </div>
+        <button class="btn-primary" type="button" id="openSubmitBtn">Enviar palpite</button>
       </section>
     </section>
 
@@ -1384,7 +1414,6 @@
       }
     };
 
-    const menuParticiparBtn = document.getElementById("menuParticiparBtn");
     const menuParticipantesBtn = document.getElementById("menuParticipantesBtn");
     const navPalpiteBtn = document.getElementById("navPalpiteBtn");
     const navPontuacaoBtn = document.getElementById("navPontuacaoBtn");
@@ -1402,7 +1431,6 @@
     const adminSaveGamesBtn = document.getElementById("adminSaveGamesBtn");
     const adminStatusMessage = document.getElementById("adminStatusMessage");
     const adminGamesBody = document.getElementById("adminGamesBody");
-    const simulatorActions = document.getElementById("simulatorActions");
     const groupsContainer = document.getElementById("groupsContainer");
     const thirdPlacesBody = document.getElementById("thirdPlacesBody");
     const progressText = document.getElementById("progressText");
@@ -2198,7 +2226,6 @@
       navClassificacaoBtn.classList.toggle("btn-active", isRanking);
       navJogosReaisBtn.classList.toggle("btn-active", isRealGames);
       navParticipantesBtn.classList.toggle("btn-active", isParticipants);
-      menuParticiparBtn.classList.toggle("btn-active", isSimulator);
       menuParticipantesBtn.classList.toggle("btn-active", isParticipants || isRanking);
 
       const target = isSimulator ? groupPage : isScore ? scorePage : isRanking ? rankingPage : isRealGames ? realGamesPage : isAdmin ? adminPage : participantsPage;
