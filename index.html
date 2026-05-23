@@ -98,6 +98,18 @@
       gap: 10px;
     }
 
+    .nav-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .btn-active {
+      background: var(--primary);
+      color: #fff;
+      border-color: var(--primary);
+    }
+
     button {
       border: 0;
       border-radius: 12px;
@@ -134,13 +146,17 @@
       scroll-margin-top: 96px;
     }
 
+    .hidden {
+      display: none !important;
+    }
+
     .grid {
       display: grid;
       grid-template-columns: repeat(2, minmax(0, 1fr));
       gap: 18px;
     }
 
-    .group-card, .summary-card, .stage-card, .champion-card, .rules-card {
+    .group-card, .summary-card, .stage-card, .champion-card {
       background: var(--card);
       border: 1px solid var(--line);
       border-radius: 18px;
@@ -262,29 +278,6 @@
     .tag-info {
       background: var(--info-bg);
       color: var(--info-text);
-    }
-
-    .rules-card {
-      margin-bottom: 18px;
-      padding: 18px;
-      display: grid;
-      gap: 10px;
-      line-height: 1.45;
-    }
-
-    .rules-card h2 {
-      margin: 0;
-      font-size: 22px;
-    }
-
-    .rules-card ol, .rules-card ul {
-      margin: 0;
-      padding-left: 20px;
-      color: var(--muted);
-    }
-
-    .rules-card li {
-      margin: 4px 0;
     }
 
     .summary-grid {
@@ -428,6 +421,103 @@
       color: var(--muted);
     }
 
+    .participants-layout {
+      display: grid;
+      grid-template-columns: 320px 1fr;
+      gap: 18px;
+      align-items: start;
+    }
+
+    .participants-panel, .participant-view-card {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .participants-panel-header, .participant-view-header {
+      padding: 16px;
+      border-bottom: 1px solid var(--line);
+      display: grid;
+      gap: 6px;
+    }
+
+    .participants-panel-header h2, .participant-view-header h2 {
+      margin: 0;
+      font-size: 20px;
+    }
+
+    .participants-panel-header p, .participant-view-header p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.4;
+    }
+
+    .participants-list {
+      padding: 12px;
+      display: grid;
+      gap: 10px;
+      max-height: 680px;
+      overflow: auto;
+    }
+
+    .participant-card {
+      width: 100%;
+      text-align: left;
+      background: #fbfcfe;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 12px;
+      display: grid;
+      gap: 5px;
+      cursor: pointer;
+    }
+
+    .participant-card:hover {
+      border-color: var(--primary);
+    }
+
+    .participant-card strong {
+      font-size: 15px;
+      color: var(--text);
+    }
+
+    .participant-card span {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 500;
+    }
+
+    .participant-card.active {
+      border-color: var(--primary);
+      background: var(--success-bg);
+    }
+
+    .viewer-sections {
+      padding: 16px;
+      display: grid;
+      gap: 18px;
+    }
+
+    .readonly-score {
+      width: 58px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 9px 6px;
+      text-align: center;
+      font-size: 15px;
+      background: #f2f4f7;
+      font-weight: 700;
+    }
+
+    .viewer-empty, .viewer-message {
+      padding: 16px;
+      color: var(--muted);
+      line-height: 1.45;
+    }
+
     dialog {
       border: 0;
       border-radius: 18px;
@@ -522,7 +612,7 @@
     }
 
     @media (max-width: 900px) {
-      .grid, .stages-grid { grid-template-columns: 1fr; }
+      .grid, .stages-grid, .participants-layout { grid-template-columns: 1fr; }
       .match, .ko-line {
         grid-template-columns: 1fr 48px 18px 48px 1fr;
         gap: 6px;
@@ -541,8 +631,12 @@
 
   <section class="toolbar">
     <div class="container toolbar-inner">
+      <div class="nav-actions">
+        <button class="btn-secondary btn-active" type="button" id="navPalpiteBtn">Fazer palpite</button>
+        <button class="btn-secondary" type="button" id="navParticipantesBtn">Ver participantes</button>
+      </div>
       <div class="status-pill" id="progressText">Fase de grupos: 0/72 • Mata-mata: 0/32</div>
-      <div class="actions">
+      <div class="actions" id="simulatorActions">
         <button class="btn-secondary" type="button" id="clearBtn">Limpar palpites</button>
         <button class="btn-primary" type="button" id="openSubmitBtn">Enviar palpite</button>
       </div>
@@ -550,24 +644,13 @@
   </section>
 
   <main class="container">
-    <section class="rules-card">
-      <h2>Regras consideradas no simulador</h2>
-      <ul>
-        <li><strong>Fase de grupos:</strong> vitória vale 3 pontos, empate vale 1 e derrota vale 0.</li>
-        <li><strong>Classificação do grupo:</strong> primeiro vem a pontuação total. Em caso de empate em pontos, o simulador aplica confronto direto entre os empatados: pontos, saldo de gols e gols marcados nesses jogos. Persistindo empate, usa saldo de gols geral e gols marcados no grupo.</li>
-        <li><strong>Melhores terceiros:</strong> pontos, saldo de gols e gols marcados em todos os jogos do grupo.</li>
-        <li><strong>Critérios que não vêm do placar:</strong> fair play/cartões e ranking FIFA são critérios oficiais, mas não são preenchidos neste MVP. Se o empate extremo persistir, o simulador usa uma ordem técnica fixa para manter o fluxo funcionando.</li>
-        <li><strong>Mata-mata:</strong> se um jogo terminar empatado no placar informado, escolha manualmente quem avança, simulando prorrogação/pênaltis.</li>
-      </ul>
-    </section>
-
     <section class="page active" id="groupPage">
       <section class="grid" id="groupsContainer"></section>
 
       <section class="summary-grid">
         <div class="summary-card">
           <h2>Melhores terceiros colocados</h2>
-          <p class="summary-note">No formato da Copa 2026, os dois primeiros de cada grupo avançam, além dos oito melhores terceiros. Esta tabela usa pontos, saldo de gols e gols marcados. Fair play/cartões e ranking FIFA não são coletados neste MVP.</p>
+          <p class="summary-note">No formato da Copa 2026, os dois primeiros de cada grupo avançam, além dos oito melhores terceiros.</p>
           <div class="table-wrap">
             <table>
               <thead>
@@ -603,6 +686,31 @@
       <section class="champion-card" id="championCard">
         <h2>Campeão: —</h2>
         <p>Preencha os grupos. O mata-mata começará a aparecer automaticamente aqui embaixo conforme os grupos forem concluídos. Depois complete todos os jogos até campeão e terceiro lugar para liberar o envio final.</p>
+      </section>
+    </section>
+
+    <section class="page hidden" id="participantsPage">
+      <section class="participants-layout">
+        <aside class="participants-panel">
+          <div class="participants-panel-header">
+            <h2>Participantes</h2>
+            <p>Veja quem já enviou o bolão e abra os palpites salvos.</p>
+            <button class="btn-secondary" type="button" id="refreshParticipantsBtn">Atualizar lista</button>
+          </div>
+          <div class="participants-list" id="participantsList">
+            <div class="viewer-message">Clique em “Atualizar lista” para carregar os participantes.</div>
+          </div>
+        </aside>
+
+        <section class="participant-view-card">
+          <div class="participant-view-header">
+            <h2 id="participantViewTitle">Palpites do participante</h2>
+            <p id="participantViewSubtitle">Selecione uma pessoa na lista para ver os resultados fixos da fase de grupos e do mata-mata.</p>
+          </div>
+          <div class="viewer-sections" id="participantPredictionView">
+            <div class="viewer-empty">Nenhum participante selecionado.</div>
+          </div>
+        </section>
       </section>
     </section>
   </main>
@@ -694,6 +802,10 @@
 
     const appState = {
       currentPage: "groups",
+      currentMode: "simulator",
+      publicData: {
+        participantes: []
+      },
       matches: [],
       standingsByGroup: {},
       thirdPlaces: [],
@@ -708,6 +820,9 @@
       }
     };
 
+    const navPalpiteBtn = document.getElementById("navPalpiteBtn");
+    const navParticipantesBtn = document.getElementById("navParticipantesBtn");
+    const simulatorActions = document.getElementById("simulatorActions");
     const groupsContainer = document.getElementById("groupsContainer");
     const thirdPlacesBody = document.getElementById("thirdPlacesBody");
     const progressText = document.getElementById("progressText");
@@ -715,6 +830,12 @@
     const clearBtn = document.getElementById("clearBtn");
     const groupPage = document.getElementById("groupPage");
     const knockoutPage = document.getElementById("knockoutPage");
+    const participantsPage = document.getElementById("participantsPage");
+    const participantsList = document.getElementById("participantsList");
+    const refreshParticipantsBtn = document.getElementById("refreshParticipantsBtn");
+    const participantPredictionView = document.getElementById("participantPredictionView");
+    const participantViewTitle = document.getElementById("participantViewTitle");
+    const participantViewSubtitle = document.getElementById("participantViewSubtitle");
     const knockoutContainer = document.getElementById("knockoutContainer");
     const championCard = document.getElementById("championCard");
     const submitDialog = document.getElementById("submitDialog");
@@ -800,6 +921,13 @@
     }
 
     function bindEvents() {
+      navPalpiteBtn.addEventListener("click", () => showMainMode("simulator"));
+      navParticipantesBtn.addEventListener("click", () => {
+        showMainMode("participants");
+        loadParticipantsData();
+      });
+      refreshParticipantsBtn.addEventListener("click", loadParticipantsData);
+
       document.querySelectorAll("input[data-match-id]").forEach(input => {
         input.addEventListener("input", handleScoreInput);
       });
@@ -1441,6 +1569,267 @@
     function updatePageControls() {
       const knockoutComplete = validateKnockoutComplete().ok;
       openSubmitBtn.disabled = !knockoutComplete;
+    }
+
+    function showMainMode(mode) {
+      appState.currentMode = mode;
+      const isSimulator = mode === "simulator";
+
+      groupPage.classList.toggle("hidden", !isSimulator);
+      knockoutPage.classList.toggle("hidden", !isSimulator);
+      participantsPage.classList.toggle("hidden", isSimulator);
+      progressText.classList.toggle("hidden", !isSimulator);
+      simulatorActions.classList.toggle("hidden", !isSimulator);
+      navPalpiteBtn.classList.toggle("btn-active", isSimulator);
+      navParticipantesBtn.classList.toggle("btn-active", !isSimulator);
+
+      const target = isSimulator ? groupPage : participantsPage;
+      target.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+
+    async function loadParticipantsData() {
+      participantsList.innerHTML = `<div class="viewer-message">Carregando participantes...</div>`;
+      refreshParticipantsBtn.disabled = true;
+      refreshParticipantsBtn.textContent = "Carregando...";
+
+      try {
+        const data = await fetchParticipantsJsonp();
+
+        if (!data || data.status !== "sucesso") {
+          throw new Error(data?.message || "Não foi possível carregar os participantes.");
+        }
+
+        appState.publicData.participantes = data.participantes || [];
+        renderParticipantsList();
+      } catch (error) {
+        console.error(error);
+        participantsList.innerHTML = `<div class="viewer-message">Erro ao carregar participantes. Confira se o Apps Script foi atualizado para permitir a leitura dos dados.</div>`;
+      } finally {
+        refreshParticipantsBtn.disabled = false;
+        refreshParticipantsBtn.textContent = "Atualizar lista";
+      }
+    }
+
+    function fetchParticipantsJsonp() {
+      return new Promise((resolve, reject) => {
+        const callbackName = `bolaoParticipantes_${Date.now()}_${Math.floor(Math.random() * 10000)}`;
+        const script = document.createElement("script");
+        const separator = SCRIPT_URL.includes("?") ? "&" : "?";
+        const timeout = setTimeout(() => {
+          cleanup();
+          reject(new Error("Tempo esgotado ao carregar participantes."));
+        }, 15000);
+
+        function cleanup() {
+          clearTimeout(timeout);
+          delete window[callbackName];
+          script.remove();
+        }
+
+        window[callbackName] = (data) => {
+          cleanup();
+          resolve(data);
+        };
+
+        script.onerror = () => {
+          cleanup();
+          reject(new Error("Falha ao carregar dados do Apps Script."));
+        };
+
+        script.src = `${SCRIPT_URL}${separator}action=listar&callback=${callbackName}&t=${Date.now()}`;
+        document.body.appendChild(script);
+      });
+    }
+
+    function renderParticipantsList() {
+      const participantes = appState.publicData.participantes;
+
+      if (!participantes.length) {
+        participantsList.innerHTML = `<div class="viewer-message">Nenhum participante enviado ainda.</div>`;
+        participantPredictionView.innerHTML = `<div class="viewer-empty">Nenhum participante selecionado.</div>`;
+        participantViewTitle.textContent = "Palpites do participante";
+        participantViewSubtitle.textContent = "Quando alguém enviar o bolão, o nome aparecerá na lista ao lado.";
+        return;
+      }
+
+      participantsList.innerHTML = participantes.map(participante => {
+        const resumo = participante.resumo_final || {};
+        const campeao = resumo.campeao ? `Campeão: ${escapeHtml(resumo.campeao)}` : "Sem campeão registrado";
+        return `
+          <button class="participant-card" type="button" data-participant-id="${escapeHtml(participante.id_participante)}">
+            <strong>${escapeHtml(participante.nome || "Participante")}</strong>
+            <span>${escapeHtml(formatDisplayDate(participante.data_envio))}</span>
+            <span>${campeao}</span>
+          </button>
+        `;
+      }).join("");
+
+      document.querySelectorAll("button[data-participant-id]").forEach(button => {
+        button.addEventListener("click", () => selectParticipant(button.dataset.participantId));
+      });
+    }
+
+    function selectParticipant(participantId) {
+      const participante = appState.publicData.participantes.find(item => item.id_participante === participantId);
+      if (!participante) return;
+
+      document.querySelectorAll("button[data-participant-id]").forEach(button => {
+        button.classList.toggle("active", button.dataset.participantId === participantId);
+      });
+
+      renderParticipantPrediction(participante);
+    }
+
+    function renderParticipantPrediction(participante) {
+      const resumo = participante.resumo_final || {};
+      participantViewTitle.textContent = `Palpite de ${participante.nome || "Participante"}`;
+      participantViewSubtitle.textContent = `Enviado em ${formatDisplayDate(participante.data_envio)}.`;
+
+      const resumoHtml = `
+        <section class="champion-card">
+          <h2>Campeão: ${escapeHtml(resumo.campeao || "—")}</h2>
+          <p><strong>Vice:</strong> ${escapeHtml(resumo.vice || "—")} &nbsp; • &nbsp; <strong>3º lugar:</strong> ${escapeHtml(resumo.terceiro || "—")} &nbsp; • &nbsp; <strong>4º lugar:</strong> ${escapeHtml(resumo.quarto || "—")}</p>
+        </section>
+      `;
+
+      const groupsHtml = `
+        <section>
+          <h2>Fase de grupos</h2>
+          <div class="grid">
+            ${Object.keys(groups).map(groupKey => renderReadonlyGroupCard(participante, groupKey)).join("")}
+          </div>
+        </section>
+      `;
+
+      const knockoutHtml = `
+        <section>
+          <h2>Mata-mata</h2>
+          <div class="stages-grid">
+            ${["R32", "R16", "QF", "SF", "FINAL", "THIRD"].map(stage => renderReadonlyStageCard(participante, stage)).join("")}
+          </div>
+        </section>
+      `;
+
+      participantPredictionView.innerHTML = resumoHtml + groupsHtml + knockoutHtml;
+    }
+
+    function renderReadonlyGroupCard(participante, groupKey) {
+      const palpites = (participante.palpites || []).filter(item => item.grupo === groupKey);
+      const classificacao = (participante.classificacao || [])
+        .filter(item => item.grupo === groupKey)
+        .sort((a, b) => Number(a.posicao) - Number(b.posicao));
+
+      return `
+        <article class="group-card">
+          <div class="group-header">
+            <div>
+              <h2>Grupo ${groupKey}</h2>
+              <span>${groups[groupKey].join(" • ")}</span>
+            </div>
+          </div>
+          <div class="matches">
+            ${palpites.map(match => `
+              <div class="match">
+                <div class="home">${escapeHtml(match.time_casa)}</div>
+                <div class="readonly-score">${escapeHtml(match.gols_casa)}</div>
+                <div class="versus">x</div>
+                <div class="readonly-score">${escapeHtml(match.gols_fora)}</div>
+                <div class="away">${escapeHtml(match.time_fora)}</div>
+              </div>
+            `).join("")}
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Pos.</th>
+                  <th class="team">Seleção</th>
+                  <th>Pts</th>
+                  <th>J</th>
+                  <th>V</th>
+                  <th>E</th>
+                  <th>D</th>
+                  <th>GP</th>
+                  <th>GC</th>
+                  <th>SG</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${classificacao.map(team => `
+                  <tr>
+                    <td>${escapeHtml(team.posicao)}</td>
+                    <td class="team">${escapeHtml(team.selecao)}</td>
+                    <td>${escapeHtml(team.pontos)}</td>
+                    <td>${escapeHtml(team.jogos)}</td>
+                    <td>${escapeHtml(team.vitorias)}</td>
+                    <td>${escapeHtml(team.empates)}</td>
+                    <td>${escapeHtml(team.derrotas)}</td>
+                    <td>${escapeHtml(team.gols_pro)}</td>
+                    <td>${escapeHtml(team.gols_contra)}</td>
+                    <td>${escapeHtml(team.saldo_gols)}</td>
+                  </tr>
+                `).join("")}
+              </tbody>
+            </table>
+          </div>
+        </article>
+      `;
+    }
+
+    function renderReadonlyStageCard(participante, stage) {
+      const jogos = (participante.mata_mata || [])
+        .filter(match => match.jogo_id && match.jogo_id.startsWith(`${stage}-`))
+        .sort((a, b) => Number(String(a.jogo_id).split("-")[1]) - Number(String(b.jogo_id).split("-")[1]));
+
+      return `
+        <article class="stage-card">
+          <div class="stage-header">
+            <div>
+              <h2>${stageLabels[stage]}</h2>
+              <span>${stageSubtitles[stage]}</span>
+            </div>
+            <span class="tag tag-info">${jogos.length}</span>
+          </div>
+          <div class="stage-matches">
+            ${jogos.map(renderReadonlyKnockoutMatch).join("") || `<div class="viewer-message">Sem jogos registrados.</div>`}
+          </div>
+        </article>
+      `;
+    }
+
+    function renderReadonlyKnockoutMatch(match) {
+      return `
+        <div class="ko-match">
+          <div class="ko-match-title">
+            <span>Jogo ${escapeHtml(String(match.jogo_id || "").split("-")[1] || "")}</span>
+            <span>${escapeHtml(match.jogo_id || "")}</span>
+          </div>
+          <div class="ko-line">
+            <div class="ko-team-home">${escapeHtml(match.time_casa || "—")}</div>
+            <div class="readonly-score">${escapeHtml(match.gols_casa)}</div>
+            <div class="versus">x</div>
+            <div class="readonly-score">${escapeHtml(match.gols_fora)}</div>
+            <div class="ko-team-away">${escapeHtml(match.time_fora || "—")}</div>
+          </div>
+          <div class="winner-line">Vencedor: ${escapeHtml(match.vencedor || "—")}</div>
+        </div>
+      `;
+    }
+
+    function formatDisplayDate(value) {
+      if (!value) return "Data não informada";
+      const date = new Date(value);
+      if (Number.isNaN(date.getTime())) return String(value);
+      return date.toLocaleString("pt-BR");
+    }
+
+    function escapeHtml(value) {
+      return String(value ?? "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
     }
 
     function resetKnockoutOnly() {
