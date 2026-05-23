@@ -648,6 +648,48 @@
       line-height: 1.45;
     }
 
+    .score-detail-card {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .score-detail-card h2,
+    .score-detail-card h3 {
+      margin: 0;
+      padding: 16px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .score-detail-card h2 {
+      font-size: 22px;
+    }
+
+    .score-detail-card h3 {
+      font-size: 18px;
+      background: #fbfcfe;
+    }
+
+    .score-detail-grid {
+      display: grid;
+      gap: 14px;
+    }
+
+    .reason-cell {
+      text-align: left;
+      white-space: normal;
+      color: var(--muted);
+      min-width: 220px;
+    }
+
+    .score-total-line {
+      padding: 14px 16px;
+      color: var(--muted);
+      line-height: 1.45;
+    }
+
     dialog {
       border: 0;
       border-radius: 18px;
@@ -1951,6 +1993,16 @@
         }
 
         appState.publicData.participantes = data.participantes || [];
+
+        try {
+          const realGamesData = await fetchRealGamesJsonp();
+          if (realGamesData && realGamesData.status === "sucesso") {
+            appState.publicData.jogosReais = realGamesData.jogos || [];
+          }
+        } catch (scoreError) {
+          console.warn("Não foi possível carregar os jogos reais para detalhar a pontuação.", scoreError);
+        }
+
         renderParticipantsList();
       } catch (error) {
         console.error(error);
@@ -2758,7 +2810,202 @@
         </section>
       `;
 
-      participantPredictionView.innerHTML = resumoHtml + groupsHtml + knockoutHtml;
+      const scoringHtml = renderParticipantScoringDetails(participante);
+
+      participantPredictionView.innerHTML = resumoHtml + scoringHtml + groupsHtml + knockoutHtml;
+    }
+
+    function renderParticipantScoringDetails(participante) {
+      const jogosReais = appState.publicData.jogosReais || [];
+      const finalizedGames = jogosReais.filter(isRealGameFinalized);
+
+      if (!finalizedGames.length) {
+        return `
+          <section class="score-detail-card">
+            <h2>Pontuação detalhada</h2>
+            <div class="viewer-message">Ainda não há jogos reais finalizados na aba JogosReais. Quando você preencher resultados com status “Finalizado”, a pontuação por jogo aparecerá aqui.</div>
+          </section>
+        `;
+      }
+
+      const groupDetails = finalizedGames
+        .filter(jogo => normalizePhase(jogo.fase) === "fase de grupos")
+        .map(realGame => getGroupGameScoreDetail(participante, realGame));
+
+      const knockoutDetails = finalizedGames
+        .filter(jogo => normalizePhase(jogo.fase) !== "fase de grupos")
+        .map(realGame => getKnockoutGameScoreDetail(participante, realGame));
+
+      const groupTotal = groupDetails.reduce((sum, item) => sum + item.points, 0);
+      const knockoutTotal = knockoutDetails.reduce((sum, item) => sum + item.points, 0);
+      const total = groupTotal + knockoutTotal;
+
+      return `
+        <section class="score-detail-card">
+          <h2>Pontuação detalhada por jogo</h2>
+          <div class="score-total-line">
+            <strong>Total por jogos finalizados:</strong> ${total} pontos
+            &nbsp; • &nbsp; <strong>Fase de grupos:</strong> ${groupTotal}
+            &nbsp; • &nbsp; <strong>Mata-mata:</strong> ${knockoutTotal}
+          </div>
+          <div class="score-detail-grid">
+            ${renderScoreDetailsTable("Fase de grupos", groupDetails)}
+            ${renderScoreDetailsTable("Mata-mata", knockoutDetails)}
+          </div>
+        </section>
+      `;
+    }
+
+    function renderScoreDetailsTable(title, details) {
+      if (!details.length) {
+        return `
+          <div>
+            <h3>${escapeHtml(title)}</h3>
+            <div class="viewer-message">Nenhum jogo finalizado nesta fase ainda.</div>
+          </div>
+        `;
+      }
+
+      return `
+        <div>
+          <h3>${escapeHtml(title)}</h3>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Jogo</th>
+                  <th class="team">Real</th>
+                  <th class="team">Palpite</th>
+                  <th>Pontos</th>
+                  <th>Motivo</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${details.map(item => `
+                  <tr>
+                    <td>${escapeHtml(item.jogo_id)}</td>
+                    <td class="team">${escapeHtml(item.realLabel)}</td>
+                    <td class="team">${escapeHtml(item.predictionLabel)}</td>
+                    <td><span class="points-badge">${item.points}</span></td>
+                    <td class="reason-cell">${escapeHtml(item.reason)}</td>
+                  </tr>
+                `).join("")}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      `;
+    }
+
+    function getGroupGameScoreDetail(participante, realGame) {
+      const prediction = (participante.palpites || []).find(item => item.jogo_id === realGame.jogo_id);
+      const detail = scoreSingleGroupGameDetailed(prediction, realGame);
+
+      return {
+        jogo_id: realGame.jogo_id || "",
+        realLabel: formatGameLabel(realGame),
+        predictionLabel: prediction ? formatGameLabel(prediction) : "Sem palpite registrado",
+        points: detail.points,
+        reason: detail.reason
+      };
+    }
+
+    function getKnockoutGameScoreDetail(participante, realGame) {
+      const prediction = (participante.mata_mata || []).find(item => item.jogo_id === realGame.jogo_id);
+      const detail = scoreSingleKnockoutGameDetailed(prediction, realGame);
+
+      return {
+        jogo_id: realGame.jogo_id || "",
+        realLabel: formatGameLabel(realGame),
+        predictionLabel: prediction ? formatGameLabel(prediction) : "Sem palpite registrado",
+        points: detail.points,
+        reason: detail.reason
+      };
+    }
+
+    function scoreSingleGroupGameDetailed(prediction, realGame) {
+      if (!prediction) {
+        return { points: 0, reason: "Sem palpite registrado para este jogo." };
+      }
+
+      const predHome = Number(prediction.gols_casa);
+      const predAway = Number(prediction.gols_fora);
+      const realHome = Number(realGame.gols_casa);
+      const realAway = Number(realGame.gols_fora);
+
+      if (predHome === realHome && predAway === realAway) {
+        return { points: 10, reason: "Acertou o placar exato." };
+      }
+
+      const sameOutcome = getOutcome(predHome, predAway) === getOutcome(realHome, realAway);
+      const homeGoals = predHome === realHome;
+      const awayGoals = predAway === realAway;
+      const oneTeamGoals = homeGoals || awayGoals;
+
+      if (sameOutcome && oneTeamGoals) {
+        const teamName = homeGoals ? realGame.time_casa : realGame.time_fora;
+        return { points: 7, reason: `Acertou o resultado e os gols de ${teamName}.` };
+      }
+
+      if (sameOutcome) {
+        return { points: 5, reason: "Acertou o resultado do jogo, mas não o placar." };
+      }
+
+      if (oneTeamGoals) {
+        const teamName = homeGoals ? realGame.time_casa : realGame.time_fora;
+        return { points: 2, reason: `Errou o resultado, mas acertou os gols de ${teamName}.` };
+      }
+
+      return { points: 0, reason: "Não acertou resultado nem gols de nenhum time." };
+    }
+
+    function scoreSingleKnockoutGameDetailed(prediction, realGame) {
+      if (!prediction) {
+        return { points: 0, reason: "Sem palpite registrado para este jogo." };
+      }
+
+      const realTeams = [normalizeTeam(realGame.time_casa), normalizeTeam(realGame.time_fora)].filter(Boolean);
+      const predTeams = [normalizeTeam(prediction.time_casa), normalizeTeam(prediction.time_fora)].filter(Boolean);
+
+      if (realTeams.length < 2 || predTeams.length < 2) {
+        return { points: 0, reason: "Confronto incompleto para comparar." };
+      }
+
+      const common = predTeams.filter(team => realTeams.includes(team)).length;
+      const fullConfrontation = common === 2;
+      let points = 0;
+      const reasons = [];
+
+      if (fullConfrontation) {
+        points += 8;
+        reasons.push("acertou os dois times do confronto");
+
+        if (normalizeTeam(prediction.vencedor) === normalizeTeam(realGame.vencedor)) {
+          points += 8;
+          reasons.push("acertou o vencedor");
+        }
+
+        if (isExactKnockoutScore(prediction, realGame)) {
+          points += 12;
+          reasons.push("acertou o placar exato");
+        }
+      } else if (common === 1) {
+        points += 3;
+        reasons.push("acertou um dos times do confronto");
+      }
+
+      return {
+        points,
+        reason: reasons.length ? capitalizeFirst(reasons.join(" + ") + ".") : "Não acertou o confronto. Pode ainda pontuar por campanha no ranking geral."
+      };
+    }
+
+    function formatGameLabel(game) {
+      return `${game.time_casa || "—"} ${formatScoreCell(game.gols_casa)} x ${formatScoreCell(game.gols_fora)} ${game.time_fora || "—"}`;
+    }
+
+    function capitalizeFirst(text) {
+      return text.charAt(0).toUpperCase() + text.slice(1);
     }
 
     function renderReadonlyGroupCard(participante, groupKey) {
