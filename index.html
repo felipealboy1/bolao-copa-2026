@@ -104,6 +104,50 @@
       gap: 8px;
     }
 
+    .menu-bar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .menu-group {
+      position: relative;
+    }
+
+    .menu-title {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .menu-items {
+      position: absolute;
+      top: calc(100% + 8px);
+      left: 0;
+      min-width: 230px;
+      display: none;
+      gap: 8px;
+      padding: 10px;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      background: var(--card);
+      box-shadow: var(--shadow);
+      z-index: 30;
+    }
+
+    .menu-group:hover .menu-items,
+    .menu-group:focus-within .menu-items {
+      display: grid;
+    }
+
+    .menu-items button {
+      width: 100%;
+      text-align: left;
+      justify-content: flex-start;
+    }
+
+
     .btn-active {
       background: var(--primary);
       color: #fff;
@@ -860,6 +904,12 @@
 
     @media (max-width: 900px) {
       .grid, .stages-grid, .participants-layout, .score-grid, .real-games-grid, .ranking-summary { grid-template-columns: 1fr; }
+      .toolbar-inner { align-items: stretch; }
+      .menu-bar { width: 100%; }
+      .menu-group { flex: 1 1 180px; }
+      .menu-title { width: 100%; justify-content: center; }
+      .menu-items { position: static; margin-top: 8px; width: 100%; }
+      .status-pill { width: 100%; justify-content: center; }
       .match, .ko-line {
         grid-template-columns: 1fr 48px 18px 48px 1fr;
         gap: 6px;
@@ -878,19 +928,28 @@
 
   <section class="toolbar">
     <div class="container toolbar-inner">
-      <div class="nav-actions">
-        <button class="btn-secondary btn-active" type="button" id="navPalpiteBtn">Fazer palpite</button>
-        <button class="btn-secondary" type="button" id="navPontuacaoBtn">Pontuação</button>
-        <button class="btn-secondary" type="button" id="navClassificacaoBtn">Classificação</button>
-        <button class="btn-secondary" type="button" id="navJogosReaisBtn">Jogos reais</button>
-        <button class="btn-secondary" type="button" id="navParticipantesBtn">Ver participantes</button>
+      <div class="menu-bar">
+        <div class="menu-group" id="simulatorActions">
+          <button class="btn-secondary menu-title btn-active" type="button" id="menuParticiparBtn">Participar do Bolão ▾</button>
+          <div class="menu-items">
+            <button class="btn-secondary btn-active" type="button" id="navPalpiteBtn">Fazer palpite</button>
+            <button class="btn-secondary" type="button" id="clearBtn">Limpar palpites</button>
+            <button class="btn-primary" type="button" id="openSubmitBtn">Enviar palpite</button>
+          </div>
+        </div>
+
+        <div class="menu-group">
+          <button class="btn-secondary menu-title" type="button" id="menuParticipantesBtn">Participantes ▾</button>
+          <div class="menu-items">
+            <button class="btn-secondary" type="button" id="navParticipantesBtn">Ver participantes</button>
+            <button class="btn-secondary" type="button" id="navClassificacaoBtn">Classificação</button>
+          </div>
+        </div>
+
+        <button class="btn-secondary menu-title" type="button" id="navJogosReaisBtn">Jogos reais</button>
+        <button class="btn-secondary menu-title" type="button" id="navPontuacaoBtn">Regras de Pontuação do Bolão</button>
       </div>
       <div class="status-pill" id="progressText">Fase de grupos: 0/72 • Mata-mata: 0/32</div>
-      <div class="actions" id="simulatorActions">
-        <button class="btn-secondary" type="button" id="clearBtn">Limpar palpites</button>
-        <button class="btn-secondary" type="button" id="randomFillBtn" onclick="fillAllRandomResults()">Preencher teste aleatório</button>
-        <button class="btn-primary" type="button" id="openSubmitBtn">Enviar palpite</button>
-      </div>
     </div>
   </section>
 
@@ -1325,6 +1384,8 @@
       }
     };
 
+    const menuParticiparBtn = document.getElementById("menuParticiparBtn");
+    const menuParticipantesBtn = document.getElementById("menuParticipantesBtn");
     const navPalpiteBtn = document.getElementById("navPalpiteBtn");
     const navPontuacaoBtn = document.getElementById("navPontuacaoBtn");
     const navClassificacaoBtn = document.getElementById("navClassificacaoBtn");
@@ -1347,7 +1408,6 @@
     const progressText = document.getElementById("progressText");
     const openSubmitBtn = document.getElementById("openSubmitBtn");
     const clearBtn = document.getElementById("clearBtn");
-    const randomFillBtn = document.getElementById("randomFillBtn");
     const groupPage = document.getElementById("groupPage");
     const knockoutPage = document.getElementById("knockoutPage");
     const rankingPage = document.getElementById("rankingPage");
@@ -2133,12 +2193,13 @@
       participantsPage.classList.toggle("hidden", !isParticipants);
       adminPage.classList.toggle("hidden", !isAdmin);
       progressText.classList.toggle("hidden", !isSimulator);
-      simulatorActions.classList.toggle("hidden", !isSimulator);
       navPalpiteBtn.classList.toggle("btn-active", isSimulator);
       navPontuacaoBtn.classList.toggle("btn-active", isScore);
       navClassificacaoBtn.classList.toggle("btn-active", isRanking);
       navJogosReaisBtn.classList.toggle("btn-active", isRealGames);
       navParticipantesBtn.classList.toggle("btn-active", isParticipants);
+      menuParticiparBtn.classList.toggle("btn-active", isSimulator);
+      menuParticipantesBtn.classList.toggle("btn-active", isParticipants || isRanking);
 
       const target = isSimulator ? groupPage : isScore ? scorePage : isRanking ? rankingPage : isRealGames ? realGamesPage : isAdmin ? adminPage : participantsPage;
       target.scrollIntoView({ behavior: "smooth", block: "start" });
