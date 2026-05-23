@@ -638,7 +638,7 @@
       <div class="status-pill" id="progressText">Fase de grupos: 0/72 • Mata-mata: 0/32</div>
       <div class="actions" id="simulatorActions">
         <button class="btn-secondary" type="button" id="clearBtn">Limpar palpites</button>
-        <button class="btn-secondary" type="button" id="randomFillBtn">Preencher teste aleatório</button>
+        <button class="btn-secondary" type="button" id="randomFillBtn" onclick="fillAllRandomResults()">Preencher teste aleatório</button>
         <button class="btn-primary" type="button" id="openSubmitBtn">Enviar palpite</button>
       </div>
     </div>
@@ -954,12 +954,6 @@
         const confirmed = confirm("Tem certeza que deseja limpar todos os placares da fase de grupos e do mata-mata?");
         if (!confirmed) return;
         resetAll();
-      });
-
-      randomFillBtn.addEventListener("click", () => {
-        const confirmed = confirm("Preencher todos os jogos com resultados aleatórios? Isso vai substituir os placares atuais.");
-        if (!confirmed) return;
-        fillAllRandomResults();
       });
 
       submitForm.addEventListener("submit", handleSubmit);
@@ -1650,7 +1644,11 @@
     }
 
     function renderParticipantsList() {
-      const participantes = appState.publicData.participantes;
+      const participantes = [...appState.publicData.participantes].sort((a, b) => {
+        const nomeA = String(a.nome || "").trim();
+        const nomeB = String(b.nome || "").trim();
+        return nomeA.localeCompare(nomeB, "pt-BR", { sensitivity: "base" });
+      });
 
       if (!participantes.length) {
         participantsList.innerHTML = `<div class="viewer-message">Nenhum participante enviado ainda.</div>`;
@@ -1841,41 +1839,71 @@
     }
 
     function fillAllRandomResults() {
-      resetKnockoutOnly();
+      try {
+        resetKnockoutOnly();
 
+        appState.matches.forEach(match => {
+          match.gols_casa = String(randomGroupGoals());
+          match.gols_fora = String(randomGroupGoals());
+        });
+
+        syncGroupInputsFromState();
+        calculateAll();
+        generateKnockout();
+
+        fillStageRandomResults("R32");
+        updateKnockoutProgression();
+
+        fillStageRandomResults("R16");
+        updateKnockoutProgression();
+
+        fillStageRandomResults("QF");
+        updateKnockoutProgression();
+
+        fillStageRandomResults("SF");
+        updateKnockoutProgression();
+
+        fillStageRandomResults("FINAL");
+        fillStageRandomResults("THIRD");
+        updateKnockoutProgression();
+
+        renderKnockout();
+        renderChampionCard();
+        updateProgress();
+
+        const validation = validateKnockoutComplete();
+        if (!validation.ok) {
+          throw new Error(`O teste preencheu a fase de grupos, mas ainda faltaram ${validation.missing} jogos do mata-mata.`);
+        }
+
+        alert("Teste aleatório preenchido com sucesso. O botão Enviar palpite foi liberado.");
+        knockoutPage.scrollIntoView({ behavior: "smooth", block: "start" });
+      } catch (error) {
+        console.error(error);
+        alert(`Erro ao preencher teste aleatório: ${error.message}`);
+      }
+    }
+
+    function syncGroupInputsFromState() {
       appState.matches.forEach(match => {
-        match.gols_casa = String(randomGroupGoals());
-        match.gols_fora = String(randomGroupGoals());
-
         const homeInput = document.querySelector(`input[data-match-id="${match.jogo_id}"][data-side="home"]`);
         const awayInput = document.querySelector(`input[data-match-id="${match.jogo_id}"][data-side="away"]`);
 
         if (homeInput) homeInput.value = match.gols_casa;
         if (awayInput) awayInput.value = match.gols_fora;
       });
-
-      calculateAll();
-      syncKnockoutWithGroups();
-      fillKnockoutRandomResults();
-      renderKnockout();
-      renderChampionCard();
-      updateProgress();
-      knockoutPage.scrollIntoView({ behavior: "smooth", block: "start" });
     }
 
-    function fillKnockoutRandomResults() {
-      const stages = ["R32", "R16", "QF", "SF", "THIRD", "FINAL"];
+    function fillStageRandomResults(stage) {
+      const matches = appState.knockout[stage] || [];
 
-      stages.forEach(stage => {
-        appState.knockout[stage].forEach(match => {
-          if (!match.time_casa || !match.time_fora) return;
+      matches.forEach(match => {
+        if (!match.time_casa || !match.time_fora) return;
 
-          const score = randomKnockoutScore();
-          match.gols_casa = String(score.home);
-          match.gols_fora = String(score.away);
-          updateMatchWinner(match);
-          updateKnockoutProgression();
-        });
+        const score = randomKnockoutScore();
+        match.gols_casa = String(score.home);
+        match.gols_fora = String(score.away);
+        match.vencedor = score.home > score.away ? match.time_casa : match.time_fora;
       });
     }
 
@@ -2024,8 +2052,15 @@
           body: JSON.stringify(payload)
         });
 
-        showModalMessage("Palpite completo enviado! Confira sua planilha para confirmar o registro.", "success");
+        showModalMessage("Palpite completo enviado! Abrindo a lista de participantes...", "success");
         submitForm.reset();
+        submitDialog.close();
+        showMainMode("participants");
+        await loadParticipantsData();
+
+        if (appState.publicData.participantes.length > 0) {
+          selectParticipant(appState.publicData.participantes[0].id_participante);
+        }
       } catch (error) {
         console.error(error);
         showModalMessage("Não foi possível enviar. Confira a publicação do Apps Script e tente novamente.", "error");
