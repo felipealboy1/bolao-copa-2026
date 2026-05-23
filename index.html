@@ -690,6 +690,81 @@
       line-height: 1.45;
     }
 
+    .admin-floating-btn {
+      position: fixed;
+      right: 16px;
+      bottom: 16px;
+      z-index: 20;
+      background: #162033;
+      color: #fff;
+      box-shadow: 0 12px 28px rgba(16, 24, 40, .25);
+    }
+
+    .admin-section {
+      display: grid;
+      gap: 18px;
+    }
+
+    .admin-card {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .admin-card h2, .admin-card h3 {
+      margin: 0;
+      padding: 16px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .admin-toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 16px;
+      align-items: center;
+    }
+
+    .admin-toolbar p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.4;
+    }
+
+    .admin-input {
+      width: 72px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 9px 6px;
+      text-align: center;
+      font-size: 14px;
+    }
+
+    .admin-team-input {
+      width: 170px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 9px;
+      font-size: 13px;
+    }
+
+    .admin-select {
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 9px;
+      background: #fff;
+      font-size: 13px;
+    }
+
+    .admin-message {
+      padding: 12px 16px;
+      color: var(--muted);
+      line-height: 1.45;
+    }
+
     dialog {
       border: 0;
       border-radius: 18px;
@@ -1048,6 +1123,47 @@
       </section>
     </section>
 
+    <section class="page hidden" id="adminPage">
+      <section class="admin-section">
+        <div class="score-hero">
+          <h2>Admin — Jogos reais</h2>
+          <p>Preencha ou edite os resultados reais aqui. Ao salvar, os dados ficam gravados na aba <strong>JogosReais</strong> da planilha.</p>
+        </div>
+
+        <article class="admin-card">
+          <div class="admin-toolbar">
+            <p>Você pode ajustar os nomes dos times no mata-mata, os placares, o vencedor e o status.</p>
+            <div class="actions">
+              <button class="btn-secondary" type="button" id="adminLoadGamesBtn">Carregar jogos</button>
+              <button class="btn-secondary" type="button" id="adminAutoResolveBtn">Preencher mata-mata automático</button>
+              <button class="btn-primary" type="button" id="adminSaveGamesBtn">Salvar jogos reais</button>
+            </div>
+          </div>
+          <div class="admin-message" id="adminStatusMessage">Entre como admin e carregue os jogos para editar.</div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Fase</th>
+                  <th>Grupo</th>
+                  <th>Jogo</th>
+                  <th class="team">Time casa</th>
+                  <th>GC</th>
+                  <th>GF</th>
+                  <th class="team">Time fora</th>
+                  <th>Vencedor</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody id="adminGamesBody">
+                <tr><td colspan="9" class="viewer-message">Nenhum jogo carregado.</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </article>
+      </section>
+    </section>
+
     <section class="page hidden" id="participantsPage">
       <section class="participants-layout">
         <aside class="participants-panel">
@@ -1074,9 +1190,37 @@
     </section>
   </main>
 
+  <button class="admin-floating-btn" type="button" id="adminFloatingBtn">Admin</button>
+
   <footer>
     MVP gratuito usando HTML, JavaScript, Google Sheets e Apps Script.
   </footer>
+
+  <dialog id="adminLoginDialog">
+    <form method="dialog" class="modal-content" id="adminLoginForm">
+      <h2>Acesso admin</h2>
+      <p>Área para atualizar os resultados reais do bolão.</p>
+
+      <div class="form-grid">
+        <label>
+          Login
+          <input type="text" id="adminLogin" autocomplete="username" required />
+        </label>
+
+        <label>
+          Senha
+          <input type="password" id="adminPassword" autocomplete="current-password" required />
+        </label>
+      </div>
+
+      <div class="message" id="adminLoginMessage"></div>
+
+      <div class="modal-actions">
+        <button class="btn-secondary" type="button" id="closeAdminLoginBtn">Cancelar</button>
+        <button class="btn-primary" type="submit">Entrar</button>
+      </div>
+    </form>
+  </dialog>
 
   <dialog id="submitDialog">
     <form method="dialog" class="modal-content" id="submitForm">
@@ -1166,6 +1310,7 @@
         participantes: [],
         jogosReais: []
       },
+      adminLoggedIn: false,
       matches: [],
       standingsByGroup: {},
       thirdPlaces: [],
@@ -1185,6 +1330,17 @@
     const navClassificacaoBtn = document.getElementById("navClassificacaoBtn");
     const navJogosReaisBtn = document.getElementById("navJogosReaisBtn");
     const navParticipantesBtn = document.getElementById("navParticipantesBtn");
+    const adminFloatingBtn = document.getElementById("adminFloatingBtn");
+    const adminLoginDialog = document.getElementById("adminLoginDialog");
+    const adminLoginForm = document.getElementById("adminLoginForm");
+    const adminLoginMessage = document.getElementById("adminLoginMessage");
+    const closeAdminLoginBtn = document.getElementById("closeAdminLoginBtn");
+    const adminPage = document.getElementById("adminPage");
+    const adminLoadGamesBtn = document.getElementById("adminLoadGamesBtn");
+    const adminAutoResolveBtn = document.getElementById("adminAutoResolveBtn");
+    const adminSaveGamesBtn = document.getElementById("adminSaveGamesBtn");
+    const adminStatusMessage = document.getElementById("adminStatusMessage");
+    const adminGamesBody = document.getElementById("adminGamesBody");
     const simulatorActions = document.getElementById("simulatorActions");
     const groupsContainer = document.getElementById("groupsContainer");
     const thirdPlacesBody = document.getElementById("thirdPlacesBody");
@@ -1310,6 +1466,12 @@
       refreshParticipantsBtn.addEventListener("click", loadParticipantsData);
       refreshRealGamesBtn.addEventListener("click", loadRealGamesData);
       refreshRankingBtn.addEventListener("click", loadRankingData);
+      adminFloatingBtn.addEventListener("click", openAdminLogin);
+      closeAdminLoginBtn.addEventListener("click", () => adminLoginDialog.close());
+      adminLoginForm.addEventListener("submit", handleAdminLogin);
+      adminLoadGamesBtn.addEventListener("click", loadAdminGames);
+      adminAutoResolveBtn.addEventListener("click", autoResolveAdminKnockoutTeams);
+      adminSaveGamesBtn.addEventListener("click", saveAdminGames);
 
       document.querySelectorAll("input[data-match-id]").forEach(input => {
         input.addEventListener("input", handleScoreInput);
@@ -1961,6 +2123,7 @@
       const isRanking = mode === "ranking";
       const isRealGames = mode === "realGames";
       const isParticipants = mode === "participants";
+      const isAdmin = mode === "admin";
 
       groupPage.classList.toggle("hidden", !isSimulator);
       knockoutPage.classList.toggle("hidden", !isSimulator);
@@ -1968,6 +2131,7 @@
       rankingPage.classList.toggle("hidden", !isRanking);
       realGamesPage.classList.toggle("hidden", !isRealGames);
       participantsPage.classList.toggle("hidden", !isParticipants);
+      adminPage.classList.toggle("hidden", !isAdmin);
       progressText.classList.toggle("hidden", !isSimulator);
       simulatorActions.classList.toggle("hidden", !isSimulator);
       navPalpiteBtn.classList.toggle("btn-active", isSimulator);
@@ -1976,7 +2140,7 @@
       navJogosReaisBtn.classList.toggle("btn-active", isRealGames);
       navParticipantesBtn.classList.toggle("btn-active", isParticipants);
 
-      const target = isSimulator ? groupPage : isScore ? scorePage : isRanking ? rankingPage : isRealGames ? realGamesPage : participantsPage;
+      const target = isSimulator ? groupPage : isScore ? scorePage : isRanking ? rankingPage : isRealGames ? realGamesPage : isAdmin ? adminPage : participantsPage;
       target.scrollIntoView({ behavior: "smooth", block: "start" });
     }
 
@@ -2540,6 +2704,193 @@
       return true;
     }
 
+    function openAdminLogin() {
+      if (appState.adminLoggedIn) {
+        showMainMode("admin");
+        loadAdminGames();
+        return;
+      }
+
+      adminLoginMessage.textContent = "";
+      adminLoginMessage.className = "message";
+      adminLoginForm.reset();
+      adminLoginDialog.showModal();
+    }
+
+    function handleAdminLogin(event) {
+      event.preventDefault();
+
+      const login = document.getElementById("adminLogin").value.trim();
+      const password = document.getElementById("adminPassword").value.trim();
+
+      if (login !== "alboy" || password !== "17052019") {
+        adminLoginMessage.textContent = "Login ou senha incorretos.";
+        adminLoginMessage.className = "message error";
+        return;
+      }
+
+      appState.adminLoggedIn = true;
+      adminLoginDialog.close();
+      showMainMode("admin");
+      loadAdminGames();
+    }
+
+    async function loadAdminGames() {
+      if (!appState.adminLoggedIn) {
+        openAdminLogin();
+        return;
+      }
+
+      adminStatusMessage.textContent = "Carregando jogos reais...";
+      adminGamesBody.innerHTML = `<tr><td colspan="9" class="viewer-message">Carregando jogos reais...</td></tr>`;
+
+      try {
+        const data = await fetchRealGamesJsonp();
+
+        if (!data || data.status !== "sucesso") {
+          throw new Error(data?.message || "Não foi possível carregar jogos reais.");
+        }
+
+        appState.publicData.jogosReais = data.jogos || [];
+        renderAdminGames(appState.publicData.jogosReais);
+        adminStatusMessage.textContent = "Jogos carregados. Edite os campos e clique em Salvar jogos reais.";
+      } catch (error) {
+        console.error(error);
+        adminStatusMessage.textContent = `Erro ao carregar jogos reais: ${error.message}`;
+        adminGamesBody.innerHTML = `<tr><td colspan="9" class="viewer-message">Erro ao carregar jogos reais.</td></tr>`;
+      }
+    }
+
+    function renderAdminGames(jogos) {
+      if (!jogos.length) {
+        adminGamesBody.innerHTML = `<tr><td colspan="9" class="viewer-message">Nenhum jogo encontrado na aba JogosReais.</td></tr>`;
+        return;
+      }
+
+      adminGamesBody.innerHTML = jogos.map((jogo, index) => `
+        <tr data-admin-row="${index}">
+          <td>${escapeHtml(jogo.fase || "")}</td>
+          <td>${escapeHtml(jogo.grupo || "")}</td>
+          <td>${escapeHtml(jogo.jogo_id || "")}</td>
+          <td><input class="admin-team-input" data-field="time_casa" value="${escapeHtml(getAdminDisplayTeamName(jogo.time_casa || ""))}" /></td>
+          <td><input class="admin-input" type="number" min="0" max="99" data-field="gols_casa" value="${escapeHtml(jogo.gols_casa ?? "")}" /></td>
+          <td><input class="admin-input" type="number" min="0" max="99" data-field="gols_fora" value="${escapeHtml(jogo.gols_fora ?? "")}" /></td>
+          <td><input class="admin-team-input" data-field="time_fora" value="${escapeHtml(getAdminDisplayTeamName(jogo.time_fora || ""))}" /></td>
+          <td><input class="admin-team-input" data-field="vencedor" value="${escapeHtml(jogo.vencedor || "")}" /></td>
+          <td>
+            <select class="admin-select" data-field="status">
+              <option value="Pendente" ${String(jogo.status || "Pendente") === "Pendente" ? "selected" : ""}>Pendente</option>
+              <option value="Finalizado" ${String(jogo.status || "") === "Finalizado" ? "selected" : ""}>Finalizado</option>
+            </select>
+          </td>
+        </tr>
+      `).join("");
+    }
+
+    function getAdminDisplayTeamName(value) {
+      const original = String(value || "").trim();
+      const resolved = resolveRealTeamName(original);
+      return resolved || original;
+    }
+
+    function autoResolveAdminKnockoutTeams() {
+      if (!appState.adminLoggedIn) {
+        openAdminLogin();
+        return;
+      }
+
+      const jogos = getAdminGamesPayload();
+      appState.publicData.jogosReais = jogos;
+
+      const rows = [...adminGamesBody.querySelectorAll("tr[data-admin-row]")];
+      let changedCount = 0;
+
+      rows.forEach(row => {
+        const index = Number(row.dataset.adminRow);
+        const jogo = jogos[index] || {};
+        const isGroupStage = normalizePhase(jogo.fase) === "fase de grupos";
+        if (isGroupStage) return;
+
+        ["time_casa", "time_fora"].forEach(field => {
+          const input = row.querySelector(`[data-field="${field}"]`);
+          if (!input) return;
+
+          const before = input.value.trim();
+          const after = resolveRealTeamName(before);
+
+          if (after && after !== before) {
+            input.value = after;
+            changedCount += 1;
+          }
+        });
+      });
+
+      adminStatusMessage.textContent = changedCount > 0
+        ? `${changedCount} campo(s) do mata-mata foram preenchidos automaticamente. Revise e clique em Salvar jogos reais.`
+        : "Nenhum campo novo foi alterado. Talvez os grupos/jogos anteriores ainda não estejam finalizados ou os nomes já estejam preenchidos.";
+    }
+
+    function getAdminGamesPayload() {
+      const rows = [...adminGamesBody.querySelectorAll("tr[data-admin-row]")];
+
+      return rows.map(row => {
+        const index = Number(row.dataset.adminRow);
+        const original = appState.publicData.jogosReais[index] || {};
+        const getValue = field => row.querySelector(`[data-field="${field}"]`)?.value?.trim() || "";
+
+        return {
+          fase: original.fase || "",
+          grupo: original.grupo || "",
+          jogo_id: original.jogo_id || "",
+          time_casa: getValue("time_casa"),
+          gols_casa: getValue("gols_casa"),
+          gols_fora: getValue("gols_fora"),
+          time_fora: getValue("time_fora"),
+          vencedor: getValue("vencedor"),
+          status: getValue("status") || "Pendente"
+        };
+      });
+    }
+
+    async function saveAdminGames() {
+      if (!appState.adminLoggedIn) {
+        openAdminLogin();
+        return;
+      }
+
+      const jogos = getAdminGamesPayload();
+      adminSaveGamesBtn.disabled = true;
+      adminSaveGamesBtn.textContent = "Salvando...";
+      adminStatusMessage.textContent = "Salvando jogos reais na planilha...";
+
+      try {
+        await fetch(SCRIPT_URL, {
+          method: "POST",
+          mode: "no-cors",
+          headers: {
+            "Content-Type": "text/plain;charset=utf-8"
+          },
+          body: JSON.stringify({
+            action: "salvar_jogos_reais",
+            admin: {
+              login: "alboy",
+              senha: "17052019"
+            },
+            jogos
+          })
+        });
+
+        appState.publicData.jogosReais = jogos;
+        adminStatusMessage.textContent = "Jogos enviados para salvar. Abra Jogos reais e clique em Atualizar jogos reais para conferir.";
+      } catch (error) {
+        console.error(error);
+        adminStatusMessage.textContent = `Erro ao salvar jogos reais: ${error.message}`;
+      } finally {
+        adminSaveGamesBtn.disabled = false;
+        adminSaveGamesBtn.textContent = "Salvar jogos reais";
+      }
+    }
+
     function fetchJsonpAction(action, callbackPrefix) {
       return new Promise((resolve, reject) => {
         const callbackName = `${callbackPrefix}_${Date.now()}_${Math.floor(Math.random() * 10000)}`;
@@ -2594,6 +2945,8 @@
     }
 
     function renderRealGames(jogos) {
+      appState.publicData.jogosReais = jogos || [];
+
       if (!jogos.length) {
         realGamesContainer.innerHTML = `<div class="viewer-message">Nenhum jogo real preenchido ainda.</div>`;
         return;
@@ -2718,10 +3071,10 @@
                 ${jogosDaFase.map(jogo => `
                   <tr>
                     <td>${escapeHtml(jogo.jogo_id || "")}</td>
-                    <td class="team">${escapeHtml(jogo.time_casa || "")}</td>
+                    <td class="team">${escapeHtml(resolveRealTeamName(jogo.time_casa || ""))}</td>
                     <td><span class="readonly-score">${formatScoreCell(jogo.gols_casa)}</span></td>
                     <td><span class="readonly-score">${formatScoreCell(jogo.gols_fora)}</span></td>
-                    <td class="team">${escapeHtml(jogo.time_fora || "")}</td>
+                    <td class="team">${escapeHtml(resolveRealTeamName(jogo.time_fora || ""))}</td>
                     <td>${escapeHtml(jogo.vencedor || "—")}</td>
                     <td><span class="tag ${jogo.status === "Finalizado" ? "tag-qualified" : "tag-info"}">${escapeHtml(jogo.status || "Pendente")}</span></td>
                   </tr>
@@ -2731,6 +3084,99 @@
           </div>
         </article>
       `;
+    }
+
+    function resolveRealTeamName(value) {
+      const original = String(value || "").trim();
+      if (!original) return "";
+
+      const directGroup = parseDirectGroupReference(original);
+      if (directGroup) {
+        const standings = getCompletedRealGroupStandings(directGroup.groupKey);
+        return standings[directGroup.position - 1]?.selecao || original;
+      }
+
+      const thirdGroups = parseThirdPlaceReference(original);
+      if (thirdGroups.length) {
+        const third = getBestRealThirdForDisplay(thirdGroups);
+        return third?.selecao || original;
+      }
+
+      const winnerNumber = parseWinnerReference(original);
+      if (winnerNumber) {
+        const game = findRealGameByNumber(winnerNumber);
+        return game?.vencedor || original;
+      }
+
+      const loserNumber = parseLoserReference(original);
+      if (loserNumber) {
+        const game = findRealGameByNumber(loserNumber);
+        return game ? getLoserFromGame(game) || original : original;
+      }
+
+      return original;
+    }
+
+    function parseDirectGroupReference(value) {
+      const text = String(value || "").trim().toUpperCase();
+      if (text.length !== 2) return null;
+
+      const position = Number(text.charAt(0));
+      const groupKey = text.charAt(1);
+
+      if (![1, 2].includes(position)) return null;
+      if (!groups[groupKey]) return null;
+
+      return { position, groupKey };
+    }
+
+    function parseThirdPlaceReference(value) {
+      const text = String(value || "").trim().toUpperCase();
+      const prefixes = ["3º DE ", "3O DE ", "3 DE "];
+      const prefix = prefixes.find(item => text.startsWith(item));
+
+      if (!prefix) return [];
+
+      return text
+        .slice(prefix.length)
+        .split("/")
+        .map(item => item.trim())
+        .filter(groupKey => Boolean(groups[groupKey]));
+    }
+
+    function parseWinnerReference(value) {
+      const text = String(value || "").trim().toUpperCase();
+      if (!text.startsWith("VENCEDOR M")) return "";
+      return text.replace("VENCEDOR M", "").trim();
+    }
+
+    function parseLoserReference(value) {
+      const text = String(value || "").trim().toUpperCase();
+      if (!text.startsWith("PERDEDOR M")) return "";
+      return text.replace("PERDEDOR M", "").trim();
+    }
+
+    function getCompletedRealGroupStandings(groupKey) {
+      const groupGames = (appState.publicData.jogosReais || [])
+        .filter(jogo => normalizePhase(jogo.fase) === "fase de grupos" && jogo.grupo === groupKey)
+        .filter(isRealGameFinalized);
+
+      if (groupGames.length < 6) return [];
+      return calculateStandingsFromRealGames(groupKey, groupGames);
+    }
+
+    function getBestRealThirdForDisplay(allowedGroups) {
+      const thirds = allowedGroups
+        .map(groupKey => getCompletedRealGroupStandings(groupKey).find(team => team.posicao === 3))
+        .filter(Boolean);
+
+      if (!thirds.length) return null;
+      return sortThirdPlaces(thirds)[0];
+    }
+
+    function findRealGameByNumber(number) {
+      const suffix = `-${number}`;
+      return (appState.publicData.jogosReais || []).find(jogo => String(jogo.jogo_id || "").endsWith(suffix));
     }
 
     function formatScoreCell(value) {
