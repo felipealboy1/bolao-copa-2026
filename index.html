@@ -428,6 +428,100 @@
       align-items: start;
     }
 
+    .score-section, .real-games-section {
+      display: grid;
+      gap: 18px;
+    }
+
+    .score-hero, .score-card, .real-games-card {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .score-hero {
+      padding: 20px;
+      display: grid;
+      gap: 8px;
+      background: linear-gradient(135deg, #ffffff, #eff8ff);
+    }
+
+    .score-hero h2 {
+      margin: 0;
+      font-size: 26px;
+    }
+
+    .score-hero p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.45;
+    }
+
+    .score-grid, .real-games-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 18px;
+    }
+
+    .real-games-toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      padding: 16px;
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      box-shadow: var(--shadow);
+    }
+
+    .real-games-toolbar p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.4;
+    }
+
+    .real-games-card h3,
+    .score-card h3 {
+      margin: 0;
+      padding: 16px;
+      border-bottom: 1px solid var(--line);
+      font-size: 19px;
+    }
+
+    .real-games-card .table-wrap,
+    .score-card .table-wrap {
+      border-bottom: 0;
+    }
+
+    .score-card td:first-child, .score-card th:first-child {
+      text-align: left;
+      white-space: normal;
+    }
+
+    .points-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 56px;
+      border-radius: 999px;
+      padding: 5px 10px;
+      background: var(--success-bg);
+      color: var(--success-text);
+      font-weight: 800;
+    }
+
+    .score-note {
+      padding: 14px 16px 16px;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.45;
+    }
+
     .participants-panel, .participant-view-card {
       background: var(--card);
       border: 1px solid var(--line);
@@ -612,7 +706,7 @@
     }
 
     @media (max-width: 900px) {
-      .grid, .stages-grid, .participants-layout { grid-template-columns: 1fr; }
+      .grid, .stages-grid, .participants-layout, .score-grid, .real-games-grid { grid-template-columns: 1fr; }
       .match, .ko-line {
         grid-template-columns: 1fr 48px 18px 48px 1fr;
         gap: 6px;
@@ -633,6 +727,8 @@
     <div class="container toolbar-inner">
       <div class="nav-actions">
         <button class="btn-secondary btn-active" type="button" id="navPalpiteBtn">Fazer palpite</button>
+        <button class="btn-secondary" type="button" id="navPontuacaoBtn">Pontuação</button>
+        <button class="btn-secondary" type="button" id="navJogosReaisBtn">Jogos reais</button>
         <button class="btn-secondary" type="button" id="navParticipantesBtn">Ver participantes</button>
       </div>
       <div class="status-pill" id="progressText">Fase de grupos: 0/72 • Mata-mata: 0/32</div>
@@ -687,6 +783,144 @@
       <section class="champion-card" id="championCard">
         <h2>Campeão: —</h2>
         <p>Preencha os grupos. O mata-mata começará a aparecer automaticamente aqui embaixo conforme os grupos forem concluídos. Depois complete todos os jogos até campeão e terceiro lugar para liberar o envio final.</p>
+      </section>
+    </section>
+
+    <section class="page hidden" id="realGamesPage">
+      <section class="real-games-section">
+        <div class="score-hero">
+          <h2>Jogos reais</h2>
+          <p>Resultados oficiais preenchidos na planilha. Esta área é apenas informativa e servirá depois como base para calcular a pontuação do bolão.</p>
+        </div>
+
+        <div class="real-games-toolbar">
+          <p>Atualize a aba <strong>JogosReais</strong> no Google Sheets e clique no botão ao lado para recarregar os resultados aqui.</p>
+          <button class="btn-secondary" type="button" id="refreshRealGamesBtn">Atualizar jogos reais</button>
+        </div>
+
+        <div class="real-games-grid" id="realGamesContainer">
+          <div class="viewer-message">Clique em “Atualizar jogos reais” para carregar os resultados oficiais.</div>
+        </div>
+      </section>
+    </section>
+
+    <section class="page hidden" id="scorePage">
+      <section class="score-section">
+        <div class="score-hero">
+          <h2>Como funciona a pontuação</h2>
+          <p>O bolão pontua placares, classificados, campanha no mata-mata e posições finais. A ideia é premiar quem acerta o resultado exato, mas também valorizar quem prevê bem a trajetória das seleções.</p>
+        </div>
+
+        <div class="score-grid">
+          <article class="score-card">
+            <h3>Jogos da fase de grupos</h3>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr><th>Acerto</th><th>Pontos</th></tr>
+                </thead>
+                <tbody>
+                  <tr><td>Placar exato</td><td><span class="points-badge">10</span></td></tr>
+                  <tr><td>Acertou vencedor/empate + gols de um dos times</td><td><span class="points-badge">7</span></td></tr>
+                  <tr><td>Acertou vencedor/empate, mas errou o placar</td><td><span class="points-badge">5</span></td></tr>
+                  <tr><td>Errou o resultado, mas acertou os gols de um dos times</td><td><span class="points-badge">2</span></td></tr>
+                  <tr><td>Errou tudo</td><td><span class="points-badge">0</span></td></tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="score-note">Exemplo: se o jogo real for Brasil 2 x 1 Suíça, um palpite Brasil 2 x 0 Suíça vale 7 pontos, porque acertou o vencedor e os gols do Brasil.</div>
+          </article>
+
+          <article class="score-card">
+            <h3>Classificação dos grupos</h3>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr><th>Acerto</th><th>Pontos</th></tr>
+                </thead>
+                <tbody>
+                  <tr><td>Acertou o 1º colocado exato do grupo</td><td><span class="points-badge">8</span></td></tr>
+                  <tr><td>Acertou o 2º colocado exato do grupo</td><td><span class="points-badge">6</span></td></tr>
+                  <tr><td>Acertou seleção no top 2, mas em posição trocada</td><td><span class="points-badge">4</span></td></tr>
+                  <tr><td>Acertou o 3º colocado do grupo</td><td><span class="points-badge">3</span></td></tr>
+                  <tr><td>Acertou que o 3º do grupo avançou entre os melhores terceiros</td><td><span class="points-badge">3</span></td></tr>
+                </tbody>
+              </table>
+            </div>
+          </article>
+
+          <article class="score-card">
+            <h3>Mata-mata por confronto</h3>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr><th>Acerto</th><th>Pontos</th></tr>
+                </thead>
+                <tbody>
+                  <tr><td>Acertou os dois times do confronto</td><td><span class="points-badge">8</span></td></tr>
+                  <tr><td>Acertou apenas um dos times do confronto</td><td><span class="points-badge">3</span></td></tr>
+                  <tr><td>Acertou o vencedor do confronto correto</td><td><span class="points-badge">8</span></td></tr>
+                  <tr><td>Acertou o placar exato do confronto correto</td><td><span class="points-badge">12</span></td></tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="score-note">Essa parte vale quando o confronto real é o mesmo do palpite. Para não penalizar demais quem errou o chaveamento, também existe pontuação por campanha.</div>
+          </article>
+
+          <article class="score-card">
+            <h3>Campanha no mata-mata</h3>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr><th>Acerto de campanha</th><th>Pontos</th></tr>
+                </thead>
+                <tbody>
+                  <tr><td>Seleção chegou à fase de 32</td><td><span class="points-badge">2</span></td></tr>
+                  <tr><td>Seleção chegou às oitavas</td><td><span class="points-badge">4</span></td></tr>
+                  <tr><td>Seleção chegou às quartas</td><td><span class="points-badge">6</span></td></tr>
+                  <tr><td>Seleção chegou à semifinal</td><td><span class="points-badge">10</span></td></tr>
+                  <tr><td>Seleção chegou à final</td><td><span class="points-badge">15</span></td></tr>
+                  <tr><td>Seleção foi campeã</td><td><span class="points-badge">30</span></td></tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="score-note">Aqui a seleção pontua mesmo se apareceu em outro lado da chave. Isso ajuda quem acertou a força da seleção, mas errou algum cruzamento.</div>
+          </article>
+
+          <article class="score-card">
+            <h3>Bônus finais</h3>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr><th>Acerto</th><th>Pontos</th></tr>
+                </thead>
+                <tbody>
+                  <tr><td>Campeão exato</td><td><span class="points-badge">50</span></td></tr>
+                  <tr><td>Vice exato</td><td><span class="points-badge">30</span></td></tr>
+                  <tr><td>Terceiro lugar exato</td><td><span class="points-badge">20</span></td></tr>
+                  <tr><td>Quarto lugar exato</td><td><span class="points-badge">10</span></td></tr>
+                  <tr><td>Seleção no top 4, mas em posição errada</td><td><span class="points-badge">8</span></td></tr>
+                </tbody>
+              </table>
+            </div>
+          </article>
+
+          <article class="score-card">
+            <h3>Bônus de classificados</h3>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr><th>Acerto</th><th>Pontos</th></tr>
+                </thead>
+                <tbody>
+                  <tr><td>Cada seleção classificada para a fase de 32</td><td><span class="points-badge">2</span></td></tr>
+                  <tr><td>Acertou todos os classificados de um grupo</td><td><span class="points-badge">5</span></td></tr>
+                  <tr><td>Acertou os 8 melhores terceiros</td><td><span class="points-badge">15</span></td></tr>
+                </tbody>
+              </table>
+            </div>
+          </article>
+        </div>
       </section>
     </section>
 
@@ -822,6 +1056,8 @@
     };
 
     const navPalpiteBtn = document.getElementById("navPalpiteBtn");
+    const navPontuacaoBtn = document.getElementById("navPontuacaoBtn");
+    const navJogosReaisBtn = document.getElementById("navJogosReaisBtn");
     const navParticipantesBtn = document.getElementById("navParticipantesBtn");
     const simulatorActions = document.getElementById("simulatorActions");
     const groupsContainer = document.getElementById("groupsContainer");
@@ -832,6 +1068,10 @@
     const randomFillBtn = document.getElementById("randomFillBtn");
     const groupPage = document.getElementById("groupPage");
     const knockoutPage = document.getElementById("knockoutPage");
+    const realGamesPage = document.getElementById("realGamesPage");
+    const realGamesContainer = document.getElementById("realGamesContainer");
+    const refreshRealGamesBtn = document.getElementById("refreshRealGamesBtn");
+    const scorePage = document.getElementById("scorePage");
     const participantsPage = document.getElementById("participantsPage");
     const participantsList = document.getElementById("participantsList");
     const refreshParticipantsBtn = document.getElementById("refreshParticipantsBtn");
@@ -924,11 +1164,17 @@
 
     function bindEvents() {
       navPalpiteBtn.addEventListener("click", () => showMainMode("simulator"));
+      navPontuacaoBtn.addEventListener("click", () => showMainMode("score"));
+      navJogosReaisBtn.addEventListener("click", () => {
+        showMainMode("realGames");
+        loadRealGamesData();
+      });
       navParticipantesBtn.addEventListener("click", () => {
         showMainMode("participants");
         loadParticipantsData();
       });
       refreshParticipantsBtn.addEventListener("click", loadParticipantsData);
+      refreshRealGamesBtn.addEventListener("click", loadRealGamesData);
 
       document.querySelectorAll("input[data-match-id]").forEach(input => {
         input.addEventListener("input", handleScoreInput);
@@ -1576,16 +1822,23 @@
     function showMainMode(mode) {
       appState.currentMode = mode;
       const isSimulator = mode === "simulator";
+      const isScore = mode === "score";
+      const isRealGames = mode === "realGames";
+      const isParticipants = mode === "participants";
 
       groupPage.classList.toggle("hidden", !isSimulator);
       knockoutPage.classList.toggle("hidden", !isSimulator);
-      participantsPage.classList.toggle("hidden", isSimulator);
+      scorePage.classList.toggle("hidden", !isScore);
+      realGamesPage.classList.toggle("hidden", !isRealGames);
+      participantsPage.classList.toggle("hidden", !isParticipants);
       progressText.classList.toggle("hidden", !isSimulator);
       simulatorActions.classList.toggle("hidden", !isSimulator);
       navPalpiteBtn.classList.toggle("btn-active", isSimulator);
-      navParticipantesBtn.classList.toggle("btn-active", !isSimulator);
+      navPontuacaoBtn.classList.toggle("btn-active", isScore);
+      navJogosReaisBtn.classList.toggle("btn-active", isRealGames);
+      navParticipantesBtn.classList.toggle("btn-active", isParticipants);
 
-      const target = isSimulator ? groupPage : participantsPage;
+      const target = isSimulator ? groupPage : isScore ? scorePage : isRealGames ? realGamesPage : participantsPage;
       target.scrollIntoView({ behavior: "smooth", block: "start" });
     }
 
@@ -1613,13 +1866,21 @@
     }
 
     function fetchParticipantsJsonp() {
+      return fetchJsonpAction("listar", "bolaoParticipantes");
+    }
+
+    function fetchRealGamesJsonp() {
+      return fetchJsonpAction("jogos_reais", "bolaoJogosReais");
+    }
+
+    function fetchJsonpAction(action, callbackPrefix) {
       return new Promise((resolve, reject) => {
-        const callbackName = `bolaoParticipantes_${Date.now()}_${Math.floor(Math.random() * 10000)}`;
+        const callbackName = `${callbackPrefix}_${Date.now()}_${Math.floor(Math.random() * 10000)}`;
         const script = document.createElement("script");
         const separator = SCRIPT_URL.includes("?") ? "&" : "?";
         const timeout = setTimeout(() => {
           cleanup();
-          reject(new Error("Tempo esgotado ao carregar participantes."));
+          reject(new Error("Tempo esgotado ao carregar dados."));
         }, 15000);
 
         function cleanup() {
@@ -1638,9 +1899,84 @@
           reject(new Error("Falha ao carregar dados do Apps Script."));
         };
 
-        script.src = `${SCRIPT_URL}${separator}action=listar&callback=${callbackName}&t=${Date.now()}`;
+        script.src = `${SCRIPT_URL}${separator}action=${action}&callback=${callbackName}&t=${Date.now()}`;
         document.body.appendChild(script);
       });
+    }
+
+    async function loadRealGamesData() {
+      realGamesContainer.innerHTML = `<div class="viewer-message">Carregando jogos reais...</div>`;
+      refreshRealGamesBtn.disabled = true;
+      refreshRealGamesBtn.textContent = "Carregando...";
+
+      try {
+        const data = await fetchRealGamesJsonp();
+
+        if (!data || data.status !== "sucesso") {
+          throw new Error(data?.message || "Não foi possível carregar os jogos reais.");
+        }
+
+        renderRealGames(data.jogos || []);
+      } catch (error) {
+        console.error(error);
+        realGamesContainer.innerHTML = `<div class="viewer-message">Erro ao carregar jogos reais: ${escapeHtml(error.message)}<br><br>Confira se a aba JogosReais existe e se o Apps Script foi publicado em uma nova versão.</div>`;
+      } finally {
+        refreshRealGamesBtn.disabled = false;
+        refreshRealGamesBtn.textContent = "Atualizar jogos reais";
+      }
+    }
+
+    function renderRealGames(jogos) {
+      if (!jogos.length) {
+        realGamesContainer.innerHTML = `<div class="viewer-message">Nenhum jogo real preenchido ainda.</div>`;
+        return;
+      }
+
+      const fases = [...new Set(jogos.map(jogo => jogo.fase || "Sem fase"))];
+
+      realGamesContainer.innerHTML = fases.map(fase => {
+        const jogosDaFase = jogos.filter(jogo => (jogo.fase || "Sem fase") === fase);
+
+        return `
+          <article class="real-games-card">
+            <h3>${escapeHtml(fase)}</h3>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Jogo</th>
+                    <th>Grupo</th>
+                    <th class="team">Mandante</th>
+                    <th></th>
+                    <th></th>
+                    <th class="team">Visitante</th>
+                    <th>Vencedor</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${jogosDaFase.map(jogo => `
+                    <tr>
+                      <td>${escapeHtml(jogo.jogo_id || "")}</td>
+                      <td>${escapeHtml(jogo.grupo || "")}</td>
+                      <td class="team">${escapeHtml(jogo.time_casa || "")}</td>
+                      <td><span class="readonly-score">${formatScoreCell(jogo.gols_casa)}</span></td>
+                      <td><span class="readonly-score">${formatScoreCell(jogo.gols_fora)}</span></td>
+                      <td class="team">${escapeHtml(jogo.time_fora || "")}</td>
+                      <td>${escapeHtml(jogo.vencedor || "—")}</td>
+                      <td><span class="tag ${jogo.status === "Finalizado" ? "tag-qualified" : "tag-info"}">${escapeHtml(jogo.status || "Pendente")}</span></td>
+                    </tr>
+                  `).join("")}
+                </tbody>
+              </table>
+            </div>
+          </article>
+        `;
+      }).join("");
+    }
+
+    function formatScoreCell(value) {
+      return value === "" || value === null || value === undefined ? "—" : escapeHtml(value);
     }
 
     function renderParticipantsList() {
