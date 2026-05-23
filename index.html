@@ -638,6 +638,7 @@
       <div class="status-pill" id="progressText">Fase de grupos: 0/72 • Mata-mata: 0/32</div>
       <div class="actions" id="simulatorActions">
         <button class="btn-secondary" type="button" id="clearBtn">Limpar palpites</button>
+        <button class="btn-secondary" type="button" id="randomFillBtn">Preencher teste aleatório</button>
         <button class="btn-primary" type="button" id="openSubmitBtn">Enviar palpite</button>
       </div>
     </div>
@@ -828,6 +829,7 @@
     const progressText = document.getElementById("progressText");
     const openSubmitBtn = document.getElementById("openSubmitBtn");
     const clearBtn = document.getElementById("clearBtn");
+    const randomFillBtn = document.getElementById("randomFillBtn");
     const groupPage = document.getElementById("groupPage");
     const knockoutPage = document.getElementById("knockoutPage");
     const participantsPage = document.getElementById("participantsPage");
@@ -952,6 +954,12 @@
         const confirmed = confirm("Tem certeza que deseja limpar todos os placares da fase de grupos e do mata-mata?");
         if (!confirmed) return;
         resetAll();
+      });
+
+      randomFillBtn.addEventListener("click", () => {
+        const confirmed = confirm("Preencher todos os jogos com resultados aleatórios? Isso vai substituir os placares atuais.");
+        if (!confirmed) return;
+        fillAllRandomResults();
       });
 
       submitForm.addEventListener("submit", handleSubmit);
@@ -1603,7 +1611,7 @@
         renderParticipantsList();
       } catch (error) {
         console.error(error);
-        participantsList.innerHTML = `<div class="viewer-message">Erro ao carregar participantes. Confira se o Apps Script foi atualizado para permitir a leitura dos dados.</div>`;
+        participantsList.innerHTML = `<div class="viewer-message">Erro ao carregar participantes: ${escapeHtml(error.message)}<br><br>Confira se o Apps Script foi substituído pelo código completo e publicado em uma nova versão.</div>`;
       } finally {
         refreshParticipantsBtn.disabled = false;
         refreshParticipantsBtn.textContent = "Atualizar lista";
@@ -1830,6 +1838,60 @@
         .replaceAll(">", "&gt;")
         .replaceAll('"', "&quot;")
         .replaceAll("'", "&#039;");
+    }
+
+    function fillAllRandomResults() {
+      resetKnockoutOnly();
+
+      appState.matches.forEach(match => {
+        match.gols_casa = String(randomGroupGoals());
+        match.gols_fora = String(randomGroupGoals());
+
+        const homeInput = document.querySelector(`input[data-match-id="${match.jogo_id}"][data-side="home"]`);
+        const awayInput = document.querySelector(`input[data-match-id="${match.jogo_id}"][data-side="away"]`);
+
+        if (homeInput) homeInput.value = match.gols_casa;
+        if (awayInput) awayInput.value = match.gols_fora;
+      });
+
+      calculateAll();
+      syncKnockoutWithGroups();
+      fillKnockoutRandomResults();
+      renderKnockout();
+      renderChampionCard();
+      updateProgress();
+      knockoutPage.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+
+    function fillKnockoutRandomResults() {
+      const stages = ["R32", "R16", "QF", "SF", "THIRD", "FINAL"];
+
+      stages.forEach(stage => {
+        appState.knockout[stage].forEach(match => {
+          if (!match.time_casa || !match.time_fora) return;
+
+          const score = randomKnockoutScore();
+          match.gols_casa = String(score.home);
+          match.gols_fora = String(score.away);
+          updateMatchWinner(match);
+          updateKnockoutProgression();
+        });
+      });
+    }
+
+    function randomGroupGoals() {
+      return Math.floor(Math.random() * 5);
+    }
+
+    function randomKnockoutScore() {
+      let home = Math.floor(Math.random() * 5);
+      let away = Math.floor(Math.random() * 5);
+
+      while (home === away) {
+        away = Math.floor(Math.random() * 5);
+      }
+
+      return { home, away };
     }
 
     function resetKnockoutOnly() {
