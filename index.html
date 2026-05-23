@@ -19,6 +19,8 @@
       --warning-text: #b54708;
       --danger-bg: #fef3f2;
       --danger-text: #b42318;
+      --info-bg: #eff8ff;
+      --info-text: #175cd3;
       --shadow: 0 10px 25px rgba(16, 24, 40, 0.08);
     }
 
@@ -54,7 +56,7 @@
     }
 
     .hero p {
-      max-width: 780px;
+      max-width: 840px;
       margin: 0;
       color: rgba(255,255,255,.85);
       font-size: 16px;
@@ -105,6 +107,11 @@
       font-size: 14px;
     }
 
+    button:disabled {
+      opacity: .55;
+      cursor: not-allowed;
+    }
+
     .btn-primary {
       background: var(--primary);
       color: #fff;
@@ -122,13 +129,18 @@
       padding: 24px 0 48px;
     }
 
+    .page {
+      display: block;
+      scroll-margin-top: 96px;
+    }
+
     .grid {
       display: grid;
       grid-template-columns: repeat(2, minmax(0, 1fr));
       gap: 18px;
     }
 
-    .group-card, .summary-card {
+    .group-card, .summary-card, .stage-card, .champion-card, .rules-card {
       background: var(--card);
       border: 1px solid var(--line);
       border-radius: 18px;
@@ -136,7 +148,7 @@
       overflow: hidden;
     }
 
-    .group-header {
+    .group-header, .stage-header {
       padding: 16px;
       border-bottom: 1px solid var(--line);
       display: flex;
@@ -145,12 +157,12 @@
       gap: 10px;
     }
 
-    .group-header h2 {
+    .group-header h2, .stage-header h2 {
       margin: 0;
       font-size: 20px;
     }
 
-    .group-header span {
+    .group-header span, .stage-header span {
       color: var(--muted);
       font-size: 13px;
     }
@@ -247,6 +259,34 @@
       color: var(--danger-text);
     }
 
+    .tag-info {
+      background: var(--info-bg);
+      color: var(--info-text);
+    }
+
+    .rules-card {
+      margin-bottom: 18px;
+      padding: 18px;
+      display: grid;
+      gap: 10px;
+      line-height: 1.45;
+    }
+
+    .rules-card h2 {
+      margin: 0;
+      font-size: 22px;
+    }
+
+    .rules-card ol, .rules-card ul {
+      margin: 0;
+      padding-left: 20px;
+      color: var(--muted);
+    }
+
+    .rules-card li {
+      margin: 4px 0;
+    }
+
     .summary-grid {
       margin-top: 18px;
       display: grid;
@@ -265,6 +305,127 @@
       padding: 0 16px 14px;
       color: var(--muted);
       font-size: 13px;
+    }
+
+    .knockout-intro {
+      margin-bottom: 18px;
+      padding: 16px;
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      background: var(--card);
+      box-shadow: var(--shadow);
+      color: var(--muted);
+      line-height: 1.45;
+    }
+
+    .knockout-intro strong {
+      color: var(--text);
+    }
+
+    .stages-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 18px;
+    }
+
+    .stage-matches {
+      padding: 14px 16px 16px;
+      display: grid;
+      gap: 12px;
+    }
+
+    .ko-match {
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 12px;
+      background: #fbfcfe;
+      display: grid;
+      gap: 10px;
+    }
+
+    .ko-match-title {
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .ko-line {
+      display: grid;
+      grid-template-columns: 1fr 58px 22px 58px 1fr;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .ko-team-home {
+      text-align: right;
+      font-weight: 700;
+      font-size: 14px;
+    }
+
+    .ko-team-away {
+      font-weight: 700;
+      font-size: 14px;
+    }
+
+    .ko-placeholder {
+      color: var(--muted);
+      font-weight: 500;
+    }
+
+    .ko-line input {
+      width: 58px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 9px 6px;
+      text-align: center;
+      font-size: 15px;
+      background: #fff;
+    }
+
+    .ko-line input:disabled {
+      background: #f2f4f7;
+    }
+
+    .tie-breaker {
+      display: grid;
+      gap: 6px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .tie-breaker select {
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 10px;
+      background: #fff;
+      font-size: 14px;
+    }
+
+    .winner-line {
+      font-size: 13px;
+      color: var(--success-text);
+      font-weight: 700;
+    }
+
+    .champion-card {
+      margin-top: 18px;
+      padding: 18px;
+      display: grid;
+      gap: 10px;
+      background: linear-gradient(135deg, #ffffff, #ecfdf3);
+    }
+
+    .champion-card h2 {
+      margin: 0;
+      font-size: 24px;
+    }
+
+    .champion-card p {
+      margin: 0;
+      color: var(--muted);
     }
 
     dialog {
@@ -361,12 +522,12 @@
     }
 
     @media (max-width: 900px) {
-      .grid { grid-template-columns: 1fr; }
-      .match {
+      .grid, .stages-grid { grid-template-columns: 1fr; }
+      .match, .ko-line {
         grid-template-columns: 1fr 48px 18px 48px 1fr;
         gap: 6px;
       }
-      .match input { width: 48px; }
+      .match input, .ko-line input { width: 48px; }
     }
   </style>
 </head>
@@ -374,49 +535,75 @@
   <header>
     <div class="container hero">
       <h1>Bolão Copa do Mundo 2026</h1>
-      <p>Preencha os placares da primeira fase. As tabelas dos grupos e a classificação dos melhores terceiros são atualizadas automaticamente.</p>
+      <p>Preencha os placares da primeira fase. Conforme cada grupo for completado, o mata-mata começa a aparecer automaticamente na mesma página. Depois, escolha quem avança em caso de empate e envie seu palpite completo até campeão e terceiro lugar.</p>
     </div>
   </header>
 
   <section class="toolbar">
     <div class="container toolbar-inner">
-      <div class="status-pill" id="progressText">Jogos preenchidos: 0/72</div>
+      <div class="status-pill" id="progressText">Fase de grupos: 0/72 • Mata-mata: 0/32</div>
       <div class="actions">
         <button class="btn-secondary" type="button" id="clearBtn">Limpar palpites</button>
-        <button class="btn-primary" type="button" id="openSubmitBtn">Enviar palpites</button>
+        <button class="btn-primary" type="button" id="openSubmitBtn">Enviar palpite</button>
       </div>
     </div>
   </section>
 
   <main class="container">
-    <section class="grid" id="groupsContainer"></section>
+    <section class="rules-card">
+      <h2>Regras consideradas no simulador</h2>
+      <ul>
+        <li><strong>Fase de grupos:</strong> vitória vale 3 pontos, empate vale 1 e derrota vale 0.</li>
+        <li><strong>Classificação do grupo:</strong> primeiro vem a pontuação total. Em caso de empate em pontos, o simulador aplica confronto direto entre os empatados: pontos, saldo de gols e gols marcados nesses jogos. Persistindo empate, usa saldo de gols geral e gols marcados no grupo.</li>
+        <li><strong>Melhores terceiros:</strong> pontos, saldo de gols e gols marcados em todos os jogos do grupo.</li>
+        <li><strong>Critérios que não vêm do placar:</strong> fair play/cartões e ranking FIFA são critérios oficiais, mas não são preenchidos neste MVP. Se o empate extremo persistir, o simulador usa uma ordem técnica fixa para manter o fluxo funcionando.</li>
+        <li><strong>Mata-mata:</strong> se um jogo terminar empatado no placar informado, escolha manualmente quem avança, simulando prorrogação/pênaltis.</li>
+      </ul>
+    </section>
 
-    <section class="summary-grid">
-      <div class="summary-card">
-        <h2>Melhores terceiros colocados</h2>
-        <p class="summary-note">No formato da Copa 2026, os dois primeiros de cada grupo avançam, além dos oito melhores terceiros. Esta tabela usa os mesmos critérios básicos do MVP: pontos, saldo de gols e gols pró.</p>
-        <div class="table-wrap">
-          <table>
-            <thead>
-              <tr>
-                <th>Pos.</th>
-                <th class="team">Seleção</th>
-                <th>Grupo</th>
-                <th>Pts</th>
-                <th>J</th>
-                <th>V</th>
-                <th>E</th>
-                <th>D</th>
-                <th>GP</th>
-                <th>GC</th>
-                <th>SG</th>
-                <th>Status</th>
-              </tr>
-            </thead>
-            <tbody id="thirdPlacesBody"></tbody>
-          </table>
+    <section class="page active" id="groupPage">
+      <section class="grid" id="groupsContainer"></section>
+
+      <section class="summary-grid">
+        <div class="summary-card">
+          <h2>Melhores terceiros colocados</h2>
+          <p class="summary-note">No formato da Copa 2026, os dois primeiros de cada grupo avançam, além dos oito melhores terceiros. Esta tabela usa pontos, saldo de gols e gols marcados. Fair play/cartões e ranking FIFA não são coletados neste MVP.</p>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Pos.</th>
+                  <th class="team">Seleção</th>
+                  <th>Grupo</th>
+                  <th>Pts</th>
+                  <th>J</th>
+                  <th>V</th>
+                  <th>E</th>
+                  <th>D</th>
+                  <th>GP</th>
+                  <th>GC</th>
+                  <th>SG</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody id="thirdPlacesBody"></tbody>
+            </table>
+          </div>
         </div>
+      </section>
+    </section>
+
+    <section class="page" id="knockoutPage">
+      <div class="knockout-intro">
+        <strong>Mata-mata:</strong> conforme os grupos forem completados, o chaveamento começa a aparecer automaticamente aqui embaixo, na mesma página. Alguns espaços podem ficar como referência, por exemplo “1A”, “2B” ou “3º de A/B/C”, até os grupos necessários serem preenchidos. Se você mudar algum placar da primeira fase depois disso, o mata-mata será recalculado e os palpites dessa etapa serão limpos para evitar inconsistência.
       </div>
+
+      <section class="stages-grid" id="knockoutContainer"></section>
+
+      <section class="champion-card" id="championCard">
+        <h2>Campeão: —</h2>
+        <p>Preencha os grupos. O mata-mata começará a aparecer automaticamente aqui embaixo conforme os grupos forem concluídos. Depois complete todos os jogos até campeão e terceiro lugar para liberar o envio final.</p>
+      </section>
     </section>
   </main>
 
@@ -426,8 +613,8 @@
 
   <dialog id="submitDialog">
     <form method="dialog" class="modal-content" id="submitForm">
-      <h2>Enviar palpites</h2>
-      <p>Informe seus dados para identificar seus palpites no bolão.</p>
+      <h2>Enviar palpite completo</h2>
+      <p>Informe seus dados para identificar seus palpites da fase de grupos e do mata-mata.</p>
 
       <div class="form-grid">
         <label>
@@ -464,33 +651,61 @@
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxvH21BWbx2XzX3naY-Z-Vb-b6eIlr_eDfYVbvZYRsoyhUYGbJQ0tHwwM3cTVZI00BQ/exec";
 
     const groups = {
-      A: ["Mexico", "South Africa", "Korea Republic", "Czechia"],
-      B: ["Canada", "Bosnia and Herzegovina", "Qatar", "Switzerland"],
-      C: ["Brazil", "Morocco", "Haiti", "Scotland"],
-      D: ["United States", "Paraguay", "Australia", "Türkiye"],
-      E: ["Germany", "Curaçao", "Côte d’Ivoire", "Ecuador"],
-      F: ["Netherlands", "Japan", "Tunisia", "Sweden"],
-      G: ["Belgium", "Egypt", "Iran", "New Zealand"],
-      H: ["Spain", "Cabo Verde", "Saudi Arabia", "Uruguay"],
-      I: ["France", "Senegal", "Norway", "Iraq"],
-      J: ["Argentina", "Algeria", "Austria", "Jordan"],
-      K: ["Portugal", "Congo DR", "Uzbekistan", "Colombia"],
-      L: ["England", "Croatia", "Ghana", "Panama"]
+      A: ["México", "África do Sul", "Coreia do Sul", "Tchéquia"],
+      B: ["Canadá", "Bósnia e Herzegovina", "Catar", "Suíça"],
+      C: ["Brasil", "Marrocos", "Haiti", "Escócia"],
+      D: ["Estados Unidos", "Paraguai", "Austrália", "Turquia"],
+      E: ["Alemanha", "Curaçao", "Costa do Marfim", "Equador"],
+      F: ["Países Baixos", "Japão", "Tunísia", "Suécia"],
+      G: ["Bélgica", "Egito", "Irã", "Nova Zelândia"],
+      H: ["Espanha", "Cabo Verde", "Arábia Saudita", "Uruguai"],
+      I: ["França", "Senegal", "Noruega", "Iraque"],
+      J: ["Argentina", "Argélia", "Áustria", "Jordânia"],
+      K: ["Portugal", "RD Congo", "Uzbequistão", "Colômbia"],
+      L: ["Inglaterra", "Croácia", "Gana", "Panamá"]
     };
 
     const pairings = [
       [0, 1],
       [2, 3],
       [0, 2],
-      [1, 3],
-      [0, 3],
+      [3, 1],
+      [3, 0],
       [1, 2]
     ];
 
+    const stageLabels = {
+      R32: "Fase de 32",
+      R16: "Oitavas de final",
+      QF: "Quartas de final",
+      SF: "Semifinais",
+      FINAL: "Final",
+      THIRD: "Decisão de 3º lugar"
+    };
+
+    const stageSubtitles = {
+      R32: "32 seleções",
+      R16: "16 seleções",
+      QF: "8 seleções",
+      SF: "4 seleções",
+      FINAL: "Campeão",
+      THIRD: "Terceiro lugar"
+    };
+
     const appState = {
+      currentPage: "groups",
       matches: [],
       standingsByGroup: {},
-      thirdPlaces: []
+      thirdPlaces: [],
+      knockoutGenerated: false,
+      knockout: {
+        R32: [],
+        R16: [],
+        QF: [],
+        SF: [],
+        FINAL: [],
+        THIRD: []
+      }
     };
 
     const groupsContainer = document.getElementById("groupsContainer");
@@ -498,6 +713,10 @@
     const progressText = document.getElementById("progressText");
     const openSubmitBtn = document.getElementById("openSubmitBtn");
     const clearBtn = document.getElementById("clearBtn");
+    const groupPage = document.getElementById("groupPage");
+    const knockoutPage = document.getElementById("knockoutPage");
+    const knockoutContainer = document.getElementById("knockoutContainer");
+    const championCard = document.getElementById("championCard");
     const submitDialog = document.getElementById("submitDialog");
     const closeDialogBtn = document.getElementById("closeDialogBtn");
     const submitForm = document.getElementById("submitForm");
@@ -509,6 +728,7 @@
       renderGroups();
       calculateAll();
       bindEvents();
+      updatePageControls();
     }
 
     function buildMatches() {
@@ -586,10 +806,10 @@
 
       openSubmitBtn.addEventListener("click", () => {
         clearModalMessage();
-        const validation = validateAllMatchesFilled();
+        const validation = validateKnockoutComplete();
 
         if (!validation.ok) {
-          alert(`Faltam ${validation.missing} jogos para preencher. Preencha todos os placares antes de enviar.`);
+          alert(`Faltam ${validation.missing} jogos do mata-mata para preencher. Complete tudo até campeão e terceiro lugar.`);
           return;
         }
 
@@ -601,19 +821,9 @@
       });
 
       clearBtn.addEventListener("click", () => {
-        const confirmed = confirm("Tem certeza que deseja limpar todos os placares?");
+        const confirmed = confirm("Tem certeza que deseja limpar todos os placares da fase de grupos e do mata-mata?");
         if (!confirmed) return;
-
-        appState.matches.forEach(match => {
-          match.gols_casa = "";
-          match.gols_fora = "";
-        });
-
-        document.querySelectorAll("input[data-match-id]").forEach(input => {
-          input.value = "";
-        });
-
-        calculateAll();
+        resetAll();
       });
 
       submitForm.addEventListener("submit", handleSubmit);
@@ -642,6 +852,8 @@
       if (side === "away") match.gols_fora = value;
 
       calculateAll();
+      syncKnockoutWithGroups();
+      updatePageControls();
     }
 
     function calculateAll() {
@@ -710,20 +922,107 @@
         team.saldo_gols = team.gols_pro - team.gols_contra;
       });
 
-      return sortStandings(table).map((team, index) => ({
+      return sortGroupStandings(table, groupKey).map((team, index) => ({
         ...team,
         posicao: index + 1
       }));
     }
 
-    function sortStandings(table) {
+    function sortGroupStandings(table, groupKey) {
+      const byPoints = [...table].sort((a, b) => b.pontos - a.pontos);
+      const result = [];
+      let index = 0;
+
+      while (index < byPoints.length) {
+        const tied = [byPoints[index]];
+        let next = index + 1;
+
+        while (next < byPoints.length && byPoints[next].pontos === byPoints[index].pontos) {
+          tied.push(byPoints[next]);
+          next += 1;
+        }
+
+        if (tied.length === 1) {
+          result.push(tied[0]);
+        } else {
+          result.push(...sortEqualPointsTeams(tied, groupKey));
+        }
+
+        index = next;
+      }
+
+      return result;
+    }
+
+    function sortEqualPointsTeams(teams, groupKey) {
+      const names = teams.map(team => team.selecao);
+      const h2h = calculateHeadToHeadStats(names, groupKey);
+
+      return [...teams].sort((a, b) => {
+        const ha = h2h[a.selecao];
+        const hb = h2h[b.selecao];
+
+        if (hb.pontos !== ha.pontos) return hb.pontos - ha.pontos;
+        if (hb.saldo_gols !== ha.saldo_gols) return hb.saldo_gols - ha.saldo_gols;
+        if (hb.gols_pro !== ha.gols_pro) return hb.gols_pro - ha.gols_pro;
+        if (b.saldo_gols !== a.saldo_gols) return b.saldo_gols - a.saldo_gols;
+        if (b.gols_pro !== a.gols_pro) return b.gols_pro - a.gols_pro;
+        return getInitialTeamOrder(a.grupo, a.selecao) - getInitialTeamOrder(b.grupo, b.selecao);
+      });
+    }
+
+    function calculateHeadToHeadStats(teamNames, groupKey) {
+      const stats = Object.fromEntries(teamNames.map(team => [team, {
+        pontos: 0,
+        gols_pro: 0,
+        gols_contra: 0,
+        saldo_gols: 0
+      }]));
+
+      appState.matches
+        .filter(match => match.grupo === groupKey && isMatchFilled(match))
+        .filter(match => teamNames.includes(match.time_casa) && teamNames.includes(match.time_fora))
+        .forEach(match => {
+          const homeGoals = Number(match.gols_casa);
+          const awayGoals = Number(match.gols_fora);
+          const home = stats[match.time_casa];
+          const away = stats[match.time_fora];
+
+          home.gols_pro += homeGoals;
+          home.gols_contra += awayGoals;
+          away.gols_pro += awayGoals;
+          away.gols_contra += homeGoals;
+
+          if (homeGoals > awayGoals) {
+            home.pontos += 3;
+          } else if (awayGoals > homeGoals) {
+            away.pontos += 3;
+          } else {
+            home.pontos += 1;
+            away.pontos += 1;
+          }
+        });
+
+      Object.values(stats).forEach(team => {
+        team.saldo_gols = team.gols_pro - team.gols_contra;
+      });
+
+      return stats;
+    }
+
+    function sortThirdPlaces(table) {
       return [...table].sort((a, b) => {
         if (b.pontos !== a.pontos) return b.pontos - a.pontos;
         if (b.saldo_gols !== a.saldo_gols) return b.saldo_gols - a.saldo_gols;
         if (b.gols_pro !== a.gols_pro) return b.gols_pro - a.gols_pro;
-        if (b.vitorias !== a.vitorias) return b.vitorias - a.vitorias;
-        return a.selecao.localeCompare(b.selecao);
+        return getInitialTeamOrder(a.grupo, a.selecao) - getInitialTeamOrder(b.grupo, b.selecao);
       });
+    }
+
+    function getInitialTeamOrder(groupKey, teamName) {
+      const groupIndex = Object.keys(groups).indexOf(groupKey);
+      const teamIndex = groups[groupKey].indexOf(teamName);
+      return groupIndex * 10 + teamIndex;
     }
 
     function renderGroupStandings(groupKey, standings) {
@@ -758,7 +1057,7 @@
         .map(groupStandings => groupStandings.find(team => team.posicao === 3))
         .filter(Boolean);
 
-      appState.thirdPlaces = sortStandings(thirds).map((team, index) => ({
+      appState.thirdPlaces = sortThirdPlaces(thirds).map((team, index) => ({
         ...team,
         posicao_terceiros: index + 1,
         avanca_terceiro: index < 8
@@ -790,13 +1089,338 @@
       }).join("");
     }
 
+    function syncKnockoutWithGroups() {
+      const hasCompletedGroup = Object.keys(groups).some(groupKey => isGroupComplete(groupKey));
+
+      if (hasCompletedGroup) {
+        generateKnockout();
+      } else if (appState.knockoutGenerated) {
+        resetKnockoutOnly();
+        renderChampionCard();
+        updateProgress();
+      }
+    }
+
+    function generateKnockout() {
+      const usedThirdGroups = new Set();
+      const allGroupsComplete = validateAllMatchesFilled().ok;
+      const team = (groupKey, position) => isGroupComplete(groupKey) ? getTeamByGroupPosition(groupKey, position) : null;
+      const isThirdEligible = (item) => {
+        if (!item || !isGroupComplete(item.grupo) || usedThirdGroups.has(item.grupo)) return false;
+        return allGroupsComplete ? item.avanca_terceiro : true;
+      };
+      const bestThird = (candidateGroups) => {
+        const groupsAllowed = candidateGroups.split("");
+        let selected = appState.thirdPlaces.find(item =>
+          isThirdEligible(item) && groupsAllowed.includes(item.grupo)
+        );
+
+        if (!selected) {
+          selected = appState.thirdPlaces.find(item => isThirdEligible(item));
+        }
+
+        if (selected) usedThirdGroups.add(selected.grupo);
+        return selected;
+      };
+
+      const r32Pairings = [
+        { number: 73, home: team("A", 2), away: team("B", 2), homeLabel: "2A", awayLabel: "2B" },
+        { number: 74, home: team("E", 1), away: bestThird("ABCDF"), homeLabel: "1E", awayLabel: "3º de A/B/C/D/F" },
+        { number: 75, home: team("F", 1), away: team("C", 2), homeLabel: "1F", awayLabel: "2C" },
+        { number: 76, home: team("C", 1), away: team("F", 2), homeLabel: "1C", awayLabel: "2F" },
+        { number: 77, home: team("I", 1), away: bestThird("CDFGH"), homeLabel: "1I", awayLabel: "3º de C/D/F/G/H" },
+        { number: 78, home: team("E", 2), away: team("I", 2), homeLabel: "2E", awayLabel: "2I" },
+        { number: 79, home: team("A", 1), away: bestThird("CEFHI"), homeLabel: "1A", awayLabel: "3º de C/E/F/H/I" },
+        { number: 80, home: team("L", 1), away: bestThird("EHIJK"), homeLabel: "1L", awayLabel: "3º de E/H/I/J/K" },
+        { number: 81, home: team("D", 1), away: bestThird("BEFIJ"), homeLabel: "1D", awayLabel: "3º de B/E/F/I/J" },
+        { number: 82, home: team("G", 1), away: bestThird("AEHIJ"), homeLabel: "1G", awayLabel: "3º de A/E/H/I/J" },
+        { number: 83, home: team("K", 2), away: team("L", 2), homeLabel: "2K", awayLabel: "2L" },
+        { number: 84, home: team("H", 1), away: team("J", 2), homeLabel: "1H", awayLabel: "2J" },
+        { number: 85, home: team("B", 1), away: bestThird("EFGIJ"), homeLabel: "1B", awayLabel: "3º de E/F/G/I/J" },
+        { number: 86, home: team("J", 1), away: team("H", 2), homeLabel: "1J", awayLabel: "2H" },
+        { number: 87, home: team("K", 1), away: bestThird("DEIJL"), homeLabel: "1K", awayLabel: "3º de D/E/I/J/L" },
+        { number: 88, home: team("D", 2), away: team("G", 2), homeLabel: "2D", awayLabel: "2G" }
+      ];
+
+      appState.knockout = {
+        R32: r32Pairings.map(item => createKnockoutMatch("R32", item.number, item.home, item.away, item.homeLabel, item.awayLabel)),
+        R16: [
+          createKnockoutMatch("R16", 89, null, null, "Vencedor M74", "Vencedor M77"),
+          createKnockoutMatch("R16", 90, null, null, "Vencedor M73", "Vencedor M75"),
+          createKnockoutMatch("R16", 91, null, null, "Vencedor M76", "Vencedor M78"),
+          createKnockoutMatch("R16", 92, null, null, "Vencedor M79", "Vencedor M80"),
+          createKnockoutMatch("R16", 93, null, null, "Vencedor M83", "Vencedor M84"),
+          createKnockoutMatch("R16", 94, null, null, "Vencedor M81", "Vencedor M82"),
+          createKnockoutMatch("R16", 95, null, null, "Vencedor M86", "Vencedor M88"),
+          createKnockoutMatch("R16", 96, null, null, "Vencedor M85", "Vencedor M87")
+        ],
+        QF: [
+          createKnockoutMatch("QF", 97, null, null, "Vencedor M89", "Vencedor M90"),
+          createKnockoutMatch("QF", 98, null, null, "Vencedor M93", "Vencedor M94"),
+          createKnockoutMatch("QF", 99, null, null, "Vencedor M91", "Vencedor M92"),
+          createKnockoutMatch("QF", 100, null, null, "Vencedor M95", "Vencedor M96")
+        ],
+        SF: [
+          createKnockoutMatch("SF", 101, null, null, "Vencedor M97", "Vencedor M98"),
+          createKnockoutMatch("SF", 102, null, null, "Vencedor M99", "Vencedor M100")
+        ],
+        FINAL: [createKnockoutMatch("FINAL", 104, null, null, "Vencedor M101", "Vencedor M102")],
+        THIRD: [createKnockoutMatch("THIRD", 103, null, null, "Perdedor M101", "Perdedor M102")]
+      };
+
+      appState.knockoutGenerated = true;
+      updateKnockoutProgression();
+      renderKnockout();
+      updateProgress();
+      updatePageControls();
+    }
+
+    function createKnockoutMatch(stage, number, home, away, homePlaceholder, awayPlaceholder) {
+      return {
+        fase: stageLabels[stage],
+        stage,
+        numero: number,
+        jogo_id: `${stage}-${number}`,
+        time_casa: home ? home.selecao : "",
+        time_fora: away ? away.selecao : "",
+        origem_casa: homePlaceholder,
+        origem_fora: awayPlaceholder,
+        grupo_casa: home ? home.grupo : "",
+        grupo_fora: away ? away.grupo : "",
+        gols_casa: "",
+        gols_fora: "",
+        vencedor: ""
+      };
+    }
+
+    function getTeamByGroupPosition(groupKey, position) {
+      return appState.standingsByGroup[groupKey].find(team => team.posicao === position);
+    }
+
+    function renderKnockout() {
+      knockoutContainer.innerHTML = "";
+
+      ["R32", "R16", "QF", "SF", "FINAL", "THIRD"].forEach(stage => {
+        const matches = appState.knockout[stage];
+        const card = document.createElement("article");
+        card.className = "stage-card";
+        card.innerHTML = `
+          <div class="stage-header">
+            <div>
+              <h2>${stageLabels[stage]}</h2>
+              <span>${stageSubtitles[stage]}</span>
+            </div>
+            <span class="tag tag-info">${getFilledStageMatches(stage)}/${matches.length}</span>
+          </div>
+          <div class="stage-matches">
+            ${matches.map(renderKnockoutMatch).join("")}
+          </div>
+        `;
+        knockoutContainer.appendChild(card);
+      });
+
+      document.querySelectorAll("input[data-ko-id]").forEach(input => {
+        input.addEventListener("change", handleKnockoutScoreInput);
+      });
+
+      document.querySelectorAll("select[data-ko-winner-id]").forEach(select => {
+        select.addEventListener("change", handleTieBreakerChange);
+      });
+
+      renderChampionCard();
+    }
+
+    function renderKnockoutMatch(match) {
+      const hasTeams = Boolean(match.time_casa && match.time_fora);
+      const disabled = hasTeams ? "" : "disabled";
+      const homeName = match.time_casa || match.origem_casa;
+      const awayName = match.time_fora || match.origem_fora;
+      const homeClass = match.time_casa ? "ko-team-home" : "ko-team-home ko-placeholder";
+      const awayClass = match.time_fora ? "ko-team-away" : "ko-team-away ko-placeholder";
+      const needsTieBreaker = hasTeams && isKnockoutMatchFilled(match) && Number(match.gols_casa) === Number(match.gols_fora);
+      const winnerLine = match.vencedor ? `<div class="winner-line">Avança: ${match.vencedor}</div>` : "";
+
+      return `
+        <div class="ko-match">
+          <div class="ko-match-title">
+            <span>Jogo ${match.numero}</span>
+            <span>${match.jogo_id}</span>
+          </div>
+          <div class="ko-line">
+            <div class="${homeClass}">${homeName}</div>
+            <input type="number" min="0" max="99" inputmode="numeric" data-ko-id="${match.jogo_id}" data-side="home" value="${match.gols_casa}" ${disabled} aria-label="Gols ${homeName}" />
+            <div class="versus">x</div>
+            <input type="number" min="0" max="99" inputmode="numeric" data-ko-id="${match.jogo_id}" data-side="away" value="${match.gols_fora}" ${disabled} aria-label="Gols ${awayName}" />
+            <div class="${awayClass}">${awayName}</div>
+          </div>
+          ${needsTieBreaker ? renderTieBreaker(match) : ""}
+          ${winnerLine}
+        </div>
+      `;
+    }
+
+    function renderTieBreaker(match) {
+      return `
+        <label class="tie-breaker">
+          Empate no mata-mata: escolha quem avança
+          <select data-ko-winner-id="${match.jogo_id}" required>
+            <option value="">Selecione</option>
+            <option value="${match.time_casa}" ${match.vencedor === match.time_casa ? "selected" : ""}>${match.time_casa}</option>
+            <option value="${match.time_fora}" ${match.vencedor === match.time_fora ? "selected" : ""}>${match.time_fora}</option>
+          </select>
+        </label>
+      `;
+    }
+
+    function handleKnockoutScoreInput(event) {
+      const input = event.target;
+      const match = findKnockoutMatch(input.dataset.koId);
+      if (!match) return;
+
+      let value = input.value;
+      if (value !== "" && Number(value) < 0) value = "0";
+      if (value !== "" && Number(value) > 99) value = "99";
+
+      if (input.dataset.side === "home") match.gols_casa = value;
+      if (input.dataset.side === "away") match.gols_fora = value;
+
+      updateMatchWinner(match);
+      updateKnockoutProgression();
+      renderKnockout();
+      updateProgress();
+    }
+
+    function handleTieBreakerChange(event) {
+      const match = findKnockoutMatch(event.target.dataset.koWinnerId);
+      if (!match) return;
+
+      match.vencedor = event.target.value;
+      updateKnockoutProgression();
+      renderKnockout();
+      updateProgress();
+    }
+
+    function updateMatchWinner(match) {
+      if (!isKnockoutMatchFilled(match) || !match.time_casa || !match.time_fora) {
+        match.vencedor = "";
+        return;
+      }
+
+      const homeGoals = Number(match.gols_casa);
+      const awayGoals = Number(match.gols_fora);
+
+      if (homeGoals > awayGoals) {
+        match.vencedor = match.time_casa;
+      } else if (awayGoals > homeGoals) {
+        match.vencedor = match.time_fora;
+      } else if (match.vencedor !== match.time_casa && match.vencedor !== match.time_fora) {
+        match.vencedor = "";
+      }
+    }
+
+    function updateKnockoutProgression() {
+      linkSpecificStage("R32", "R16", [[1, 4], [0, 2], [3, 5], [6, 7], [10, 11], [8, 9], [13, 15], [12, 14]]);
+      linkSpecificStage("R16", "QF", [[0, 1], [4, 5], [2, 3], [6, 7]]);
+      linkSpecificStage("QF", "SF", [[0, 1], [2, 3]]);
+      linkSpecificStage("SF", "FINAL", [[0, 1]]);
+      linkSemiLosersToThirdPlace();
+    }
+
+    function linkSpecificStage(currentStage, nextStage, pairs) {
+      const currentMatches = appState.knockout[currentStage];
+      const nextMatches = appState.knockout[nextStage];
+
+      pairs.forEach(([firstIndex, secondIndex], index) => {
+        const firstWinner = currentMatches[firstIndex]?.vencedor || "";
+        const secondWinner = currentMatches[secondIndex]?.vencedor || "";
+        setNextMatchTeams(nextMatches[index], firstWinner, secondWinner);
+      });
+    }
+
+    function linkSemiLosersToThirdPlace() {
+      const semiMatches = appState.knockout.SF;
+      const thirdMatch = appState.knockout.THIRD[0];
+      const firstLoser = getLoser(semiMatches[0]);
+      const secondLoser = getLoser(semiMatches[1]);
+      setNextMatchTeams(thirdMatch, firstLoser, secondLoser);
+    }
+
+    function setNextMatchTeams(match, home, away) {
+      const changed = match.time_casa !== home || match.time_fora !== away;
+      match.time_casa = home;
+      match.time_fora = away;
+
+      if (changed) {
+        match.gols_casa = "";
+        match.gols_fora = "";
+        match.vencedor = "";
+      } else {
+        updateMatchWinner(match);
+      }
+    }
+
+    function getLoser(match) {
+      if (!match || !match.vencedor || !match.time_casa || !match.time_fora) return "";
+      return match.vencedor === match.time_casa ? match.time_fora : match.time_casa;
+    }
+
+    function findKnockoutMatch(matchId) {
+      return Object.values(appState.knockout).flat().find(match => match.jogo_id === matchId);
+    }
+
+    function getFilledStageMatches(stage) {
+      return appState.knockout[stage].filter(match => match.vencedor).length;
+    }
+
+    function isKnockoutMatchFilled(match) {
+      return match.gols_casa !== "" && match.gols_fora !== "";
+    }
+
+    function validateKnockoutComplete() {
+      if (!appState.knockoutGenerated) {
+        return { ok: false, missing: 32 };
+      }
+
+      const allMatches = Object.values(appState.knockout).flat();
+      const missing = allMatches.filter(match => !match.vencedor).length;
+      return {
+        ok: missing === 0,
+        missing
+      };
+    }
+
+    function renderChampionCard() {
+      const finalMatch = appState.knockout.FINAL[0];
+      const thirdMatch = appState.knockout.THIRD[0];
+      const champion = finalMatch?.vencedor || "—";
+      const runnerUp = finalMatch?.vencedor ? getLoser(finalMatch) : "—";
+      const third = thirdMatch?.vencedor || "—";
+      const fourth = thirdMatch?.vencedor ? getLoser(thirdMatch) : "—";
+
+      championCard.innerHTML = `
+        <h2>Campeão: ${champion}</h2>
+        <p><strong>Vice:</strong> ${runnerUp} &nbsp; • &nbsp; <strong>3º lugar:</strong> ${third} &nbsp; • &nbsp; <strong>4º lugar:</strong> ${fourth}</p>
+        <p>${validateKnockoutComplete().ok ? "Palpite completo. O botão de envio já está liberado." : "Preencha todos os jogos do mata-mata, incluindo decisão de terceiro lugar, para liberar o envio final."}</p>
+      `;
+    }
+
     function updateProgress() {
-      const filled = appState.matches.filter(isMatchFilled).length;
-      progressText.textContent = `Jogos preenchidos: ${filled}/${appState.matches.length}`;
+      const groupFilled = appState.matches.filter(isMatchFilled).length;
+      const allKoMatches = Object.values(appState.knockout).flat();
+      const koFilled = allKoMatches.filter(match => match.vencedor).length;
+      const koTotal = allKoMatches.length || 32;
+      progressText.textContent = `Fase de grupos: ${groupFilled}/${appState.matches.length} • Mata-mata: ${koFilled}/${koTotal}`;
+      updatePageControls();
     }
 
     function isMatchFilled(match) {
       return match.gols_casa !== "" && match.gols_fora !== "";
+    }
+
+    function isGroupComplete(groupKey) {
+      return appState.matches
+        .filter(match => match.grupo === groupKey)
+        .every(match => isMatchFilled(match));
     }
 
     function validateAllMatchesFilled() {
@@ -805,6 +1429,46 @@
         ok: missing === 0,
         missing
       };
+    }
+
+    function showPage(page) {
+      appState.currentPage = page;
+      const target = page === "knockout" ? knockoutPage : groupPage;
+      target.scrollIntoView({ behavior: "smooth", block: "start" });
+      updateProgress();
+    }
+
+    function updatePageControls() {
+      const knockoutComplete = validateKnockoutComplete().ok;
+      openSubmitBtn.disabled = !knockoutComplete;
+    }
+
+    function resetKnockoutOnly() {
+      appState.knockoutGenerated = false;
+      appState.knockout = {
+        R32: [],
+        R16: [],
+        QF: [],
+        SF: [],
+        FINAL: [],
+        THIRD: []
+      };
+      knockoutContainer.innerHTML = "";
+    }
+
+    function resetAll() {
+      appState.matches.forEach(match => {
+        match.gols_casa = "";
+        match.gols_fora = "";
+      });
+
+      document.querySelectorAll("input[data-match-id]").forEach(input => {
+        input.value = "";
+      });
+
+      resetKnockoutOnly();
+      calculateAll();
+      groupPage.scrollIntoView({ behavior: "smooth", block: "start" });
     }
 
     function getPalpitesPayload() {
@@ -836,9 +1500,41 @@
         }));
     }
 
+    function getMataMataPayload() {
+      return Object.values(appState.knockout)
+        .flat()
+        .map(match => ({
+          fase: match.fase,
+          jogo_id: match.jogo_id,
+          time_casa: match.time_casa,
+          gols_casa: Number(match.gols_casa),
+          gols_fora: Number(match.gols_fora),
+          time_fora: match.time_fora,
+          vencedor: match.vencedor
+        }));
+    }
+
+    function getResumoFinalPayload() {
+      const finalMatch = appState.knockout.FINAL[0];
+      const thirdMatch = appState.knockout.THIRD[0];
+
+      return {
+        campeao: finalMatch?.vencedor || "",
+        vice: finalMatch?.vencedor ? getLoser(finalMatch) : "",
+        terceiro: thirdMatch?.vencedor || "",
+        quarto: thirdMatch?.vencedor ? getLoser(thirdMatch) : ""
+      };
+    }
+
     async function handleSubmit(event) {
       event.preventDefault();
       clearModalMessage();
+
+      const validation = validateKnockoutComplete();
+      if (!validation.ok) {
+        showModalMessage("Complete todo o mata-mata antes de enviar.", "error");
+        return;
+      }
 
       const participante = {
         nome: document.getElementById("nome").value.trim(),
@@ -859,7 +1555,9 @@
       const payload = {
         participante,
         palpites: getPalpitesPayload(),
-        classificacao: getClassificacaoPayload()
+        classificacao: getClassificacaoPayload(),
+        mata_mata: getMataMataPayload(),
+        resumo_final: getResumoFinalPayload()
       };
 
       sendBtn.disabled = true;
@@ -875,7 +1573,7 @@
           body: JSON.stringify(payload)
         });
 
-        showModalMessage("Palpites enviados! Confira sua planilha para confirmar o registro.", "success");
+        showModalMessage("Palpite completo enviado! Confira sua planilha para confirmar o registro.", "success");
         submitForm.reset();
       } catch (error) {
         console.error(error);
