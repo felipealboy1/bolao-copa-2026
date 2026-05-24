@@ -1100,12 +1100,6 @@
       <section class="ranking-section">
         <div class="score-hero">
           <h2>Classificação do bolão</h2>
-          <p>Ranking calculado automaticamente comparando os palpites enviados com os resultados preenchidos na aba <strong>JogosReais</strong>.</p>
-        </div>
-
-        <div class="real-games-toolbar">
-          <p>Atualize os resultados reais na planilha e clique no botão ao lado para recalcular a pontuação.</p>
-          <button class="btn-secondary" type="button" id="refreshRankingBtn">Atualizar classificação</button>
         </div>
 
         <div class="ranking-summary" id="rankingSummary">
@@ -1133,7 +1127,7 @@
                 </tr>
               </thead>
               <tbody id="rankingTableBody">
-                <tr><td colspan="9" class="viewer-message">Clique em “Atualizar classificação” para calcular o ranking.</td></tr>
+                <tr><td colspan="9" class="viewer-message">Carregando classificação...</td></tr>
               </tbody>
             </table>
           </div>
@@ -1623,7 +1617,9 @@
       if (refreshRealGamesBtn) {
         refreshRealGamesBtn.addEventListener("click", loadRealGamesData);
       }
-      refreshRankingBtn.addEventListener("click", loadRankingData);
+      if (refreshRankingBtn) {
+        refreshRankingBtn.addEventListener("click", loadRankingData);
+      }
       refreshComparisonBtn.addEventListener("click", loadComparisonData);
       adminFloatingBtn.addEventListener("click", openAdminLogin);
       closeAdminLoginBtn.addEventListener("click", () => adminLoginDialog.close());
@@ -2476,8 +2472,10 @@
 
     async function loadRankingData() {
       rankingTableBody.innerHTML = `<tr><td colspan="9" class="viewer-message">Calculando classificação...</td></tr>`;
-      refreshRankingBtn.disabled = true;
-      refreshRankingBtn.textContent = "Calculando...";
+      if (refreshRankingBtn) {
+        refreshRankingBtn.disabled = true;
+        refreshRankingBtn.textContent = "Calculando...";
+      }
 
       try {
         const data = await fetchRankingJsonp();
@@ -2507,8 +2505,10 @@
         console.error(error);
         rankingTableBody.innerHTML = `<tr><td colspan="9" class="viewer-message">Erro ao calcular classificação: ${escapeHtml(error.message)}</td></tr>`;
       } finally {
+        if (refreshRankingBtn) {
         refreshRankingBtn.disabled = false;
         refreshRankingBtn.textContent = "Atualizar classificação";
+      }
       }
     }
 
