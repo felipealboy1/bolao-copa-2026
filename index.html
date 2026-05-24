@@ -2315,7 +2315,7 @@
       refreshParticipantsBtn.textContent = "Carregando...";
 
       try {
-        const data = await fetchParticipantsJsonp();
+        const data = await fetchParticipantsSummaryJsonp();
 
         if (!data || data.status !== "sucesso") {
           throw new Error(data?.message || "Não foi possível carregar os participantes.");
@@ -2344,6 +2344,16 @@
 
     function fetchParticipantsJsonp() {
       return fetchJsonpAction("listar", "bolaoParticipantes");
+    }
+
+    function fetchParticipantsSummaryJsonp() {
+      return fetchJsonpAction("participantes_resumo", "bolaoParticipantesResumo");
+    }
+
+    function fetchParticipantDetailJsonp(participantId) {
+      return fetchJsonpAction("participante_detalhe", "bolaoParticipanteDetalhe", {
+        id: participantId
+      });
     }
 
     function fetchRealGamesJsonp() {
@@ -3177,7 +3187,7 @@
       }
     }
 
-    function fetchJsonpAction(action, callbackPrefix) {
+    function fetchJsonpAction(action, callbackPrefix, params = {}) {
       return new Promise((resolve, reject) => {
         const callbackName = `${callbackPrefix}_${Date.now()}_${Math.floor(Math.random() * 10000)}`;
         const script = document.createElement("script");
@@ -3203,7 +3213,14 @@
           reject(new Error("Falha ao carregar dados do Apps Script."));
         };
 
-        script.src = `${SCRIPT_URL}${separator}action=${action}&callback=${callbackName}&t=${Date.now()}`;
+        const queryParams = new URLSearchParams({
+          action,
+          callback: callbackName,
+          t: String(Date.now()),
+          ...params
+        });
+
+        script.src = `${SCRIPT_URL}${separator}${queryParams.toString()}`;
         document.body.appendChild(script);
       });
     }
@@ -3501,13 +3518,40 @@
       });
     }
 
-    function selectParticipant(participantId) {
-      const participante = appState.publicData.participantes.find(item => item.id_participante === participantId);
+    async function selectParticipant(participantId) {
+      let participante = appState.publicData.participantes.find(item => item.id_participante === participantId);
       if (!participante) return;
 
       document.querySelectorAll("button[data-participant-id]").forEach(button => {
         button.classList.toggle("active", button.dataset.participantId === participantId);
       });
+
+      const hasFullDetails = Array.isArray(participante.palpites)
+        && Array.isArray(participante.classificacao)
+        && Array.isArray(participante.mata_mata);
+
+      if (!hasFullDetails) {
+        participantViewTitle.textContent = `Carregando palpite de ${participante.nome || "Participante"}`;
+        participantViewSubtitle.textContent = "Buscando somente os detalhes deste participante...";
+        participantPredictionView.innerHTML = `<div class="viewer-message">Carregando palpite completo...</div>`;
+
+        try {
+          const data = await fetchParticipantDetailJsonp(participantId);
+
+          if (!data || data.status !== "sucesso" || !data.participante) {
+            throw new Error(data?.message || "Não foi possível carregar o detalhe do participante.");
+          }
+
+          participante = data.participante;
+          appState.publicData.participantes = appState.publicData.participantes.map(item =>
+            item.id_participante === participantId ? participante : item
+          );
+        } catch (error) {
+          console.error(error);
+          participantPredictionView.innerHTML = `<div class="viewer-message">Erro ao carregar o palpite: ${escapeHtml(error.message)}</div>`;
+          return;
+        }
+      }
 
       renderParticipantPrediction(participante);
     }
