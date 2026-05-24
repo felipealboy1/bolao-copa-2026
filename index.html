@@ -1145,16 +1145,10 @@
       <section class="real-games-section">
         <div class="score-hero">
           <h2>Jogos reais</h2>
-          <p>Resultados oficiais preenchidos na planilha. Esta área é apenas informativa e servirá depois como base para calcular a pontuação do bolão.</p>
-        </div>
-
-        <div class="real-games-toolbar">
-          <p>Atualize a aba <strong>JogosReais</strong> no Google Sheets e clique no botão ao lado para recarregar os resultados aqui.</p>
-          <button class="btn-secondary" type="button" id="refreshRealGamesBtn">Atualizar jogos reais</button>
         </div>
 
         <div class="real-games-grid" id="realGamesContainer">
-          <div class="viewer-message">Clique em “Atualizar jogos reais” para carregar os resultados oficiais.</div>
+          <div class="viewer-message">Carregando jogos reais...</div>
         </div>
       </section>
     </section>
@@ -1626,7 +1620,9 @@
         loadParticipantsData();
       });
       refreshParticipantsBtn.addEventListener("click", loadParticipantsData);
-      refreshRealGamesBtn.addEventListener("click", loadRealGamesData);
+      if (refreshRealGamesBtn) {
+        refreshRealGamesBtn.addEventListener("click", loadRealGamesData);
+      }
       refreshRankingBtn.addEventListener("click", loadRankingData);
       refreshComparisonBtn.addEventListener("click", loadComparisonData);
       adminFloatingBtn.addEventListener("click", openAdminLogin);
@@ -3229,8 +3225,10 @@
 
     async function loadRealGamesData() {
       realGamesContainer.innerHTML = `<div class="viewer-message">Carregando jogos reais...</div>`;
-      refreshRealGamesBtn.disabled = true;
-      refreshRealGamesBtn.textContent = "Carregando...";
+      if (refreshRealGamesBtn) {
+        refreshRealGamesBtn.disabled = true;
+        refreshRealGamesBtn.textContent = "Carregando...";
+      }
 
       try {
         const data = await fetchRealGamesJsonp();
@@ -3244,8 +3242,10 @@
         console.error(error);
         realGamesContainer.innerHTML = `<div class="viewer-message">Erro ao carregar jogos reais: ${escapeHtml(error.message)}<br><br>Confira se a aba JogosReais existe e se o Apps Script foi publicado em uma nova versão.</div>`;
       } finally {
+        if (refreshRealGamesBtn) {
         refreshRealGamesBtn.disabled = false;
         refreshRealGamesBtn.textContent = "Atualizar jogos reais";
+      }
       }
     }
 
@@ -3271,10 +3271,6 @@
       }).join("");
 
       realGamesContainer.innerHTML = `
-        <article class="summary-card" style="grid-column: 1 / -1;">
-          <h2>Classificação real dos grupos</h2>
-          <p class="summary-note">A tabela considera apenas jogos com status <strong>Finalizado</strong> e placar preenchido.</p>
-        </article>
         ${groupHtml}
         <article class="summary-card" style="grid-column: 1 / -1;">
           <h2>Mata-mata real</h2>
