@@ -2360,30 +2360,27 @@
       return fetchJsonpAction("jogos_reais", "bolaoJogosReais");
     }
 
+    function fetchRankingJsonp() {
+      return fetchJsonpAction("ranking", "bolaoRanking");
+    }
+
+    function fetchComparisonJsonp() {
+      return fetchJsonpAction("comparativo", "bolaoComparativo");
+    }
+
     async function loadComparisonData() {
       comparisonTableBody.innerHTML = `<tr><td colspan="8" class="viewer-message">Carregando comparativo...</td></tr>`;
       refreshComparisonBtn.disabled = true;
       refreshComparisonBtn.textContent = "Carregando...";
 
       try {
-        const [participantsData, realGamesData] = await Promise.all([
-          fetchParticipantsJsonp(),
-          fetchRealGamesJsonp()
-        ]);
+        const data = await fetchComparisonJsonp();
 
-        if (!participantsData || participantsData.status !== "sucesso") {
-          throw new Error(participantsData?.message || "Não foi possível carregar participantes.");
+        if (!data || data.status !== "sucesso") {
+          throw new Error(data?.message || "Não foi possível carregar o comparativo.");
         }
 
-        if (!realGamesData || realGamesData.status !== "sucesso") {
-          throw new Error(realGamesData?.message || "Não foi possível carregar jogos reais.");
-        }
-
-        appState.publicData.participantes = participantsData.participantes || [];
-        appState.publicData.jogosReais = realGamesData.jogos || [];
-
-        const rows = calculateComparisonRows(appState.publicData.participantes, appState.publicData.jogosReais);
-        renderComparisonRows(rows);
+        renderComparisonRows(data.rows || data.comparativo || []);
       } catch (error) {
         console.error(error);
         comparisonTableBody.innerHTML = `<tr><td colspan="8" class="viewer-message">Erro ao carregar comparativo: ${escapeHtml(error.message)}</td></tr>`;
@@ -2487,24 +2484,29 @@
       refreshRankingBtn.textContent = "Calculando...";
 
       try {
-        const [participantsData, realGamesData] = await Promise.all([
-          fetchParticipantsJsonp(),
-          fetchRealGamesJsonp()
-        ]);
+        const data = await fetchRankingJsonp();
 
-        if (!participantsData || participantsData.status !== "sucesso") {
-          throw new Error(participantsData?.message || "Não foi possível carregar participantes.");
+        if (!data || data.status !== "sucesso") {
+          throw new Error(data?.message || "Não foi possível carregar a classificação.");
         }
 
-        if (!realGamesData || realGamesData.status !== "sucesso") {
-          throw new Error(realGamesData?.message || "Não foi possível carregar jogos reais.");
-        }
+        const ranking = (data.ranking || []).map(item => ({
+          id: item.id || item.id_participante || "",
+          nome: item.nome || "Participante",
+          total: Number(item.total || 0),
+          breakdown: item.breakdown || {
+            jogos: Number(item.jogos || 0),
+            grupos: Number(item.grupos || 0),
+            mataMata: Number(item.mataMata || item.mata_mata || 0),
+            campanha: Number(item.campanha || 0),
+            finais: Number(item.finais || 0),
+            bonus: Number(item.bonus || 0)
+          }
+        }));
 
-        appState.publicData.participantes = participantsData.participantes || [];
-        appState.publicData.jogosReais = realGamesData.jogos || [];
-
-        const ranking = calculateRanking(appState.publicData.participantes, appState.publicData.jogosReais);
-        renderRanking(ranking, appState.publicData.jogosReais);
+        renderRanking(ranking, {
+          jogosFinalizados: data.jogos_finalizados ?? data.meta?.jogos_finalizados ?? "—"
+        });
       } catch (error) {
         console.error(error);
         rankingTableBody.innerHTML = `<tr><td colspan="9" class="viewer-message">Erro ao calcular classificação: ${escapeHtml(error.message)}</td></tr>`;
@@ -2514,8 +2516,8 @@
       }
     }
 
-    function renderRanking(ranking, jogosReais) {
-      const finalizedGames = jogosReais.filter(isRealGameFinalized).length;
+    function renderRanking(ranking, meta = {}) {
+      const finalizedGames = meta.jogosFinalizados ?? "—";
       const leader = ranking[0];
 
       rankingSummary.innerHTML = `
