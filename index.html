@@ -486,6 +486,62 @@
       line-height: 1.45;
     }
 
+    .group-help {
+      margin-top: 6px;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.4;
+    }
+
+    .group-chip-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 8px;
+    }
+
+    .group-chip {
+      display: inline-flex;
+      align-items: center;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 6px 10px;
+      background: #fbfcfe;
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .ranking-filter-card {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      box-shadow: var(--shadow);
+      padding: 16px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .ranking-filter-card label {
+      display: grid;
+      gap: 6px;
+      font-size: 14px;
+      font-weight: 800;
+      color: var(--text);
+    }
+
+    .ranking-filter-card select {
+      min-width: 240px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 10px;
+      background: #fff;
+      font-size: 14px;
+    }
+
     .participants-layout {
       display: grid;
       grid-template-columns: 320px 1fr;
@@ -1102,6 +1158,16 @@
           <h2>Classificação do bolão</h2>
         </div>
 
+        <div class="ranking-filter-card">
+          <label>
+            Ver classificação por grupo
+            <select id="rankingGroupSelect">
+              <option value="GERAL">Geral</option>
+            </select>
+          </label>
+          <button class="btn-secondary" type="button" id="refreshGroupsBtn">Atualizar grupos</button>
+        </div>
+
         <div class="ranking-summary" id="rankingSummary">
           <div class="ranking-stat"><strong>—</strong><span>Participantes</span></div>
           <div class="ranking-stat"><strong>—</strong><span>Jogos reais finalizados</span></div>
@@ -1378,10 +1444,26 @@
           <input type="email" id="email" autocomplete="email" required />
         </label>
 
+        $1
+
         <label>
-          Telefone
-          <input type="tel" id="telefone" autocomplete="tel" required />
+          Entrar em grupos existentes
+          <input type="text" id="groupCodesInput" placeholder="Ex.: FAM-8392, TRAB-1020" />
+          <span class="group-help">Digite os códigos dos grupos separados por vírgula. O grupo Geral é obrigatório e já entra automaticamente.</span>
         </label>
+
+        <label>
+          Criar novo grupo, opcional
+          <input type="text" id="newGroupNameInput" placeholder="Ex.: Família Alboy" />
+          <span class="group-help">Ao criar um grupo, o sistema gera um código para você compartilhar com outras pessoas.</span>
+        </label>
+
+        <div>
+          <strong>Grupos do palpite</strong>
+          <div class="group-chip-list" id="submitGroupsPreview">
+            <span class="group-chip">Geral</span>
+          </div>
+        </div>
 
         <label class="consent">
           <input type="checkbox" id="consentimento" required />
@@ -1496,6 +1578,11 @@
     const rankingTableBody = document.getElementById("rankingTableBody");
     const rankingSummary = document.getElementById("rankingSummary");
     const refreshRankingBtn = document.getElementById("refreshRankingBtn");
+    const rankingGroupSelect = document.getElementById("rankingGroupSelect");
+    const refreshGroupsBtn = document.getElementById("refreshGroupsBtn");
+    const groupCodesInput = document.getElementById("groupCodesInput");
+    const newGroupNameInput = document.getElementById("newGroupNameInput");
+    const submitGroupsPreview = document.getElementById("submitGroupsPreview");
     const realGamesPage = document.getElementById("realGamesPage");
     const realGamesContainer = document.getElementById("realGamesContainer");
     const refreshRealGamesBtn = document.getElementById("refreshRealGamesBtn");
@@ -1595,6 +1682,7 @@
       navPontuacaoBtn.addEventListener("click", () => showMainMode("score"));
       navClassificacaoBtn.addEventListener("click", () => {
         showMainMode("ranking");
+        loadGroupsForRanking();
         loadRankingData();
       });
       navComparativoBtn.addEventListener("click", () => {
@@ -1615,6 +1703,18 @@
       }
       if (refreshRankingBtn) {
         refreshRankingBtn.addEventListener("click", loadRankingData);
+      }
+      if (refreshGroupsBtn) {
+        refreshGroupsBtn.addEventListener("click", loadGroupsForRanking);
+      }
+      if (rankingGroupSelect) {
+        rankingGroupSelect.addEventListener("change", loadRankingData);
+      }
+      if (groupCodesInput) {
+        groupCodesInput.addEventListener("input", updateSubmitGroupsPreview);
+      }
+      if (newGroupNameInput) {
+        newGroupNameInput.addEventListener("input", updateSubmitGroupsPreview);
       }
       refreshComparisonBtn.addEventListener("click", loadComparisonData);
       adminFloatingBtn.addEventListener("click", openAdminLogin);
@@ -2349,7 +2449,14 @@
     }
 
     function fetchRankingJsonp() {
-      return fetchJsonpAction("ranking", "bolaoRanking");
+      const groupCode = rankingGroupSelect?.value || "GERAL";
+      return fetchJsonpAction("ranking", "bolaoRanking", {
+        grupo: groupCode
+      });
+    }
+
+    function fetchGroupsJsonp() {
+      return fetchJsonpAction("grupos", "bolaoGrupos");
     }
 
     function fetchComparisonJsonp() {
@@ -2464,6 +2571,88 @@
           <div class="comparison-bar"><div class="comparison-bar-fill" style="width:${percent}%"></div></div>
         </div>
       `;
+    }
+
+    function normalizeGroupCode(value) {
+      return String(value || "")
+        .trim()
+        .toUpperCase()
+        .replace(/[^A-Z0-9-]/g, "");
+    }
+
+    function createGroupCodeFromName(name) {
+      const clean = String(name || "")
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .replace(/[^A-Za-z0-9]/g, "")
+        .toUpperCase()
+        .slice(0, 4) || "GRP";
+
+      return `${clean}-${Math.floor(1000 + Math.random() * 9000)}`;
+    }
+
+    function enrichPayloadWithGroups(payload) {
+      return {
+        ...payload,
+        grupos: getSubmissionGroups()
+      };
+    }
+
+    function getSubmissionGroups() {
+      const codes = String(groupCodesInput?.value || "")
+        .split(/[;,\n]/)
+        .map(normalizeGroupCode)
+        .filter(Boolean)
+        .filter(code => code !== "GERAL");
+
+      const uniqueCodes = [...new Set(codes)];
+      const newGroupName = String(newGroupNameInput?.value || "").trim();
+      const groups = [{ codigo: "GERAL", nome: "Geral", origem: "padrao" }];
+
+      uniqueCodes.forEach(code => {
+        groups.push({ codigo: code, nome: code, origem: "existente" });
+      });
+
+      if (newGroupName) {
+        groups.push({
+          codigo: createGroupCodeFromName(newGroupName),
+          nome: newGroupName,
+          origem: "novo"
+        });
+      }
+
+      return groups;
+    }
+
+    function updateSubmitGroupsPreview() {
+      if (!submitGroupsPreview) return;
+
+      const groups = getSubmissionGroups();
+      submitGroupsPreview.innerHTML = groups
+        .map(group => `<span class="group-chip">${escapeHtml(group.nome)}${group.codigo !== "GERAL" ? ` • ${escapeHtml(group.codigo)}` : ""}</span>`)
+        .join("");
+    }
+
+    async function loadGroupsForRanking() {
+      if (!rankingGroupSelect) return;
+
+      const selected = rankingGroupSelect.value || "GERAL";
+
+      try {
+        const data = await fetchGroupsJsonp();
+        if (!data || data.status !== "sucesso") return;
+
+        const groups = data.grupos || [];
+        rankingGroupSelect.innerHTML = groups.map(group => `
+          <option value="${escapeHtml(group.codigo)}">${escapeHtml(group.nome)}${group.codigo !== "GERAL" ? ` (${escapeHtml(group.codigo)})` : ""}</option>
+        `).join("");
+
+        if ([...rankingGroupSelect.options].some(option => option.value === selected)) {
+          rankingGroupSelect.value = selected;
+        }
+      } catch (error) {
+        console.warn("Não foi possível carregar grupos.", error);
+      }
     }
 
     async function loadRankingData() {
@@ -4108,11 +4297,12 @@
           headers: {
             "Content-Type": "text/plain;charset=utf-8"
           },
-          body: JSON.stringify(payload)
+          body: JSON.stringify(enrichPayloadWithGroups(payload))
         });
 
         showModalMessage("Palpite completo enviado! Abrindo a lista de participantes...", "success");
         submitForm.reset();
+        updateSubmitGroupsPreview();
         submitDialog.close();
         showMainMode("participants");
         await loadParticipantsData();
