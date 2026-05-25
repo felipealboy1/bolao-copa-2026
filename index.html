@@ -161,16 +161,39 @@
       cursor: pointer;
       font-weight: 700;
       font-size: 14px;
+      transition: transform .15s ease, box-shadow .15s ease, border-color .15s ease, background .15s ease;
+    }
+
+    button:not(:disabled) {
+      box-shadow: 0 4px 10px rgba(16, 24, 40, 0.08);
+    }
+
+    button:not(:disabled):hover {
+      transform: translateY(-1px);
+      box-shadow: 0 8px 18px rgba(16, 24, 40, 0.12);
+    }
+
+    button:not(:disabled):active {
+      transform: translateY(0);
+      box-shadow: 0 3px 8px rgba(16, 24, 40, 0.10);
+    }
+
+    button:focus-visible {
+      outline: 3px solid rgba(15, 118, 110, 0.22);
+      outline-offset: 2px;
     }
 
     button:disabled {
       opacity: .55;
       cursor: not-allowed;
+      box-shadow: none;
     }
 
     .btn-primary {
       background: var(--primary);
       color: #fff;
+      border: 1px solid var(--primary);
+      box-shadow: 0 6px 14px rgba(15, 118, 110, 0.18);
     }
 
     .btn-primary:hover { background: var(--primary-dark); }
@@ -178,7 +201,26 @@
     .btn-secondary {
       background: #fff;
       color: var(--text);
-      border: 1px solid var(--line);
+      border: 1px solid #d7dde7;
+    }
+
+    .btn-secondary:hover {
+      border-color: #b8c2d2;
+      background: #fbfcfe;
+    }
+
+
+    .menu-bar .btn-active {
+      background: #f59e0b;
+      color: #162033;
+      border-color: #f59e0b;
+      box-shadow: 0 8px 18px rgba(245, 158, 11, 0.28);
+    }
+
+    .menu-bar .btn-active:hover {
+      background: #d97706;
+      color: #fff;
+      border-color: #d97706;
     }
 
     main {
@@ -549,6 +591,21 @@
       font-size: 13px;
       line-height: 1.4;
       padding: 4px;
+    }
+
+    .create-group-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+      margin-top: 8px;
+    }
+
+    .create-group-message {
+      color: var(--success-text);
+      font-size: 13px;
+      font-weight: 700;
+      line-height: 1.4;
     }
 
     .group-chip-list {
@@ -1095,12 +1152,398 @@
       }
       .match input, .ko-line input { width: 48px; }
     }
+
+
+    /* Ajustes finais de responsividade e usabilidade */
+    html { scroll-behavior: smooth; }
+
+    button, input, select, textarea {
+      font-family: inherit;
+    }
+
+    button, select, input {
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .menu-bar {
+      max-width: 100%;
+    }
+
+    .menu-title {
+      min-height: 42px;
+      white-space: nowrap;
+    }
+
+    .participants-panel-header label,
+    .ranking-filter-card label {
+      width: 100%;
+    }
+
+    .participants-panel-header select,
+    .ranking-filter-card select {
+      width: 100%;
+      max-width: 100%;
+    }
+
+    .participant-card {
+      min-height: 64px;
+    }
+
+    .modal-content {
+      max-height: min(88vh, 760px);
+      overflow: auto;
+    }
+
+    .table-wrap {
+      max-width: 100%;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    @media (max-width: 900px) {
+      .grid,
+      .stages-grid,
+      .participants-layout,
+      .score-grid,
+      .real-games-grid,
+      .ranking-summary {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 768px) {
+      header {
+        padding: 22px 0;
+      }
+
+      .container {
+        width: min(100% - 20px, 1180px);
+      }
+
+      h1 {
+        font-size: 28px;
+      }
+
+      .hero p {
+        font-size: 14px;
+        line-height: 1.45;
+      }
+
+      .toolbar {
+        padding: 8px 0;
+      }
+
+      .toolbar-inner {
+        gap: 8px;
+        align-items: stretch;
+      }
+
+      .menu-bar {
+        width: 100%;
+        display: flex;
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        gap: 8px;
+        padding-bottom: 4px;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+      }
+
+      .menu-bar::-webkit-scrollbar {
+        display: none;
+      }
+
+      .menu-title {
+        width: auto !important;
+        flex: 0 0 auto;
+        justify-content: center;
+        min-height: 40px;
+        padding: 10px 12px;
+        border-radius: 999px;
+        font-size: 13px;
+      }
+
+      .status-pill {
+        width: 100%;
+        justify-content: flex-start;
+        font-size: 12px;
+        padding: 8px 10px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      main {
+        padding: 16px 0 32px;
+      }
+
+      .submit-card {
+        padding: 14px;
+        display: grid;
+        gap: 12px;
+      }
+
+      .submit-card h2 {
+        font-size: 20px;
+      }
+
+      .submit-card p {
+        font-size: 13px;
+      }
+
+      .submit-card .actions {
+        width: 100%;
+        display: grid;
+        grid-template-columns: 1fr;
+      }
+
+      .submit-card button,
+      .actions button {
+        width: 100%;
+      }
+
+      .group-card,
+      .summary-card,
+      .stage-card,
+      .champion-card,
+      .submit-card,
+      .score-hero,
+      .score-card,
+      .real-games-card,
+      .ranking-card,
+      .comparison-card,
+      .participants-panel,
+      .participant-view-card,
+      .admin-card,
+      .ranking-stat,
+      .ranking-filter-card {
+        border-radius: 16px;
+      }
+
+      .group-header,
+      .stage-header {
+        padding: 14px;
+        align-items: flex-start;
+      }
+
+      .group-header h2,
+      .stage-header h2 {
+        font-size: 18px;
+      }
+
+      .group-header span,
+      .stage-header span {
+        font-size: 12px;
+        line-height: 1.35;
+      }
+
+      .matches,
+      .stage-matches {
+        padding: 12px;
+      }
+
+      .match,
+      .ko-line {
+        grid-template-columns: minmax(78px, 1fr) 44px 14px 44px minmax(78px, 1fr);
+        gap: 5px;
+        font-size: 12px;
+      }
+
+      .match .home,
+      .match .away,
+      .ko-team-home,
+      .ko-team-away {
+        font-size: 12px;
+        line-height: 1.2;
+        word-break: break-word;
+      }
+
+      .match input,
+      .ko-line input {
+        width: 44px;
+        padding: 8px 4px;
+        font-size: 16px;
+      }
+
+      .ko-match {
+        padding: 10px;
+      }
+
+      .ko-match-title {
+        font-size: 11px;
+      }
+
+      th,
+      td {
+        padding: 8px 6px;
+        font-size: 12px;
+      }
+
+      td.team,
+      th.team {
+        min-width: 128px;
+      }
+
+      .summary-card h2,
+      .comparison-card h3,
+      .ranking-card h3,
+      .real-games-card h3,
+      .score-card h3 {
+        font-size: 17px;
+        padding: 14px;
+      }
+
+      .score-hero {
+        padding: 16px;
+      }
+
+      .score-hero h2 {
+        font-size: 22px;
+      }
+
+      .score-hero p {
+        font-size: 13px;
+      }
+
+      .ranking-filter-card {
+        display: grid;
+        gap: 10px;
+        padding: 14px;
+      }
+
+      .ranking-filter-card select,
+      .participants-panel-header select,
+      label input,
+      label select {
+        min-width: 0;
+        width: 100%;
+        font-size: 16px;
+      }
+
+      .ranking-filter-card button {
+        width: 100%;
+      }
+
+      .ranking-summary {
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+      }
+
+      .ranking-stat {
+        padding: 12px;
+      }
+
+      .ranking-stat strong {
+        font-size: 20px;
+      }
+
+      .participants-layout {
+        gap: 14px;
+      }
+
+      .participants-panel-header,
+      .participant-view-header {
+        padding: 14px;
+      }
+
+      .participants-list {
+        max-height: 360px;
+        padding: 10px;
+      }
+
+      .participant-card {
+        padding: 11px;
+      }
+
+      .viewer-sections {
+        padding: 12px;
+      }
+
+      dialog {
+        width: calc(100% - 20px);
+        max-width: 560px;
+      }
+
+      .modal-content {
+        padding: 18px;
+        max-height: 86vh;
+      }
+
+      .modal-actions {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 8px;
+      }
+
+      .modal-actions button {
+        width: 100%;
+      }
+
+      .admin-floating-btn {
+        right: 12px;
+        bottom: 12px;
+        border-radius: 999px;
+        padding: 10px 12px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .container {
+        width: min(100% - 16px, 1180px);
+      }
+
+      h1 {
+        font-size: 25px;
+      }
+
+      .hero p {
+        font-size: 13px;
+      }
+
+      .status-pill {
+        font-size: 11px;
+      }
+
+      .menu-title {
+        font-size: 12px;
+        padding: 9px 11px;
+      }
+
+      .match,
+      .ko-line {
+        grid-template-columns: minmax(64px, 1fr) 40px 12px 40px minmax(64px, 1fr);
+        gap: 4px;
+      }
+
+      .match input,
+      .ko-line input {
+        width: 40px;
+      }
+
+      .match .home,
+      .match .away,
+      .ko-team-home,
+      .ko-team-away {
+        font-size: 11px;
+      }
+
+      .ranking-summary {
+        grid-template-columns: 1fr !important;
+      }
+
+      .participants-list {
+        max-height: 310px;
+      }
+
+      .admin-team-input {
+        width: 135px;
+      }
+    }
+
   </style>
 </head>
 <body>
   <header>
     <div class="container hero">
-      <h1>Bolão Copa do Mundo 2026</h1>
+      <h1 id="secretAdminTrigger" title="">Bolão Copa do Mundo 2026</h1>
       <p>Preencha os placares da primeira fase. Conforme cada grupo for completado, o mata-mata começa a aparecer automaticamente na mesma página. Depois, escolha quem avança em caso de empate e envie seu palpite completo até campeão e terceiro lugar.</p>
     </div>
   </header>
@@ -1127,7 +1570,7 @@
           <p>Preencha os resultados da fase de grupos. O mata-mata será montado automaticamente conforme os grupos forem concluídos.</p>
         </div>
         <div class="actions">
-          <button class="btn-secondary" type="button" id="randomFillBtn">Preencher todos os jogos automaticamente</button>
+          <button class="btn-secondary" type="button" id="randomFillBtn">Preencher todos os resultados aleatoriamente</button>
           <button class="btn-secondary" type="button" id="clearBtn">Limpar palpites</button>
         </div>
       </section>
@@ -1462,7 +1905,7 @@
             <button class="btn-secondary" type="button" id="refreshParticipantsBtn">Atualizar lista</button>
           </div>
           <div class="participants-list" id="participantsList">
-            <div class="viewer-message">Clique em “Atualizar lista” para carregar os participantes.</div>
+            <div class="viewer-message">Carregando participantes...</div>
           </div>
         </aside>
 
@@ -1479,7 +1922,7 @@
     </section>
   </main>
 
-  <button class="admin-floating-btn" type="button" id="adminFloatingBtn">Admin</button>
+  <button class="admin-floating-btn hidden" type="button" id="adminFloatingBtn" aria-hidden="true" tabindex="-1">Admin</button>
 
   <dialog id="adminLoginDialog">
     <form method="dialog" class="modal-content" id="adminLoginForm">
@@ -1551,7 +1994,11 @@
             <label>
               Nome do novo grupo
               <input type="text" id="newGroupNameInput" placeholder="Ex.: Família Alboy" />
-              <span class="group-help">Depois do envio, o grupo aparece na lista para outras pessoas entrarem.</span>
+              <div class="create-group-actions">
+                <button class="btn-primary" type="button" id="confirmCreateGroupBtn">Confirmar grupo</button>
+                <span class="create-group-message" id="createGroupMessage"></span>
+              </div>
+              <span class="group-help">Confirme o grupo para adicioná-lo à lista abaixo já marcado. Depois do envio, ele ficará disponível para outras pessoas.</span>
             </label>
           </div>
 
@@ -1652,6 +2099,7 @@
     const navJogosReaisBtn = document.getElementById("navJogosReaisBtn");
     const navParticipantesBtn = document.getElementById("navParticipantesBtn");
     const adminFloatingBtn = document.getElementById("adminFloatingBtn");
+    const secretAdminTrigger = document.getElementById("secretAdminTrigger");
     const adminLoginDialog = document.getElementById("adminLoginDialog");
     const adminLoginForm = document.getElementById("adminLoginForm");
     const adminLoginMessage = document.getElementById("adminLoginMessage");
@@ -1704,7 +2152,12 @@
     const createGroupPanel = document.getElementById("createGroupPanel");
     const existingGroupsCheckboxes = document.getElementById("existingGroupsCheckboxes");
     const newGroupNameInput = document.getElementById("newGroupNameInput");
+    const confirmCreateGroupBtn = document.getElementById("confirmCreateGroupBtn");
+    const createGroupMessage = document.getElementById("createGroupMessage");
     const submitGroupsPreview = document.getElementById("submitGroupsPreview");
+
+    let pendingCreatedGroups = [];
+    let availableExistingGroups = [];
 
     function init() {
       buildMatches();
@@ -1802,14 +2255,12 @@
         showMainMode("realGames");
         loadRealGamesData();
       });
-      navParticipantesBtn.addEventListener("click", () => {
+      navParticipantesBtn.addEventListener("click", async () => {
         showMainMode("participants");
-        loadGroupsForParticipants();
-        loadParticipantsData();
+        await refreshParticipantsGroupsAndList();
       });
-      refreshParticipantsBtn.addEventListener("click", () => {
-        loadGroupsForParticipants();
-        loadParticipantsData();
+      refreshParticipantsBtn.addEventListener("click", async () => {
+        await refreshParticipantsGroupsAndList(participantsGroupSelect?.value || "GERAL");
       });
       if (participantsGroupSelect) {
         participantsGroupSelect.addEventListener("change", loadParticipantsData);
@@ -1847,9 +2298,36 @@
         existingGroupsCheckboxes.addEventListener("change", updateSubmitGroupsPreview);
       }
       if (newGroupNameInput) {
-        newGroupNameInput.addEventListener("input", updateSubmitGroupsPreview);
+        newGroupNameInput.addEventListener("input", () => {
+          if (createGroupMessage) createGroupMessage.textContent = "";
+        });
       }
-      adminFloatingBtn.addEventListener("click", openAdminLogin);
+      if (confirmCreateGroupBtn) {
+        confirmCreateGroupBtn.addEventListener("click", confirmCreateGroupSelection);
+      }
+      if (adminFloatingBtn) {
+        adminFloatingBtn.addEventListener("click", openAdminLogin);
+      }
+
+      let secretAdminClickCount = 0;
+      let secretAdminClickTimer = null;
+
+      if (secretAdminTrigger) {
+        secretAdminTrigger.addEventListener("click", () => {
+          secretAdminClickCount += 1;
+          clearTimeout(secretAdminClickTimer);
+
+          if (secretAdminClickCount >= 5) {
+            secretAdminClickCount = 0;
+            openAdminLogin();
+            return;
+          }
+
+          secretAdminClickTimer = setTimeout(() => {
+            secretAdminClickCount = 0;
+          }, 1600);
+        });
+      }
       closeAdminLoginBtn.addEventListener("click", () => adminLoginDialog.close());
       adminLoginForm.addEventListener("submit", handleAdminLogin);
       adminLoadGamesBtn.addEventListener("click", loadAdminGames);
@@ -2543,7 +3021,34 @@
           throw new Error(data?.message || "Não foi possível carregar os participantes.");
         }
 
-        appState.publicData.participantes = data.participantes || [];
+        let participantes = data.participantes || [];
+        const selectedGroup = normalizeGroupCode(participantsGroupSelect?.value || "GERAL");
+
+        if (selectedGroup !== "GERAL") {
+          participantsList.innerHTML = `<div class="viewer-message">Filtrando participantes do grupo selecionado...</div>`;
+
+          const detalhes = await Promise.all(participantes.map(async participante => {
+            try {
+              const detalhe = await fetchParticipantDetailJsonp(participante.id_participante);
+              return detalhe && detalhe.status === "sucesso" && detalhe.participante
+                ? detalhe.participante
+                : participante;
+            } catch (error) {
+              console.warn("Não foi possível conferir os grupos do participante.", participante, error);
+              return participante;
+            }
+          }));
+
+          participantes = detalhes.filter(participante => {
+            const grupos = participante.grupos || [];
+            return grupos.some(grupo => normalizeGroupCode(grupo.codigo || grupo.codigo_grupo || grupo.nome) === selectedGroup);
+          });
+        }
+
+        appState.publicData.participantes = participantes;
+        participantPredictionView.innerHTML = `<div class="viewer-empty">Nenhum participante selecionado.</div>`;
+        participantViewTitle.textContent = "Palpites do participante";
+        participantViewSubtitle.textContent = "Selecione uma pessoa na lista para ver os resultados fixos da fase de grupos e do mata-mata.";
 
         try {
           const realGamesData = await fetchRealGamesJsonp();
@@ -2608,6 +3113,14 @@
       }
 
       try {
+        const selectedGroup = comparisonGroupSelect?.value || "GERAL";
+
+        if (selectedGroup !== "GERAL") {
+          const rows = await loadComparisonRowsForSelectedGroup(selectedGroup);
+          renderComparisonRows(rows);
+          return;
+        }
+
         const data = await fetchComparisonJsonp();
 
         if (!data || data.status !== "sucesso") {
@@ -2624,6 +3137,41 @@
           refreshComparisonBtn.textContent = "Atualizar comparativo";
         }
       }
+    }
+
+    async function loadComparisonRowsForSelectedGroup(groupCode) {
+      const normalizedGroup = normalizeGroupCode(groupCode);
+      const [participantsData, realGamesData] = await Promise.all([
+        fetchParticipantsSummaryJsonp(),
+        fetchRealGamesJsonp()
+      ]);
+
+      if (!participantsData || participantsData.status !== "sucesso") {
+        throw new Error(participantsData?.message || "Não foi possível carregar participantes.");
+      }
+
+      if (!realGamesData || realGamesData.status !== "sucesso") {
+        throw new Error(realGamesData?.message || "Não foi possível carregar jogos reais.");
+      }
+
+      const summaries = participantsData.participantes || [];
+      const details = await Promise.all(
+        summaries.map(async participant => {
+          try {
+            const detailData = await fetchParticipantDetailJsonp(participant.id_participante);
+            return detailData && detailData.status === "sucesso" ? detailData.participante : null;
+          } catch (error) {
+            return null;
+          }
+        })
+      );
+
+      const participantsInGroup = details.filter(participant => {
+        if (!participant) return false;
+        return (participant.grupos || []).some(group => normalizeGroupCode(group.codigo) === normalizedGroup);
+      });
+
+      return calculateComparisonRows(participantsInGroup, realGamesData.jogos || []);
     }
 
     function calculateComparisonRows(participantes, jogosReais) {
@@ -2721,10 +3269,10 @@
         .replace(/[^A-Z0-9-]/g, "");
     }
 
-    async function loadGroupsForSelect(selectElement, includeGeneral = true) {
+    async function loadGroupsForSelect(selectElement, includeGeneral = true, preferredValue = null) {
       if (!selectElement) return;
 
-      const selected = selectElement.value || "GERAL";
+      const selected = preferredValue || selectElement.value || "GERAL";
 
       try {
         const data = await fetchGroupsJsonp();
@@ -2735,6 +3283,7 @@
 
         if (!groupsList.length) {
           selectElement.innerHTML = `<option value="GERAL">Geral</option>`;
+          selectElement.value = "GERAL";
           return;
         }
 
@@ -2760,13 +3309,26 @@
       return loadGroupsForSelect(comparisonGroupSelect, true);
     }
 
-    function loadGroupsForParticipants() {
-      return loadGroupsForSelect(participantsGroupSelect, true);
+    function loadGroupsForParticipants(preferredValue = null) {
+      return loadGroupsForSelect(participantsGroupSelect, true, preferredValue);
+    }
+
+    async function refreshParticipantsGroupsAndList(preferredValue = "GERAL") {
+      await loadGroupsForParticipants(preferredValue);
+
+      if (participantsGroupSelect) {
+        const normalizedPreferred = normalizeGroupCode(preferredValue || "GERAL");
+        const optionExists = [...participantsGroupSelect.options].some(option => option.value === normalizedPreferred);
+        participantsGroupSelect.value = optionExists ? normalizedPreferred : "GERAL";
+      }
+
+      await loadParticipantsData();
     }
 
     async function loadGroupsForSubmit() {
       if (!existingGroupsCheckboxes) return;
 
+      const selectedValues = getCheckedGroupValues();
       existingGroupsCheckboxes.innerHTML = `<div class="group-empty-message">Carregando grupos...</div>`;
 
       try {
@@ -2777,33 +3339,128 @@
         }
 
         const groupsList = (data.grupos || [])
-          .filter(group => normalizeGroupCode(group.codigo) !== "GERAL");
+          .filter(group => normalizeGroupCode(group.codigo) !== "GERAL")
+          .map(group => ({
+            codigo: normalizeGroupCode(group.codigo),
+            nome: group.nome || normalizeGroupCode(group.codigo),
+            origem: "existente"
+          }));
 
-        if (!groupsList.length) {
-          existingGroupsCheckboxes.innerHTML = `<div class="group-empty-message">Nenhum grupo criado ainda.</div>`;
-          return;
+        availableExistingGroups = groupsList;
+        renderGroupCheckboxes(availableExistingGroups, selectedValues);
+      } catch (error) {
+        console.warn(error);
+        renderGroupCheckboxes(availableExistingGroups, selectedValues);
+
+        const existingMessage = existingGroupsCheckboxes.querySelector(".group-empty-message");
+        if (!existingMessage && !pendingCreatedGroups.length) {
+          existingGroupsCheckboxes.innerHTML = `<div class="group-empty-message">Não foi possível carregar os grupos.</div>`;
         }
+      }
+    }
 
-        const selectedValues = new Set(
-          [...existingGroupsCheckboxes.querySelectorAll('input[type="checkbox"]:checked')]
-            .map(input => input.value)
-        );
+    function getCheckedGroupValues() {
+      if (!existingGroupsCheckboxes) return new Set();
 
-        existingGroupsCheckboxes.innerHTML = groupsList.map(group => {
-          const code = normalizeGroupCode(group.codigo);
+      return new Set(
+        [...existingGroupsCheckboxes.querySelectorAll('input[type="checkbox"]:checked')]
+          .map(input => input.value)
+      );
+    }
+
+    function renderGroupCheckboxes(existingGroups = [], selectedValues = getCheckedGroupValues()) {
+      if (!existingGroupsCheckboxes) return;
+
+      const normalizedExisting = existingGroups
+        .filter(group => group.codigo && group.codigo !== "GERAL")
+        .map(group => ({
+          codigo: normalizeGroupCode(group.codigo),
+          nome: group.nome || normalizeGroupCode(group.codigo),
+          origem: "existente"
+        }));
+
+      const localGroups = pendingCreatedGroups.map(group => ({
+        codigo: group.codigo,
+        nome: group.nome,
+        origem: "novo"
+      }));
+
+      const allGroups = [...normalizedExisting, ...localGroups];
+
+      if (!allGroups.length) {
+        existingGroupsCheckboxes.innerHTML = `<div class="group-empty-message">Nenhum grupo criado ainda. Você pode criar um novo grupo acima.</div>`;
+        updateSubmitGroupsPreview();
+        return;
+      }
+
+      const seen = new Set();
+      existingGroupsCheckboxes.innerHTML = allGroups
+        .filter(group => {
+          const key = group.origem === "novo" ? group.codigo : normalizeGroupCode(group.codigo);
+          if (seen.has(key)) return false;
+          seen.add(key);
+          return true;
+        })
+        .map(group => {
+          const code = group.codigo;
           const name = group.nome || code;
-          const checked = selectedValues.has(code) ? " checked" : "";
+          const isNew = group.origem === "novo";
+          const checked = selectedValues.has(code) || isNew ? " checked" : "";
+          const labelSuffix = isNew ? "Novo grupo" : code;
+
           return `
             <label class="group-checkbox">
-              <input type="checkbox" value="${escapeHtml(code)}" data-group-name="${escapeHtml(name)}"${checked} />
-              <span>${escapeHtml(name)} (${escapeHtml(code)})</span>
+              <input type="checkbox" value="${escapeHtml(code)}" data-group-name="${escapeHtml(name)}" data-group-origin="${escapeHtml(group.origem)}"${checked} />
+              <span>${escapeHtml(name)} (${escapeHtml(labelSuffix)})</span>
             </label>
           `;
         }).join("");
-      } catch (error) {
-        console.warn(error);
-        existingGroupsCheckboxes.innerHTML = `<div class="group-empty-message">Não foi possível carregar os grupos.</div>`;
+
+      updateSubmitGroupsPreview();
+    }
+
+    function confirmCreateGroupSelection() {
+      if (!newGroupNameInput) return;
+
+      const name = newGroupNameInput.value.trim();
+
+      if (!name) {
+        if (createGroupMessage) createGroupMessage.textContent = "Digite um nome para o grupo.";
+        newGroupNameInput.focus();
+        return;
       }
+
+      const key = `NOVO-${name.toLowerCase()}`;
+      const alreadyExists = pendingCreatedGroups.some(group => group.codigo === key)
+        || [...(existingGroupsCheckboxes?.querySelectorAll('input[type="checkbox"]') || [])]
+          .some(input => String(input.dataset.groupName || "").toLowerCase() === name.toLowerCase());
+
+      if (!alreadyExists) {
+        pendingCreatedGroups.push({
+          codigo: key,
+          nome: name,
+          origem: "novo"
+        });
+      }
+
+      newGroupNameInput.value = "";
+      if (createGroupMessage) createGroupMessage.textContent = `Grupo "${name}" adicionado e selecionado.`;
+      const selectedValues = getCheckedGroupValues();
+      selectedValues.add(key);
+
+      const visibleExistingGroups = [...(existingGroupsCheckboxes?.querySelectorAll('input[type="checkbox"]') || [])]
+        .filter(input => input.dataset.groupOrigin !== "novo")
+        .map(input => ({
+          codigo: normalizeGroupCode(input.value),
+          nome: input.dataset.groupName || normalizeGroupCode(input.value),
+          origem: "existente"
+        }))
+        .filter(group => group.codigo && group.codigo !== "GERAL");
+
+      const baseGroups = availableExistingGroups.length ? availableExistingGroups : visibleExistingGroups;
+      renderGroupCheckboxes(baseGroups, selectedValues);
+
+      if (enterGroupPanel) enterGroupPanel.classList.remove("hidden");
     }
 
     function getSubmissionGroups() {
@@ -2811,6 +3468,15 @@
         .map(input => {
           const code = normalizeGroupCode(input.value);
           const name = input.dataset.groupName || code;
+          const origin = input.dataset.groupOrigin || "existente";
+
+          if (origin === "novo") {
+            return {
+              codigo: "",
+              nome: name,
+              origem: "novo"
+            };
+          }
 
           return {
             codigo: code,
@@ -2818,20 +3484,10 @@
             origem: "existente"
           };
         })
-        .filter(group => group.codigo && group.codigo !== "GERAL");
+        .filter(group => (group.origem === "novo" && group.nome) || (group.codigo && group.codigo !== "GERAL"));
 
-      const newGroupName = String(newGroupNameInput?.value || "").trim();
       const groupsPayload = [{ codigo: "GERAL", nome: "Geral", origem: "padrao" }];
-
       selectedGroups.forEach(group => groupsPayload.push(group));
-
-      if (newGroupName) {
-        groupsPayload.push({
-          codigo: "",
-          nome: newGroupName,
-          origem: "novo"
-        });
-      }
 
       const unique = {};
       groupsPayload.forEach(group => {
@@ -3889,11 +4545,10 @@
 
       participantsList.innerHTML = participantes.map(participante => {
         const resumo = participante.resumo_final || {};
-        const campeao = resumo.campeao ? `Campeão: ${escapeHtml(resumo.campeao)}` : "Sem campeão registrado";
+        const campeao = `Campeão: ${escapeHtml(resumo.campeao || "—")}`;
         return `
           <button class="participant-card" type="button" data-participant-id="${escapeHtml(participante.id_participante)}">
             <strong>${escapeHtml(participante.nome || "Participante")}</strong>
-            <span>${escapeHtml(formatDisplayDate(participante.data_envio))}</span>
             <span>${campeao}</span>
           </button>
         `;
@@ -4327,7 +4982,7 @@
           throw new Error(`O teste preencheu a fase de grupos, mas ainda faltaram ${validation.missing} jogos do mata-mata.`);
         }
 
-        alert("Teste aleatório preenchido com sucesso. O botão Enviar palpite foi liberado.");
+        alert("Resultados aleatórios preenchidos com sucesso");
         knockoutPage.scrollIntoView({ behavior: "smooth", block: "start" });
       } catch (error) {
         console.error(error);
@@ -4506,12 +5161,17 @@
 
         showModalMessage("Palpite completo enviado! Abrindo a lista de participantes...", "success");
         submitForm.reset();
+        pendingCreatedGroups = [];
+        if (existingGroupsCheckboxes) {
+          existingGroupsCheckboxes.innerHTML = `<div class="group-empty-message">Carregando grupos...</div>`;
+        }
+        if (createGroupMessage) createGroupMessage.textContent = "";
         if (enterGroupPanel) enterGroupPanel.classList.add("hidden");
         if (createGroupPanel) createGroupPanel.classList.add("hidden");
         updateSubmitGroupsPreview();
         submitDialog.close();
         showMainMode("participants");
-        await loadParticipantsData();
+        await refreshParticipantsGroupsAndList("GERAL");
 
         if (appState.publicData.participantes.length > 0) {
           selectParticipant(appState.publicData.participantes[0].id_participante);
