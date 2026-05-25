@@ -515,8 +515,11 @@
       display: none;
     }
 
-    .group-multi-select {
-      min-height: 118px;
+    .group-checkbox-list {
+      display: grid;
+      gap: 8px;
+      max-height: 170px;
+      overflow: auto;
       border: 1px solid var(--line);
       border-radius: 12px;
       padding: 10px;
@@ -524,8 +527,28 @@
       font-size: 14px;
     }
 
-    .group-multi-select option {
-      padding: 7px;
+    .group-checkbox {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: #fbfcfe;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .group-checkbox input {
+      width: auto;
+      margin: 0;
+    }
+
+    .group-empty-message {
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.4;
+      padding: 4px;
     }
 
     .group-chip-list {
@@ -740,6 +763,14 @@
       color: var(--muted);
       font-size: 13px;
       line-height: 1.4;
+    }
+
+    .participants-panel-header select {
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 10px;
+      background: #fff;
+      font-size: 14px;
     }
 
     .participants-list {
@@ -1422,6 +1453,12 @@
           <div class="participants-panel-header">
             <h2>Participantes</h2>
             <p>Veja quem já enviou o bolão e abra os palpites salvos.</p>
+            <label>
+              Filtrar por grupo
+              <select id="participantsGroupSelect">
+                <option value="GERAL">Geral</option>
+              </select>
+            </label>
             <button class="btn-secondary" type="button" id="refreshParticipantsBtn">Atualizar lista</button>
           </div>
           <div class="participants-list" id="participantsList">
@@ -1503,10 +1540,10 @@
           <div class="group-panel hidden" id="enterGroupPanel">
             <label>
               Selecionar grupos existentes
-              <select id="existingGroupsSelect" class="group-multi-select" multiple>
-                <option disabled>Carregando grupos...</option>
-              </select>
-              <span class="group-help">Você pode selecionar mais de um grupo. O Geral não aparece aqui porque já entra automaticamente.</span>
+              <div id="existingGroupsCheckboxes" class="group-checkbox-list">
+                <div class="group-empty-message">Carregando grupos...</div>
+              </div>
+              <span class="group-help">Marque ou desmarque os grupos que quiser. O Geral não aparece aqui porque já entra automaticamente.</span>
             </label>
           </div>
 
@@ -1649,6 +1686,7 @@
     const participantsPage = document.getElementById("participantsPage");
     const participantsList = document.getElementById("participantsList");
     const refreshParticipantsBtn = document.getElementById("refreshParticipantsBtn");
+    const participantsGroupSelect = document.getElementById("participantsGroupSelect");
     const participantPredictionView = document.getElementById("participantPredictionView");
     const participantViewTitle = document.getElementById("participantViewTitle");
     const participantViewSubtitle = document.getElementById("participantViewSubtitle");
@@ -1664,7 +1702,7 @@
     const showCreateGroupBtn = document.getElementById("showCreateGroupBtn");
     const enterGroupPanel = document.getElementById("enterGroupPanel");
     const createGroupPanel = document.getElementById("createGroupPanel");
-    const existingGroupsSelect = document.getElementById("existingGroupsSelect");
+    const existingGroupsCheckboxes = document.getElementById("existingGroupsCheckboxes");
     const newGroupNameInput = document.getElementById("newGroupNameInput");
     const submitGroupsPreview = document.getElementById("submitGroupsPreview");
 
@@ -1766,9 +1804,16 @@
       });
       navParticipantesBtn.addEventListener("click", () => {
         showMainMode("participants");
+        loadGroupsForParticipants();
         loadParticipantsData();
       });
-      refreshParticipantsBtn.addEventListener("click", loadParticipantsData);
+      refreshParticipantsBtn.addEventListener("click", () => {
+        loadGroupsForParticipants();
+        loadParticipantsData();
+      });
+      if (participantsGroupSelect) {
+        participantsGroupSelect.addEventListener("change", loadParticipantsData);
+      }
       if (refreshRealGamesBtn) {
         refreshRealGamesBtn.addEventListener("click", loadRealGamesData);
       }
@@ -1798,8 +1843,8 @@
           createGroupPanel.classList.toggle("hidden");
         });
       }
-      if (existingGroupsSelect) {
-        existingGroupsSelect.addEventListener("change", updateSubmitGroupsPreview);
+      if (existingGroupsCheckboxes) {
+        existingGroupsCheckboxes.addEventListener("change", updateSubmitGroupsPreview);
       }
       if (newGroupNameInput) {
         newGroupNameInput.addEventListener("input", updateSubmitGroupsPreview);
@@ -2524,7 +2569,9 @@
     }
 
     function fetchParticipantsSummaryJsonp() {
-      return fetchJsonpAction("participantes_resumo", "bolaoParticipantesResumo");
+      return fetchJsonpAction("participantes_resumo", "bolaoParticipantesResumo", {
+        grupo: participantsGroupSelect?.value || "GERAL"
+      });
     }
 
     function fetchParticipantDetailJsonp(participantId) {
@@ -2713,10 +2760,14 @@
       return loadGroupsForSelect(comparisonGroupSelect, true);
     }
 
-    async function loadGroupsForSubmit() {
-      if (!existingGroupsSelect) return;
+    function loadGroupsForParticipants() {
+      return loadGroupsForSelect(participantsGroupSelect, true);
+    }
 
-      existingGroupsSelect.innerHTML = `<option disabled>Carregando grupos...</option>`;
+    async function loadGroupsForSubmit() {
+      if (!existingGroupsCheckboxes) return;
+
+      existingGroupsCheckboxes.innerHTML = `<div class="group-empty-message">Carregando grupos...</div>`;
 
       try {
         const data = await fetchGroupsJsonp();
@@ -2729,29 +2780,37 @@
           .filter(group => normalizeGroupCode(group.codigo) !== "GERAL");
 
         if (!groupsList.length) {
-          existingGroupsSelect.innerHTML = `<option disabled>Nenhum grupo criado ainda</option>`;
+          existingGroupsCheckboxes.innerHTML = `<div class="group-empty-message">Nenhum grupo criado ainda.</div>`;
           return;
         }
 
-        const selectedValues = new Set([...existingGroupsSelect.selectedOptions].map(option => option.value));
+        const selectedValues = new Set(
+          [...existingGroupsCheckboxes.querySelectorAll('input[type="checkbox"]:checked')]
+            .map(input => input.value)
+        );
 
-        existingGroupsSelect.innerHTML = groupsList.map(group => {
+        existingGroupsCheckboxes.innerHTML = groupsList.map(group => {
           const code = normalizeGroupCode(group.codigo);
-          const selected = selectedValues.has(code) ? " selected" : "";
-          return `<option value="${escapeHtml(code)}"${selected}>${escapeHtml(group.nome || code)} (${escapeHtml(code)})</option>`;
+          const name = group.nome || code;
+          const checked = selectedValues.has(code) ? " checked" : "";
+          return `
+            <label class="group-checkbox">
+              <input type="checkbox" value="${escapeHtml(code)}" data-group-name="${escapeHtml(name)}"${checked} />
+              <span>${escapeHtml(name)} (${escapeHtml(code)})</span>
+            </label>
+          `;
         }).join("");
       } catch (error) {
         console.warn(error);
-        existingGroupsSelect.innerHTML = `<option disabled>Não foi possível carregar os grupos</option>`;
+        existingGroupsCheckboxes.innerHTML = `<div class="group-empty-message">Não foi possível carregar os grupos.</div>`;
       }
     }
 
     function getSubmissionGroups() {
-      const selectedGroups = [...(existingGroupsSelect?.selectedOptions || [])]
-        .map(option => {
-          const code = normalizeGroupCode(option.value);
-          const label = String(option.textContent || code);
-          const name = label.replace(/\s*\([^)]*\)\s*$/, "").trim();
+      const selectedGroups = [...(existingGroupsCheckboxes?.querySelectorAll('input[type="checkbox"]:checked') || [])]
+        .map(input => {
+          const code = normalizeGroupCode(input.value);
+          const name = input.dataset.groupName || code;
 
           return {
             codigo: code,
@@ -3820,7 +3879,8 @@
       });
 
       if (!participantes.length) {
-        participantsList.innerHTML = `<div class="viewer-message">Nenhum participante enviado ainda.</div>`;
+        const groupLabel = participantsGroupSelect?.options[participantsGroupSelect.selectedIndex]?.textContent || "Geral";
+        participantsList.innerHTML = `<div class="viewer-message">Nenhum participante encontrado em ${escapeHtml(groupLabel)}.</div>`;
         participantPredictionView.innerHTML = `<div class="viewer-empty">Nenhum participante selecionado.</div>`;
         participantViewTitle.textContent = "Palpites do participante";
         participantViewSubtitle.textContent = "Quando alguém enviar o bolão, o nome aparecerá na lista ao lado.";
