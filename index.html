@@ -4286,11 +4286,11 @@
           <td>${escapeHtml(jogo.fase || "")}</td>
           <td>${escapeHtml(jogo.grupo || "")}</td>
           <td>${escapeHtml(jogo.jogo_id || "")}</td>
-          <td><input class="admin-team-input" data-field="time_casa" value="${escapeHtml(getAdminDisplayTeamName(jogo.time_casa || ""))}" /></td>
+          <td><input class="admin-team-input" data-field="time_casa" value="${escapeHtml(getAdminTeamInputValue(jogo, "time_casa"))}" /></td>
           <td><input class="admin-input" type="number" min="0" max="99" data-field="gols_casa" value="${escapeHtml(jogo.gols_casa ?? "")}" /></td>
           <td><input class="admin-input" type="number" min="0" max="99" data-field="gols_fora" value="${escapeHtml(jogo.gols_fora ?? "")}" /></td>
-          <td><input class="admin-team-input" data-field="time_fora" value="${escapeHtml(getAdminDisplayTeamName(jogo.time_fora || ""))}" /></td>
-          <td><input class="admin-team-input" data-field="vencedor" value="${escapeHtml(jogo.vencedor || "")}" /></td>
+          <td><input class="admin-team-input" data-field="time_fora" value="${escapeHtml(getAdminTeamInputValue(jogo, "time_fora"))}" /></td>
+          <td><input class="admin-team-input" data-field="vencedor" value="${escapeHtml(hasRealScoreFilled(jogo) ? (jogo.vencedor || "") : "")}" /></td>
           <td>
             <select class="admin-select" data-field="status">
               <option value="Pendente" ${String(jogo.status || "Pendente") === "Pendente" ? "selected" : ""}>Pendente</option>
@@ -4323,7 +4323,7 @@
         const index = Number(row.dataset.adminRow);
         const jogo = jogos[index] || {};
         const isGroupStage = normalizePhase(jogo.fase) === "fase de grupos";
-        if (isGroupStage) return;
+        if (isGroupStage || !hasRealScoreFilled(jogo)) return;
 
         ["time_casa", "time_fora"].forEach(field => {
           const input = row.querySelector(`[data-field="${field}"]`);
@@ -4352,7 +4352,7 @@
         const original = appState.publicData.jogosReais[index] || {};
         const getValue = field => row.querySelector(`[data-field="${field}"]`)?.value?.trim() || "";
 
-        return {
+        return normalizeAdminKnockoutPayloadBeforeSave({
           fase: original.fase || "",
           grupo: original.grupo || "",
           jogo_id: original.jogo_id || "",
@@ -4362,7 +4362,7 @@
           time_fora: getValue("time_fora"),
           vencedor: getValue("vencedor"),
           status: getValue("status") || "Pendente"
-        };
+        });
       });
     }
 
@@ -4602,11 +4602,11 @@
                 ${jogosDaFase.map(jogo => `
                   <tr>
                     <td>${escapeHtml(jogo.jogo_id || "")}</td>
-                    <td class="team">${escapeHtml(resolveRealTeamName(jogo.time_casa || ""))}</td>
+                    <td class="team">${escapeHtml(getRealKnockoutDisplayTeam(jogo, "time_casa"))}</td>
                     <td><span class="readonly-score">${formatScoreCell(jogo.gols_casa)}</span></td>
                     <td><span class="readonly-score">${formatScoreCell(jogo.gols_fora)}</span></td>
-                    <td class="team">${escapeHtml(resolveRealTeamName(jogo.time_fora || ""))}</td>
-                    <td>${escapeHtml(jogo.vencedor || "—")}</td>
+                    <td class="team">${escapeHtml(getRealKnockoutDisplayTeam(jogo, "time_fora"))}</td>
+                    <td>${escapeHtml(getRealGameWinnerForDisplay(jogo) || "—")}</td>
                     <td><span class="tag ${jogo.status === "Finalizado" ? "tag-qualified" : "tag-info"}">${escapeHtml(jogo.status || "Pendente")}</span></td>
                   </tr>
                 `).join("")}
@@ -4615,6 +4615,122 @@
           </div>
         </article>
       `;
+    }
+
+
+    const REAL_KNOCKOUT_PLACEHOLDERS = {
+      "R32-73": { home: "2A", away: "2B" },
+      "R32-74": { home: "1E", away: "3º de A/B/C/D/F" },
+      "R32-75": { home: "1F", away: "2C" },
+      "R32-76": { home: "1C", away: "2F" },
+      "R32-77": { home: "1I", away: "3º de C/D/F/G/H" },
+      "R32-78": { home: "2E", away: "2I" },
+      "R32-79": { home: "1A", away: "3º de C/E/F/H/I" },
+      "R32-80": { home: "1L", away: "3º de E/H/I/J/K" },
+      "R32-81": { home: "1D", away: "3º de B/E/F/I/J" },
+      "R32-82": { home: "1G", away: "3º de A/E/H/I/J" },
+      "R32-83": { home: "2K", away: "2L" },
+      "R32-84": { home: "1H", away: "2J" },
+      "R32-85": { home: "1B", away: "3º de E/F/G/I/J" },
+      "R32-86": { home: "1J", away: "2H" },
+      "R32-87": { home: "1K", away: "3º de D/E/I/J/L" },
+      "R32-88": { home: "2D", away: "2G" },
+      "R16-89": { home: "Vencedor M74", away: "Vencedor M77" },
+      "R16-90": { home: "Vencedor M73", away: "Vencedor M75" },
+      "R16-91": { home: "Vencedor M76", away: "Vencedor M78" },
+      "R16-92": { home: "Vencedor M79", away: "Vencedor M80" },
+      "R16-93": { home: "Vencedor M83", away: "Vencedor M84" },
+      "R16-94": { home: "Vencedor M81", away: "Vencedor M82" },
+      "R16-95": { home: "Vencedor M86", away: "Vencedor M88" },
+      "R16-96": { home: "Vencedor M85", away: "Vencedor M87" },
+      "QF-97": { home: "Vencedor M89", away: "Vencedor M90" },
+      "QF-98": { home: "Vencedor M93", away: "Vencedor M94" },
+      "QF-99": { home: "Vencedor M91", away: "Vencedor M92" },
+      "QF-100": { home: "Vencedor M95", away: "Vencedor M96" },
+      "SF-101": { home: "Vencedor M97", away: "Vencedor M98" },
+      "SF-102": { home: "Vencedor M99", away: "Vencedor M100" },
+      "FINAL-104": { home: "Vencedor M101", away: "Vencedor M102" },
+      "THIRD-103": { home: "Perdedor M101", away: "Perdedor M102" }
+    };
+
+    function getRealKnockoutPlaceholders(jogoId) {
+      return REAL_KNOCKOUT_PLACEHOLDERS[String(jogoId || "").trim()] || null;
+    }
+
+    function hasRealScoreFilled(jogo) {
+      return jogo
+        && jogo.gols_casa !== ""
+        && jogo.gols_casa !== null
+        && jogo.gols_casa !== undefined
+        && jogo.gols_fora !== ""
+        && jogo.gols_fora !== null
+        && jogo.gols_fora !== undefined;
+    }
+
+    function isRealKnockoutGame(jogo) {
+      return jogo && normalizePhase(jogo.fase) !== "fase de grupos";
+    }
+
+    function getRealKnockoutDisplayTeam(jogo, field) {
+      if (!isRealKnockoutGame(jogo)) {
+        return jogo?.[field] || "";
+      }
+
+      const placeholders = getRealKnockoutPlaceholders(jogo.jogo_id);
+      const placeholder = field === "time_casa" ? placeholders?.home : placeholders?.away;
+
+      if (!hasRealScoreFilled(jogo)) {
+        return placeholder || jogo?.[field] || "";
+      }
+
+      return resolveRealTeamName(placeholder || jogo?.[field] || "");
+    }
+
+    function getRealGameWinnerForDisplay(jogo) {
+      if (!hasRealScoreFilled(jogo)) return "";
+
+      if (jogo.vencedor) {
+        return resolveRealTeamName(jogo.vencedor);
+      }
+
+      const golsCasa = Number(jogo.gols_casa);
+      const golsFora = Number(jogo.gols_fora);
+
+      if (golsCasa > golsFora) {
+        return getRealKnockoutDisplayTeam(jogo, "time_casa");
+      }
+
+      if (golsFora > golsCasa) {
+        return getRealKnockoutDisplayTeam(jogo, "time_fora");
+      }
+
+      return "";
+    }
+
+    function normalizeAdminKnockoutPayloadBeforeSave(jogo) {
+      if (!isRealKnockoutGame(jogo)) return jogo;
+
+      const placeholders = getRealKnockoutPlaceholders(jogo.jogo_id);
+
+      if (!hasRealScoreFilled(jogo) && placeholders) {
+        return {
+          ...jogo,
+          time_casa: placeholders.home,
+          time_fora: placeholders.away,
+          vencedor: "",
+          status: "Pendente"
+        };
+      }
+
+      return jogo;
+    }
+
+    function getAdminTeamInputValue(jogo, field) {
+      if (!isRealKnockoutGame(jogo)) {
+        return jogo?.[field] || "";
+      }
+
+      return getRealKnockoutDisplayTeam(jogo, field);
     }
 
     function resolveRealTeamName(value) {
@@ -4636,13 +4752,13 @@
       const winnerNumber = parseWinnerReference(original);
       if (winnerNumber) {
         const game = findRealGameByNumber(winnerNumber);
-        return game?.vencedor || original;
+        return game && hasRealScoreFilled(game) ? getRealGameWinnerForDisplay(game) || original : original;
       }
 
       const loserNumber = parseLoserReference(original);
       if (loserNumber) {
         const game = findRealGameByNumber(loserNumber);
-        return game ? getLoserFromGame(game) || original : original;
+        return game && hasRealScoreFilled(game) ? getLoserFromGame(game) || original : original;
       }
 
       return original;
