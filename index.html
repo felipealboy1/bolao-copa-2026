@@ -2052,6 +2052,21 @@
       [1, 2]
     ];
 
+    const groupPairings = {
+      A: [[0, 1], [2, 3], [3, 1], [0, 2], [3, 0], [1, 2]],
+      B: [[0, 1], [2, 3], [3, 1], [0, 2], [3, 0], [1, 2]],
+      C: [[2, 3], [0, 1], [0, 2], [3, 1], [3, 0], [1, 2]],
+      D: [[0, 1], [2, 3], [3, 1], [0, 2], [3, 0], [1, 2]],
+      E: [[2, 3], [0, 1], [0, 2], [3, 1], [1, 2], [3, 0]],
+      F: [[0, 1], [3, 2], [0, 3], [2, 1], [1, 3], [2, 0]],
+      G: [[2, 3], [0, 1], [0, 2], [3, 1], [1, 2], [3, 0]],
+      H: [[2, 3], [0, 1], [3, 1], [0, 2], [1, 2], [3, 0]],
+      I: [[0, 1], [3, 2], [2, 1], [0, 3], [2, 0], [1, 3]],
+      J: [[0, 1], [2, 3], [0, 2], [3, 1], [1, 2], [3, 0]],
+      K: [[0, 1], [2, 3], [0, 2], [3, 1], [3, 0], [1, 2]],
+      L: [[2, 3], [0, 1], [0, 2], [3, 1], [3, 0], [1, 2]]
+    };
+
     const stageLabels = {
       R32: "Fase de 32",
       R16: "Oitavas de final",
@@ -2176,7 +2191,9 @@
       appState.matches = [];
 
       Object.entries(groups).forEach(([groupKey, teams]) => {
-        pairings.forEach(([homeIndex, awayIndex], pairingIndex) => {
+        const orderedPairings = groupPairings[groupKey] || pairings;
+
+        orderedPairings.forEach(([homeIndex, awayIndex], pairingIndex) => {
           appState.matches.push({
             grupo: groupKey,
             jogo_id: `${groupKey}${pairingIndex + 1}`,
