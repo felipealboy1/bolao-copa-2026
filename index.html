@@ -980,6 +980,45 @@
       box-shadow: 0 12px 28px rgba(16, 24, 40, .25);
     }
 
+
+    .floating-submit-btn {
+      position: fixed;
+      right: 18px;
+      bottom: 18px;
+      z-index: 40;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      min-width: 168px;
+      padding: 14px 18px;
+      border-radius: 999px;
+      background: var(--primary);
+      color: #fff;
+      border: 1px solid rgba(255, 255, 255, .24);
+      box-shadow: 0 14px 36px rgba(15, 118, 110, .32);
+      font-size: 15px;
+      font-weight: 900;
+    }
+
+    .floating-submit-btn:hover:not(:disabled) {
+      background: var(--primary-dark);
+      transform: translateY(-1px);
+      box-shadow: 0 18px 42px rgba(15, 118, 110, .38);
+    }
+
+    .floating-submit-btn:disabled {
+      background: #98a2b3;
+      color: #fff;
+      opacity: .92;
+      cursor: not-allowed;
+      box-shadow: 0 10px 26px rgba(16, 24, 40, .18);
+    }
+
+    .floating-submit-btn.hidden {
+      display: none !important;
+    }
+
     .admin-section {
       display: grid;
       gap: 18px;
@@ -1483,6 +1522,17 @@
         border-radius: 999px;
         padding: 10px 12px;
       }
+
+
+      .floating-submit-btn {
+        left: 16px;
+        right: 16px;
+        bottom: calc(14px + env(safe-area-inset-bottom, 0px));
+        width: auto;
+        min-width: 0;
+        padding: 14px 16px;
+        border-radius: 16px;
+      }
     }
 
     @media (max-width: 480px) {
@@ -1923,6 +1973,7 @@
   </main>
 
   <button class="admin-floating-btn hidden" type="button" id="adminFloatingBtn" aria-hidden="true" tabindex="-1">Admin</button>
+  <button class="floating-submit-btn hidden" type="button" id="floatingSubmitBtn" disabled>Enviar palpite</button>
 
   <dialog id="adminLoginDialog">
     <form method="dialog" class="modal-content" id="adminLoginForm">
@@ -1953,22 +2004,27 @@
   <dialog id="submitDialog">
     <form method="dialog" class="modal-content" id="submitForm">
       <h2>Enviar palpite completo</h2>
-      <p>Informe seus dados para identificar seus palpites da fase de grupos e do mata-mata.</p>
+      <p>Informe seu nome para identificar seus palpites. Email e telefone são opcionais.</p>
 
       <div class="form-grid">
         <label>
           Nome
-          <input type="text" id="nome" autocomplete="name" required />
+          <input type="text" id="nome" autocomplete="given-name" required />
         </label>
 
         <label>
-          Email
-          <input type="email" id="email" autocomplete="email" required />
+          Sobrenome
+          <input type="text" id="sobrenome" autocomplete="family-name" required />
         </label>
 
         <label>
-          Telefone
-          <input type="tel" id="telefone" autocomplete="tel" required />
+          Email (opcional)
+          <input type="email" id="email" autocomplete="email" />
+        </label>
+
+        <label>
+          Telefone (opcional)
+          <input type="tel" id="telefone" autocomplete="tel" />
         </label>
 
         <div>
@@ -2131,6 +2187,7 @@
     const thirdPlacesBody = document.getElementById("thirdPlacesBody");
     const progressText = document.getElementById("progressText");
     const openSubmitBtn = document.getElementById("openSubmitBtn");
+    const floatingSubmitBtn = document.getElementById("floatingSubmitBtn");
     const clearBtn = document.getElementById("clearBtn");
     const groupPage = document.getElementById("groupPage");
     const knockoutPage = document.getElementById("knockoutPage");
@@ -2185,6 +2242,9 @@
       loadGroupsForComparison();
       updateSubmitGroupsPreview();
       updatePageControls();
+      if (floatingSubmitBtn) {
+        floatingSubmitBtn.classList.toggle("hidden", appState.currentMode !== "simulator");
+      }
     }
 
     function buildMatches() {
@@ -2357,19 +2417,10 @@
         input.addEventListener("input", handleScoreInput);
       });
 
-      openSubmitBtn.addEventListener("click", () => {
-        clearModalMessage();
-        const validation = validateKnockoutComplete();
-
-        if (!validation.ok) {
-          alert(`Faltam ${validation.missing} jogos do mata-mata para preencher. Complete tudo até campeão e terceiro lugar.`);
-          return;
-        }
-
-        loadGroupsForSubmit();
-        updateSubmitGroupsPreview();
-        submitDialog.showModal();
-      });
+      openSubmitBtn.addEventListener("click", openSubmitDialogIfReady);
+      if (floatingSubmitBtn) {
+        floatingSubmitBtn.addEventListener("click", openSubmitDialogIfReady);
+      }
 
       closeDialogBtn.addEventListener("click", () => {
         submitDialog.close();
@@ -2382,6 +2433,20 @@
       });
 
       submitForm.addEventListener("submit", handleSubmit);
+    }
+
+    function openSubmitDialogIfReady() {
+      clearModalMessage();
+      const validation = validateKnockoutComplete();
+
+      if (!validation.ok) {
+        alert(`Faltam ${validation.missing} jogos do mata-mata para preencher. Complete tudo até campeão e terceiro lugar.`);
+        return;
+      }
+
+      loadGroupsForSubmit();
+      updateSubmitGroupsPreview();
+      submitDialog.showModal();
     }
 
     function handleScoreInput(event) {
@@ -3058,6 +3123,11 @@
     function updatePageControls() {
       const knockoutComplete = validateKnockoutComplete().ok;
       openSubmitBtn.disabled = !knockoutComplete;
+
+      if (floatingSubmitBtn) {
+        floatingSubmitBtn.disabled = !knockoutComplete;
+        floatingSubmitBtn.textContent = knockoutComplete ? "Enviar palpite" : "Complete o palpite";
+      }
     }
 
     function showMainMode(mode) {
@@ -3078,6 +3148,9 @@
       realGamesPage.classList.toggle("hidden", !isRealGames);
       participantsPage.classList.toggle("hidden", !isParticipants);
       adminPage.classList.toggle("hidden", !isAdmin);
+      if (floatingSubmitBtn) {
+        floatingSubmitBtn.classList.toggle("hidden", !isSimulator);
+      }
       progressText.classList.toggle("hidden", !isSimulator);
       navPalpiteBtn.classList.toggle("btn-active", isSimulator);
       navPontuacaoBtn.classList.toggle("btn-active", isScore);
@@ -5235,14 +5308,20 @@
         return;
       }
 
+      const primeiroNome = document.getElementById("nome").value.trim();
+      const sobrenome = document.getElementById("sobrenome").value.trim();
+      const nomeCompleto = [primeiroNome, sobrenome].filter(Boolean).join(" ");
+
       const participante = {
-        nome: document.getElementById("nome").value.trim(),
+        nome: nomeCompleto,
+        primeiro_nome: primeiroNome,
+        sobrenome: sobrenome,
         email: document.getElementById("email").value.trim(),
         telefone: document.getElementById("telefone").value.trim()
       };
 
-      if (!participante.nome || !participante.email || !participante.telefone) {
-        showModalMessage("Preencha nome, email e telefone.", "error");
+      if (!participante.primeiro_nome || !participante.sobrenome) {
+        showModalMessage("Preencha nome e sobrenome.", "error");
         return;
       }
 
