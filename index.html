@@ -5100,7 +5100,7 @@
         knockoutPage.scrollIntoView({ behavior: "smooth", block: "start" });
       } catch (error) {
         console.error(error);
-        alert(`Erro ao preencher teste aleatório: ${error.message}`);
+        alert(`Erro ao preencher resultados aleatórios: ${error.message}`);
       }
     }
 
@@ -5128,15 +5128,15 @@
     }
 
     function randomGroupGoals() {
-      return Math.floor(Math.random() * 5);
+      return Math.floor(Math.random() * 3);
     }
 
     function randomKnockoutScore() {
-      let home = Math.floor(Math.random() * 5);
-      let away = Math.floor(Math.random() * 5);
+      let home = Math.floor(Math.random() * 3);
+      let away = Math.floor(Math.random() * 3);
 
       while (home === away) {
-        away = Math.floor(Math.random() * 5);
+        away = Math.floor(Math.random() * 3);
       }
 
       return { home, away };
