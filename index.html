@@ -486,6 +486,97 @@
       line-height: 1.45;
     }
 
+    .group-help {
+      margin-top: 6px;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.4;
+      font-weight: 400;
+    }
+
+    .group-choice-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 8px;
+    }
+
+    .group-panel {
+      display: grid;
+      gap: 8px;
+      margin-top: 10px;
+      padding: 12px;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: #fbfcfe;
+    }
+
+    .group-panel.hidden {
+      display: none;
+    }
+
+    .group-multi-select {
+      min-height: 118px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 10px;
+      background: #fff;
+      font-size: 14px;
+    }
+
+    .group-multi-select option {
+      padding: 7px;
+    }
+
+    .group-chip-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 8px;
+    }
+
+    .group-chip {
+      display: inline-flex;
+      align-items: center;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 6px 10px;
+      background: #fbfcfe;
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .ranking-filter-card {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      box-shadow: var(--shadow);
+      padding: 16px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .ranking-filter-card label {
+      display: grid;
+      gap: 6px;
+      font-size: 14px;
+      font-weight: 800;
+      color: var(--text);
+    }
+
+    .ranking-filter-card select {
+      min-width: 240px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 10px;
+      background: #fff;
+      font-size: 14px;
+    }
+
     .participants-layout {
       display: grid;
       grid-template-columns: 320px 1fr;
@@ -1004,7 +1095,10 @@
           <h2>Fazer palpite</h2>
           <p>Preencha os resultados da fase de grupos. O mata-mata será montado automaticamente conforme os grupos forem concluídos.</p>
         </div>
-        <button class="btn-secondary" type="button" id="clearBtn">Limpar palpites</button>
+        <div class="actions">
+          <button class="btn-secondary" type="button" id="randomFillBtn">Preencher todos os jogos automaticamente</button>
+          <button class="btn-secondary" type="button" id="clearBtn">Limpar palpites</button>
+        </div>
       </section>
 
       <section class="grid" id="groupsContainer"></section>
@@ -1066,8 +1160,13 @@
           <p>Veja, jogo a jogo, como os participantes apostaram: vitória do time da casa, empate ou vitória do time de fora. Quando o jogo real estiver finalizado, a página também mostra qual grupo de apostas acertou.</p>
         </div>
 
-        <div class="real-games-toolbar">
-          <p>O comparativo usa os palpites enviados e os resultados preenchidos na aba <strong>JogosReais</strong>.</p>
+        <div class="ranking-filter-card">
+          <label>
+            Ver comparativo por grupo
+            <select id="comparisonGroupSelect">
+              <option value="GERAL">Geral</option>
+            </select>
+          </label>
           <button class="btn-secondary" type="button" id="refreshComparisonBtn">Atualizar comparativo</button>
         </div>
 
@@ -1102,6 +1201,15 @@
           <h2>Classificação do bolão</h2>
         </div>
 
+        <div class="ranking-filter-card">
+          <label>
+            Ver classificação por grupo
+            <select id="rankingGroupSelect">
+              <option value="GERAL">Geral</option>
+            </select>
+          </label>
+        </div>
+
         <div class="ranking-summary" id="rankingSummary">
           <div class="ranking-stat"><strong>—</strong><span>Participantes</span></div>
           <div class="ranking-stat"><strong>—</strong><span>Jogos reais finalizados</span></div>
@@ -1110,7 +1218,7 @@
         </div>
 
         <article class="ranking-card">
-          <h3>Ranking geral</h3>
+          <h3 id="rankingTitle">Ranking geral</h3>
           <div class="table-wrap">
             <table>
               <thead>
@@ -1383,6 +1491,41 @@
           <input type="tel" id="telefone" autocomplete="tel" required />
         </label>
 
+        <div>
+          <strong>Grupos</strong>
+          <p class="group-help">O grupo Geral é automático. Você também pode entrar em grupos existentes ou criar um novo grupo.</p>
+
+          <div class="group-choice-actions">
+            <button class="btn-secondary" type="button" id="showEnterGroupBtn">Entrar em grupo</button>
+            <button class="btn-secondary" type="button" id="showCreateGroupBtn">Criar grupo</button>
+          </div>
+
+          <div class="group-panel hidden" id="enterGroupPanel">
+            <label>
+              Selecionar grupos existentes
+              <select id="existingGroupsSelect" class="group-multi-select" multiple>
+                <option disabled>Carregando grupos...</option>
+              </select>
+              <span class="group-help">Você pode selecionar mais de um grupo. O Geral não aparece aqui porque já entra automaticamente.</span>
+            </label>
+          </div>
+
+          <div class="group-panel hidden" id="createGroupPanel">
+            <label>
+              Nome do novo grupo
+              <input type="text" id="newGroupNameInput" placeholder="Ex.: Família Alboy" />
+              <span class="group-help">Depois do envio, o grupo aparece na lista para outras pessoas entrarem.</span>
+            </label>
+          </div>
+
+          <div>
+            <strong>Grupos selecionados</strong>
+            <div class="group-chip-list" id="submitGroupsPreview">
+              <span class="group-chip">Geral</span>
+            </div>
+          </div>
+        </div>
+
         <label class="consent">
           <input type="checkbox" id="consentimento" required />
           <span>Autorizo o uso dos meus dados apenas para identificar meus palpites neste bolão e para contato sobre o resultado.</span>
@@ -1492,10 +1635,13 @@
     const comparisonPage = document.getElementById("comparisonPage");
     const comparisonTableBody = document.getElementById("comparisonTableBody");
     const refreshComparisonBtn = document.getElementById("refreshComparisonBtn");
+    const comparisonGroupSelect = document.getElementById("comparisonGroupSelect");
     const rankingPage = document.getElementById("rankingPage");
     const rankingTableBody = document.getElementById("rankingTableBody");
     const rankingSummary = document.getElementById("rankingSummary");
     const refreshRankingBtn = document.getElementById("refreshRankingBtn");
+    const rankingGroupSelect = document.getElementById("rankingGroupSelect");
+    const rankingTitle = document.getElementById("rankingTitle");
     const realGamesPage = document.getElementById("realGamesPage");
     const realGamesContainer = document.getElementById("realGamesContainer");
     const refreshRealGamesBtn = document.getElementById("refreshRealGamesBtn");
@@ -1513,12 +1659,23 @@
     const submitForm = document.getElementById("submitForm");
     const modalMessage = document.getElementById("modalMessage");
     const sendBtn = document.getElementById("sendBtn");
+    const randomFillBtn = document.getElementById("randomFillBtn");
+    const showEnterGroupBtn = document.getElementById("showEnterGroupBtn");
+    const showCreateGroupBtn = document.getElementById("showCreateGroupBtn");
+    const enterGroupPanel = document.getElementById("enterGroupPanel");
+    const createGroupPanel = document.getElementById("createGroupPanel");
+    const existingGroupsSelect = document.getElementById("existingGroupsSelect");
+    const newGroupNameInput = document.getElementById("newGroupNameInput");
+    const submitGroupsPreview = document.getElementById("submitGroupsPreview");
 
     function init() {
       buildMatches();
       renderGroups();
       calculateAll();
       bindEvents();
+      loadGroupsForRanking();
+      loadGroupsForComparison();
+      updateSubmitGroupsPreview();
       updatePageControls();
     }
 
@@ -1595,10 +1752,12 @@
       navPontuacaoBtn.addEventListener("click", () => showMainMode("score"));
       navClassificacaoBtn.addEventListener("click", () => {
         showMainMode("ranking");
+        loadGroupsForRanking();
         loadRankingData();
       });
       navComparativoBtn.addEventListener("click", () => {
         showMainMode("comparison");
+        loadGroupsForComparison();
         loadComparisonData();
       });
       navJogosReaisBtn.addEventListener("click", () => {
@@ -1616,7 +1775,35 @@
       if (refreshRankingBtn) {
         refreshRankingBtn.addEventListener("click", loadRankingData);
       }
-      refreshComparisonBtn.addEventListener("click", loadComparisonData);
+      if (refreshComparisonBtn) {
+        refreshComparisonBtn.addEventListener("click", loadComparisonData);
+      }
+      if (rankingGroupSelect) {
+        rankingGroupSelect.addEventListener("change", loadRankingData);
+      }
+      if (comparisonGroupSelect) {
+        comparisonGroupSelect.addEventListener("change", loadComparisonData);
+      }
+      if (randomFillBtn) {
+        randomFillBtn.addEventListener("click", fillAllRandomResults);
+      }
+      if (showEnterGroupBtn && enterGroupPanel) {
+        showEnterGroupBtn.addEventListener("click", () => {
+          enterGroupPanel.classList.toggle("hidden");
+          if (!enterGroupPanel.classList.contains("hidden")) loadGroupsForSubmit();
+        });
+      }
+      if (showCreateGroupBtn && createGroupPanel) {
+        showCreateGroupBtn.addEventListener("click", () => {
+          createGroupPanel.classList.toggle("hidden");
+        });
+      }
+      if (existingGroupsSelect) {
+        existingGroupsSelect.addEventListener("change", updateSubmitGroupsPreview);
+      }
+      if (newGroupNameInput) {
+        newGroupNameInput.addEventListener("input", updateSubmitGroupsPreview);
+      }
       adminFloatingBtn.addEventListener("click", openAdminLogin);
       closeAdminLoginBtn.addEventListener("click", () => adminLoginDialog.close());
       adminLoginForm.addEventListener("submit", handleAdminLogin);
@@ -1637,6 +1824,8 @@
           return;
         }
 
+        loadGroupsForSubmit();
+        updateSubmitGroupsPreview();
         submitDialog.showModal();
       });
 
@@ -2349,17 +2538,27 @@
     }
 
     function fetchRankingJsonp() {
-      return fetchJsonpAction("ranking", "bolaoRanking");
+      return fetchJsonpAction("ranking", "bolaoRanking", {
+        grupo: rankingGroupSelect?.value || "GERAL"
+      });
     }
 
     function fetchComparisonJsonp() {
-      return fetchJsonpAction("comparativo", "bolaoComparativo");
+      return fetchJsonpAction("comparativo", "bolaoComparativo", {
+        grupo: comparisonGroupSelect?.value || "GERAL"
+      });
+    }
+
+    function fetchGroupsJsonp() {
+      return fetchJsonpAction("grupos", "bolaoGrupos");
     }
 
     async function loadComparisonData() {
       comparisonTableBody.innerHTML = `<tr><td colspan="8" class="viewer-message">Carregando comparativo...</td></tr>`;
-      refreshComparisonBtn.disabled = true;
-      refreshComparisonBtn.textContent = "Carregando...";
+      if (refreshComparisonBtn) {
+        refreshComparisonBtn.disabled = true;
+        refreshComparisonBtn.textContent = "Carregando...";
+      }
 
       try {
         const data = await fetchComparisonJsonp();
@@ -2373,8 +2572,10 @@
         console.error(error);
         comparisonTableBody.innerHTML = `<tr><td colspan="8" class="viewer-message">Erro ao carregar comparativo: ${escapeHtml(error.message)}</td></tr>`;
       } finally {
-        refreshComparisonBtn.disabled = false;
-        refreshComparisonBtn.textContent = "Atualizar comparativo";
+        if (refreshComparisonBtn) {
+          refreshComparisonBtn.disabled = false;
+          refreshComparisonBtn.textContent = "Atualizar comparativo";
+        }
       }
     }
 
@@ -2466,6 +2667,132 @@
       `;
     }
 
+    function normalizeGroupCode(value) {
+      return String(value || "")
+        .trim()
+        .toUpperCase()
+        .replace(/[^A-Z0-9-]/g, "");
+    }
+
+    async function loadGroupsForSelect(selectElement, includeGeneral = true) {
+      if (!selectElement) return;
+
+      const selected = selectElement.value || "GERAL";
+
+      try {
+        const data = await fetchGroupsJsonp();
+        if (!data || data.status !== "sucesso") return;
+
+        const groupsList = (data.grupos || [])
+          .filter(group => includeGeneral || normalizeGroupCode(group.codigo) !== "GERAL");
+
+        if (!groupsList.length) {
+          selectElement.innerHTML = `<option value="GERAL">Geral</option>`;
+          return;
+        }
+
+        selectElement.innerHTML = groupsList.map(group => {
+          const code = normalizeGroupCode(group.codigo);
+          const suffix = code !== "GERAL" ? ` (${escapeHtml(code)})` : "";
+          return `<option value="${escapeHtml(code)}">${escapeHtml(group.nome || code)}${suffix}</option>`;
+        }).join("");
+
+        if ([...selectElement.options].some(option => option.value === selected)) {
+          selectElement.value = selected;
+        }
+      } catch (error) {
+        console.warn("Não foi possível carregar grupos.", error);
+      }
+    }
+
+    function loadGroupsForRanking() {
+      return loadGroupsForSelect(rankingGroupSelect, true);
+    }
+
+    function loadGroupsForComparison() {
+      return loadGroupsForSelect(comparisonGroupSelect, true);
+    }
+
+    async function loadGroupsForSubmit() {
+      if (!existingGroupsSelect) return;
+
+      existingGroupsSelect.innerHTML = `<option disabled>Carregando grupos...</option>`;
+
+      try {
+        const data = await fetchGroupsJsonp();
+
+        if (!data || data.status !== "sucesso") {
+          throw new Error(data?.message || "Erro ao carregar grupos.");
+        }
+
+        const groupsList = (data.grupos || [])
+          .filter(group => normalizeGroupCode(group.codigo) !== "GERAL");
+
+        if (!groupsList.length) {
+          existingGroupsSelect.innerHTML = `<option disabled>Nenhum grupo criado ainda</option>`;
+          return;
+        }
+
+        const selectedValues = new Set([...existingGroupsSelect.selectedOptions].map(option => option.value));
+
+        existingGroupsSelect.innerHTML = groupsList.map(group => {
+          const code = normalizeGroupCode(group.codigo);
+          const selected = selectedValues.has(code) ? " selected" : "";
+          return `<option value="${escapeHtml(code)}"${selected}>${escapeHtml(group.nome || code)} (${escapeHtml(code)})</option>`;
+        }).join("");
+      } catch (error) {
+        console.warn(error);
+        existingGroupsSelect.innerHTML = `<option disabled>Não foi possível carregar os grupos</option>`;
+      }
+    }
+
+    function getSubmissionGroups() {
+      const selectedGroups = [...(existingGroupsSelect?.selectedOptions || [])]
+        .map(option => {
+          const code = normalizeGroupCode(option.value);
+          const label = String(option.textContent || code);
+          const name = label.replace(/\s*\([^)]*\)\s*$/, "").trim();
+
+          return {
+            codigo: code,
+            nome: name || code,
+            origem: "existente"
+          };
+        })
+        .filter(group => group.codigo && group.codigo !== "GERAL");
+
+      const newGroupName = String(newGroupNameInput?.value || "").trim();
+      const groupsPayload = [{ codigo: "GERAL", nome: "Geral", origem: "padrao" }];
+
+      selectedGroups.forEach(group => groupsPayload.push(group));
+
+      if (newGroupName) {
+        groupsPayload.push({
+          codigo: "",
+          nome: newGroupName,
+          origem: "novo"
+        });
+      }
+
+      const unique = {};
+      groupsPayload.forEach(group => {
+        const key = group.codigo || `NOVO-${group.nome.toLowerCase()}`;
+        unique[key] = group;
+      });
+
+      return Object.values(unique);
+    }
+
+    function updateSubmitGroupsPreview() {
+      if (!submitGroupsPreview) return;
+
+      const groupsPayload = getSubmissionGroups();
+      submitGroupsPreview.innerHTML = groupsPayload.map(group => {
+        const suffix = group.codigo && group.codigo !== "GERAL" ? ` • ${escapeHtml(group.codigo)}` : "";
+        return `<span class="group-chip">${escapeHtml(group.nome)}${suffix}</span>`;
+      }).join("");
+    }
+
     async function loadRankingData() {
       rankingTableBody.innerHTML = `<tr><td colspan="9" class="viewer-message">Calculando classificação...</td></tr>`;
       if (refreshRankingBtn) {
@@ -2478,6 +2805,11 @@
 
         if (!data || data.status !== "sucesso") {
           throw new Error(data?.message || "Não foi possível carregar a classificação.");
+        }
+
+        if (rankingTitle && rankingGroupSelect) {
+          const selectedLabel = rankingGroupSelect.options[rankingGroupSelect.selectedIndex]?.textContent || "Geral";
+          rankingTitle.textContent = `Ranking — ${selectedLabel}`;
         }
 
         const ranking = (data.ranking || []).map(item => ({
@@ -4095,7 +4427,8 @@
         palpites: getPalpitesPayload(),
         classificacao: getClassificacaoPayload(),
         mata_mata: getMataMataPayload(),
-        resumo_final: getResumoFinalPayload()
+        resumo_final: getResumoFinalPayload(),
+        grupos: getSubmissionGroups()
       };
 
       sendBtn.disabled = true;
@@ -4113,6 +4446,9 @@
 
         showModalMessage("Palpite completo enviado! Abrindo a lista de participantes...", "success");
         submitForm.reset();
+        if (enterGroupPanel) enterGroupPanel.classList.add("hidden");
+        if (createGroupPanel) createGroupPanel.classList.add("hidden");
+        updateSubmitGroupsPreview();
         submitDialog.close();
         showMainMode("participants");
         await loadParticipantsData();
