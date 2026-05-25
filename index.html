@@ -2078,6 +2078,8 @@
         jogosReais: []
       },
       adminLoggedIn: false,
+      adminToken: "",
+      adminCredentials: null,
       matches: [],
       standingsByGroup: {},
       thirdPlaces: [],
@@ -4054,22 +4056,45 @@
       adminLoginDialog.showModal();
     }
 
-    function handleAdminLogin(event) {
+    async function handleAdminLogin(event) {
       event.preventDefault();
 
       const login = document.getElementById("adminLogin").value.trim();
       const password = document.getElementById("adminPassword").value.trim();
+      const adminSubmitBtn = adminLoginForm.querySelector('button[type="submit"]');
 
-      if (login !== "alboy" || password !== "17052019") {
-        adminLoginMessage.textContent = "Login ou senha incorretos.";
-        adminLoginMessage.className = "message error";
-        return;
+      adminLoginMessage.textContent = "Validando acesso...";
+      adminLoginMessage.className = "message success";
+      if (adminSubmitBtn) {
+        adminSubmitBtn.disabled = true;
+        adminSubmitBtn.textContent = "Validando...";
       }
 
-      appState.adminLoggedIn = true;
-      adminLoginDialog.close();
-      showMainMode("admin");
-      loadAdminGames();
+      try {
+        const data = await fetchAdminLoginJsonp(login, password);
+
+        if (!data || data.status !== "sucesso") {
+          throw new Error(data?.message || "Login ou senha incorretos.");
+        }
+
+        appState.adminLoggedIn = true;
+        appState.adminCredentials = {
+          login,
+          senha: password
+        };
+        appState.adminToken = data.token || "";
+        adminLoginDialog.close();
+        showMainMode("admin");
+        loadAdminGames();
+      } catch (error) {
+        adminLoginMessage.textContent = error.message || "Login ou senha incorretos.";
+        adminLoginMessage.className = "message error";
+      } finally {
+        if (adminSubmitBtn) {
+          adminSubmitBtn.disabled = false;
+          adminSubmitBtn.textContent = "Entrar";
+        }
+      }
     }
 
     async function loadAdminGames() {
@@ -4209,10 +4234,12 @@
           },
           body: JSON.stringify({
             action: "salvar_jogos_reais",
-            admin: {
-              login: "alboy",
-              senha: "17052019"
-            },
+            admin: appState.adminToken
+              ? { token: appState.adminToken }
+              : {
+                  login: appState.adminCredentials?.login || "",
+                  senha: appState.adminCredentials?.senha || ""
+                },
             jogos
           })
         });
@@ -4226,6 +4253,14 @@
         adminSaveGamesBtn.disabled = false;
         adminSaveGamesBtn.textContent = "Salvar jogos reais";
       }
+    }
+
+
+    function fetchAdminLoginJsonp(login, senha) {
+      return fetchJsonpAction("admin_login", "bolaoAdminLogin", {
+        login,
+        senha
+      });
     }
 
     function fetchJsonpAction(action, callbackPrefix, params = {}) {
