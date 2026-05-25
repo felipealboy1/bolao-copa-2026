@@ -1620,7 +1620,7 @@
           <p>Preencha os resultados da fase de grupos. O mata-mata será montado automaticamente conforme os grupos forem concluídos.</p>
         </div>
         <div class="actions">
-          <button class="btn-secondary" type="button" id="randomFillBtn">Preencher todos os resultados aleatoriamente</button>
+          <button class="btn-secondary" type="button" id="randomFillBtn">Preencher o que falta aleatoriamente</button>
           <button class="btn-secondary" type="button" id="clearBtn">Limpar palpites</button>
         </div>
       </section>
@@ -5133,43 +5133,45 @@
 
     function fillAllRandomResults() {
       try {
-        resetKnockoutOnly();
+        let filledAnything = false;
 
         appState.matches.forEach(match => {
-          match.gols_casa = String(randomGroupGoals());
-          match.gols_fora = String(randomGroupGoals());
+          if (match.gols_casa === "") {
+            match.gols_casa = String(randomGroupGoals());
+            filledAnything = true;
+          }
+
+          if (match.gols_fora === "") {
+            match.gols_fora = String(randomGroupGoals());
+            filledAnything = true;
+          }
         });
 
         syncGroupInputsFromState();
         calculateAll();
-        generateKnockout();
+        syncKnockoutWithGroups();
 
-        fillStageRandomResults("R32");
-        updateKnockoutProgression();
-
-        fillStageRandomResults("R16");
-        updateKnockoutProgression();
-
-        fillStageRandomResults("QF");
-        updateKnockoutProgression();
-
-        fillStageRandomResults("SF");
-        updateKnockoutProgression();
-
-        fillStageRandomResults("FINAL");
-        fillStageRandomResults("THIRD");
-        updateKnockoutProgression();
+        ["R32", "R16", "QF", "SF", "FINAL", "THIRD"].forEach(stage => {
+          const changedStage = fillStageRandomResults(stage);
+          filledAnything = filledAnything || changedStage;
+          updateKnockoutProgression();
+        });
 
         renderKnockout();
         renderChampionCard();
         updateProgress();
+        updatePageControls();
 
         const validation = validateKnockoutComplete();
+
         if (!validation.ok) {
-          throw new Error(`O teste preencheu a fase de grupos, mas ainda faltaram ${validation.missing} jogos do mata-mata.`);
+          alert("O que faltava foi preenchido aleatoriamente. Ainda existem jogos ou desempates pendentes para revisar.");
+        } else if (filledAnything) {
+          alert("Resultados aleatórios preenchidos com sucesso");
+        } else {
+          alert("Não havia resultados pendentes para preencher.");
         }
 
-        alert("Resultados aleatórios preenchidos com sucesso");
         knockoutPage.scrollIntoView({ behavior: "smooth", block: "start" });
       } catch (error) {
         console.error(error);
@@ -5189,15 +5191,73 @@
 
     function fillStageRandomResults(stage) {
       const matches = appState.knockout[stage] || [];
+      let changed = false;
 
       matches.forEach(match => {
         if (!match.time_casa || !match.time_fora) return;
 
-        const score = randomKnockoutScore();
-        match.gols_casa = String(score.home);
-        match.gols_fora = String(score.away);
-        match.vencedor = score.home > score.away ? match.time_casa : match.time_fora;
+        const homeWasEmpty = match.gols_casa === "";
+        const awayWasEmpty = match.gols_fora === "";
+
+        if (!homeWasEmpty && !awayWasEmpty) {
+          updateMatchWinner(match);
+          return;
+        }
+
+        const score = randomKnockoutScoreForMissing(match.gols_casa, match.gols_fora);
+
+        if (homeWasEmpty) {
+          match.gols_casa = String(score.home);
+          changed = true;
+        }
+
+        if (awayWasEmpty) {
+          match.gols_fora = String(score.away);
+          changed = true;
+        }
+
+        updateMatchWinner(match);
       });
+
+      return changed;
+    }
+
+    function randomKnockoutScoreForMissing(currentHome, currentAway) {
+      const homeEmpty = currentHome === "";
+      const awayEmpty = currentAway === "";
+
+      if (homeEmpty && awayEmpty) {
+        return randomKnockoutScore();
+      }
+
+      if (homeEmpty) {
+        const away = Number(currentAway);
+        let home = randomGroupGoals();
+
+        if (home === away) {
+          const options = [0, 1, 2].filter(value => value !== away);
+          home = options[Math.floor(Math.random() * options.length)];
+        }
+
+        return { home, away };
+      }
+
+      if (awayEmpty) {
+        const home = Number(currentHome);
+        let away = randomGroupGoals();
+
+        if (away === home) {
+          const options = [0, 1, 2].filter(value => value !== home);
+          away = options[Math.floor(Math.random() * options.length)];
+        }
+
+        return { home, away };
+      }
+
+      return {
+        home: Number(currentHome),
+        away: Number(currentAway)
+      };
     }
 
     function randomGroupGoals() {
