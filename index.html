@@ -2648,12 +2648,82 @@
       const hasCompletedGroup = Object.keys(groups).some(groupKey => isGroupComplete(groupKey));
 
       if (hasCompletedGroup) {
-        generateKnockout();
-      } else if (appState.knockoutGenerated) {
+        if (!appState.knockoutGenerated || !hasAnyKnockoutPrediction()) {
+          generateKnockout();
+        } else {
+          refreshKnockoutKeepingPredictions();
+        }
+      } else if (appState.knockoutGenerated && !hasAnyKnockoutPrediction()) {
         resetKnockoutOnly();
         renderChampionCard();
         updateProgress();
       }
+    }
+
+    function hasAnyKnockoutPrediction() {
+      return Object.values(appState.knockout).flat().some(match =>
+        match.gols_casa !== "" ||
+        match.gols_fora !== "" ||
+        match.vencedor
+      );
+    }
+
+    function getKnockoutPredictionSnapshot() {
+      const snapshot = {};
+
+      Object.values(appState.knockout).flat().forEach(match => {
+        snapshot[match.jogo_id] = {
+          gols_casa: match.gols_casa,
+          gols_fora: match.gols_fora,
+          vencedor: match.vencedor
+        };
+      });
+
+      return snapshot;
+    }
+
+    function restoreStagePredictions(stage, snapshot) {
+      (appState.knockout[stage] || []).forEach(match => {
+        const saved = snapshot[match.jogo_id];
+        if (!saved) return;
+
+        match.gols_casa = saved.gols_casa;
+        match.gols_fora = saved.gols_fora;
+
+        if (saved.vencedor === match.time_casa || saved.vencedor === match.time_fora) {
+          match.vencedor = saved.vencedor;
+        } else {
+          match.vencedor = "";
+        }
+
+        updateMatchWinner(match);
+      });
+    }
+
+    function refreshKnockoutKeepingPredictions() {
+      const snapshot = getKnockoutPredictionSnapshot();
+
+      generateKnockout();
+
+      restoreStagePredictions("R32", snapshot);
+      linkSpecificStage("R32", "R16", [[1, 4], [0, 2], [3, 5], [6, 7], [10, 11], [8, 9], [13, 15], [12, 14]]);
+
+      restoreStagePredictions("R16", snapshot);
+      linkSpecificStage("R16", "QF", [[0, 1], [4, 5], [2, 3], [6, 7]]);
+
+      restoreStagePredictions("QF", snapshot);
+      linkSpecificStage("QF", "SF", [[0, 1], [2, 3]]);
+
+      restoreStagePredictions("SF", snapshot);
+      linkSpecificStage("SF", "FINAL", [[0, 1]]);
+      linkSemiLosersToThirdPlace();
+
+      restoreStagePredictions("FINAL", snapshot);
+      restoreStagePredictions("THIRD", snapshot);
+
+      renderKnockout();
+      updateProgress();
+      updatePageControls();
     }
 
     function generateKnockout() {
@@ -2901,17 +2971,9 @@
     }
 
     function setNextMatchTeams(match, home, away) {
-      const changed = match.time_casa !== home || match.time_fora !== away;
       match.time_casa = home;
       match.time_fora = away;
-
-      if (changed) {
-        match.gols_casa = "";
-        match.gols_fora = "";
-        match.vencedor = "";
-      } else {
-        updateMatchWinner(match);
-      }
+      updateMatchWinner(match);
     }
 
     function getLoser(match) {
