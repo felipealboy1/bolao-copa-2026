@@ -3268,20 +3268,8 @@
 
       try {
         const selectedGroup = comparisonGroupSelect?.value || "GERAL";
-
-        if (selectedGroup !== "GERAL") {
-          const rows = await loadComparisonRowsForSelectedGroup(selectedGroup);
-          renderComparisonRows(rows);
-          return;
-        }
-
-        const data = await fetchComparisonJsonp();
-
-        if (!data || data.status !== "sucesso") {
-          throw new Error(data?.message || "Não foi possível carregar o comparativo.");
-        }
-
-        renderComparisonRows(data.rows || data.comparativo || []);
+        const rows = await loadComparisonRowsForSelectedGroup(selectedGroup);
+        renderComparisonRows(rows);
       } catch (error) {
         console.error(error);
         comparisonTableBody.innerHTML = `<tr><td colspan="8" class="viewer-message">Erro ao carregar comparativo: ${escapeHtml(error.message)}</td></tr>`;
@@ -3320,12 +3308,54 @@
         })
       );
 
-      const participantsInGroup = details.filter(participant => {
-        if (!participant) return false;
-        return (participant.grupos || []).some(group => normalizeGroupCode(group.codigo) === normalizedGroup);
-      });
+      const participantsInGroup = normalizedGroup === "GERAL"
+        ? details.filter(Boolean)
+        : details.filter(participant => {
+            if (!participant) return false;
+            return (participant.grupos || []).some(group => normalizeGroupCode(group.codigo) === normalizedGroup);
+          });
 
       return calculateComparisonRows(participantsInGroup, realGamesData.jogos || []);
+    }
+
+    function normalizeComparisonTeamName(value) {
+      return String(value || "")
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .trim()
+        .toLowerCase();
+    }
+
+    function getPredictionOutcomeForRealGame(prediction, realGame) {
+      const predictionHome = normalizeComparisonTeamName(prediction.time_casa);
+      const predictionAway = normalizeComparisonTeamName(prediction.time_fora);
+      const realHome = normalizeComparisonTeamName(realGame.time_casa);
+      const realAway = normalizeComparisonTeamName(realGame.time_fora);
+
+      const sameOrder = predictionHome === realHome && predictionAway === realAway;
+      const reversedOrder = predictionHome === realAway && predictionAway === realHome;
+
+      if (sameOrder) {
+        return getOutcome(Number(prediction.gols_casa), Number(prediction.gols_fora));
+      }
+
+      if (reversedOrder) {
+        return getOutcome(Number(prediction.gols_fora), Number(prediction.gols_casa));
+      }
+
+      return null;
+    }
+
+    function predictionBelongsToRealGame(prediction, realGame) {
+      const predictionHome = normalizeComparisonTeamName(prediction.time_casa);
+      const predictionAway = normalizeComparisonTeamName(prediction.time_fora);
+      const realHome = normalizeComparisonTeamName(realGame.time_casa);
+      const realAway = normalizeComparisonTeamName(realGame.time_fora);
+
+      const sameOrder = predictionHome === realHome && predictionAway === realAway;
+      const reversedOrder = predictionHome === realAway && predictionAway === realHome;
+
+      return sameOrder || reversedOrder;
     }
 
     function calculateComparisonRows(participantes, jogosReais) {
@@ -3334,13 +3364,13 @@
       return (jogosReais || [])
         .filter(jogo => normalizePhase(jogo.fase) === "fase de grupos")
         .map(realGame => {
-          const predictions = allPredictions.filter(prediction => prediction.jogo_id === realGame.jogo_id);
+          const predictions = allPredictions.filter(prediction => predictionBelongsToRealGame(prediction, realGame));
           const total = predictions.length;
           const counts = { home: 0, draw: 0, away: 0 };
 
           predictions.forEach(prediction => {
-            const outcome = getOutcome(Number(prediction.gols_casa), Number(prediction.gols_fora));
-            counts[outcome] += 1;
+            const outcome = getPredictionOutcomeForRealGame(prediction, realGame);
+            if (outcome) counts[outcome] += 1;
           });
 
           const realFinalized = isRealGameFinalized(realGame);
