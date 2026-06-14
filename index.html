@@ -3440,6 +3440,12 @@
       });
     }
 
+    function fetchJogoAJogoJsonp() {
+      return fetchJsonpAction("jogo_a_jogo", "bolaoJogoAJogo", {
+        grupo: jogoAJogoGroupSelect?.value || "GERAL"
+      });
+    }
+
     function fetchGroupsJsonp() {
       return fetchJsonpAction("grupos", "bolaoGrupos");
     }
@@ -5073,52 +5079,13 @@
       }
 
       try {
-        const selectedGroup = normalizeGroupCode(jogoAJogoGroupSelect?.value || "GERAL");
+        const data = await fetchJogoAJogoJsonp();
 
-        const [participantsData, realGamesData] = await Promise.all([
-          fetchAllParticipantsJsonp(),
-          fetchRealGamesJsonp()
-        ]);
-
-        if (!participantsData || participantsData.status !== "sucesso") {
-          throw new Error(participantsData?.message || "Não foi possível carregar participantes.");
+        if (!data || data.status !== "sucesso") {
+          throw new Error(data?.message || "Não foi possível carregar o jogo a jogo.");
         }
 
-        if (!realGamesData || realGamesData.status !== "sucesso") {
-          throw new Error(realGamesData?.message || "Não foi possível carregar jogos reais.");
-        }
-
-        const jogosFinalizados = (realGamesData.jogos || []).filter(isRealGameFinalized);
-
-        if (!jogosFinalizados.length) {
-          jogoAJogoContainer.innerHTML = `<div class="viewer-message">Ainda não há jogos reais finalizados.</div>`;
-          return;
-        }
-
-        let participantes = participantsData.participantes || [];
-
-        if (selectedGroup !== "GERAL") {
-          const detalhes = await Promise.all(participantes.map(async participante => {
-            if (participante.grupos) return participante;
-
-            try {
-              const detalhe = await fetchParticipantDetailJsonp(participante.id_participante);
-              return detalhe && detalhe.status === "sucesso" && detalhe.participante
-                ? detalhe.participante
-                : participante;
-            } catch (error) {
-              console.warn("Não foi possível carregar grupos do participante.", participante, error);
-              return participante;
-            }
-          }));
-
-          participantes = detalhes.filter(participante => {
-            const grupos = participante.grupos || [];
-            return grupos.some(grupo => normalizeGroupCode(grupo.codigo || grupo.codigo_grupo || grupo.nome) === selectedGroup);
-          });
-        }
-
-        renderJogoAJogo(jogosFinalizados, participantes);
+        renderJogoAJogo(data.jogos || []);
       } catch (error) {
         console.error(error);
         jogoAJogoContainer.innerHTML = `<div class="viewer-message">Erro ao carregar jogo a jogo: ${escapeHtml(error.message)}</div>`;
@@ -5130,49 +5097,22 @@
       }
     }
 
-    function renderJogoAJogo(jogosFinalizados, participantes) {
-      if (!participantes.length) {
-        const groupLabel = jogoAJogoGroupSelect?.options[jogoAJogoGroupSelect.selectedIndex]?.textContent || "Geral";
-        jogoAJogoContainer.innerHTML = `<div class="viewer-message">Nenhum participante encontrado em ${escapeHtml(groupLabel)}.</div>`;
+    function renderJogoAJogo(jogos) {
+      if (!jogos.length) {
+        jogoAJogoContainer.innerHTML = `<div class="viewer-message">Ainda não há jogos reais finalizados para o grupo selecionado.</div>`;
         return;
       }
 
-      jogoAJogoContainer.innerHTML = jogosFinalizados.map((jogo, index) => {
-        const rows = participantes.map(participante => {
-          const isGroupStage = normalizePhase(jogo.fase) === "fase de grupos";
-          const prediction = isGroupStage
-            ? findPredictionForRealGame(participante, jogo)
-            : (participante.mata_mata || []).find(item => String(item.jogo_id) === String(jogo.jogo_id));
-
-          const detail = isGroupStage
-            ? scoreSingleGroupGameDetailed(prediction, jogo)
-            : scoreSingleKnockoutGameDetailed(prediction, jogo);
-
-          const predictionLabel = prediction
-            ? (isGroupStage ? formatPredictionAgainstRealGame(prediction, jogo) : formatGameLabel(prediction))
-            : "Sem palpite registrado";
-
-          return {
-            nome: participante.nome || "Participante",
-            predictionLabel,
-            points: detail.points,
-            reason: detail.reason
-          };
-        }).sort((a, b) => {
-          if (b.points !== a.points) return b.points - a.points;
-          return String(a.nome || "").localeCompare(String(b.nome || ""), "pt-BR", { sensitivity: "base" });
-        });
-
-        const totalPalpites = rows.filter(row => row.predictionLabel !== "Sem palpite registrado").length;
-        const media = rows.length ? (rows.reduce((sum, row) => sum + row.points, 0) / rows.length).toFixed(1).replace(".", ",") : "0,0";
+      jogoAJogoContainer.innerHTML = jogos.map((jogo, index) => {
+        const media = Number(jogo.media_pontos || 0).toFixed(1).replace(".", ",");
         const contentId = `jogo-a-jogo-${index}`;
 
         return `
           <article class="game-detail-card">
             <button class="game-detail-toggle" type="button" onclick="toggleJogoAJogoCard('${contentId}')">
               <span class="game-detail-title">
-                <strong>${escapeHtml(formatGameLabel(jogo))}</strong>
-                <span>${escapeHtml(jogo.fase || "—")}${jogo.grupo ? ` • Grupo ${escapeHtml(jogo.grupo)}` : ""} • ${totalPalpites} palpites • média ${media} pontos</span>
+                <strong>${escapeHtml(jogo.confronto || "—")}</strong>
+                <span>${escapeHtml(jogo.fase || "—")}${jogo.grupo ? ` • Grupo ${escapeHtml(jogo.grupo)}` : ""} • ${jogo.total_palpites || 0} palpites • média ${media} pontos</span>
               </span>
               <span class="game-detail-pill">Expandir</span>
             </button>
@@ -5184,12 +5124,12 @@
                 <strong>Pontos</strong>
                 <strong>Motivo</strong>
               </div>
-              ${rows.map(row => `
+              ${(jogo.participantes || []).map(row => `
                 <div class="game-player-row">
-                  <strong>${escapeHtml(row.nome)}</strong>
-                  <span>${escapeHtml(row.predictionLabel)}</span>
-                  <span class="game-player-points">${row.points}</span>
-                  <span>${escapeHtml(row.reason)}</span>
+                  <strong>${escapeHtml(row.nome || "Participante")}</strong>
+                  <span>${escapeHtml(row.palpite || "Sem palpite registrado")}</span>
+                  <span class="game-player-points">${escapeHtml(row.pontos ?? 0)}</span>
+                  <span>${escapeHtml(row.motivo || "—")}</span>
                 </div>
               `).join("")}
             </div>
