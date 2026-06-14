@@ -1733,17 +1733,16 @@
   <header>
     <div class="container hero">
       <h1 id="secretAdminTrigger" title="">Bolão Copa do Mundo 2026</h1>
-      <p>Preencha os placares da primeira fase. Conforme cada grupo for completado, o mata-mata começa a aparecer automaticamente na mesma página. Depois, escolha quem avança em caso de empate e envie seu palpite completo até campeão e terceiro lugar.</p>
+      <p>Acompanhe a classificação, os palpites, os resultados jogo a jogo e a evolução do bolão da Copa do Mundo 2026.</p>
     </div>
   </header>
 
   <section class="toolbar">
     <div class="container toolbar-inner">
       <div class="menu-bar">
-        <button class="btn-secondary menu-title btn-active" type="button" id="navPalpiteBtn">Fazer palpite</button>
         <button class="btn-secondary menu-title" type="button" id="navParticipantesBtn">Ver participantes</button>
         <button class="btn-secondary menu-title" type="button" id="navJogoAJogoBtn">Jogo a Jogo</button>
-        <button class="btn-secondary menu-title" type="button" id="navClassificacaoBtn">Classificação</button>
+        <button class="btn-secondary menu-title btn-active" type="button" id="navClassificacaoBtn">Classificação</button>
         <button class="btn-secondary menu-title" type="button" id="navComparativoBtn">Comparativo</button>
         <button class="btn-secondary menu-title" type="button" id="navJogosReaisBtn">Jogos reais</button>
         <button class="btn-secondary menu-title" type="button" id="navPontuacaoBtn">Regras de Pontuação</button>
@@ -1753,7 +1752,7 @@
   </section>
 
   <main class="container">
-    <section class="page active" id="groupPage">
+    <section class="page hidden" id="groupPage">
       <section class="submit-card">
         <div>
           <h2>Fazer palpite</h2>
@@ -1796,7 +1795,7 @@
       </section>
     </section>
 
-    <section class="page" id="knockoutPage">
+    <section class="page hidden" id="knockoutPage">
       <div class="knockout-intro">
         <strong>Mata-mata:</strong> conforme os grupos forem completados, o chaveamento começa a aparecer automaticamente aqui embaixo, na mesma página. Alguns espaços podem ficar como referência, por exemplo “1A”, “2B” ou “3º de A/B/C”, até os grupos necessários serem preenchidos. Se você mudar algum placar da primeira fase depois disso, o mata-mata será recalculado e os palpites dessa etapa serão limpos para evitar inconsistência.
       </div>
@@ -1883,7 +1882,7 @@
       </section>
     </section>
 
-    <section class="page hidden" id="rankingPage">
+    <section class="page" id="rankingPage">
       <section class="ranking-section">
         <div class="score-hero">
           <h2>Classificação do bolão</h2>
@@ -2487,7 +2486,7 @@
     }
 
     function bindEvents() {
-      navPalpiteBtn.addEventListener("click", () => showMainMode("simulator"));
+      if (navPalpiteBtn) navPalpiteBtn.addEventListener("click", () => showMainMode("simulator"));
       navPontuacaoBtn.addEventListener("click", () => showMainMode("score"));
       navClassificacaoBtn.addEventListener("click", () => {
         showMainMode("ranking");
@@ -3333,14 +3332,15 @@
         floatingSubmitBtn.classList.toggle("hidden", !isSimulator);
       }
       progressText.classList.toggle("hidden", !isSimulator);
-      navPalpiteBtn.classList.toggle("btn-active", isSimulator);
+      if (navPalpiteBtn) navPalpiteBtn.classList.toggle("btn-active", isSimulator);
       navPontuacaoBtn.classList.toggle("btn-active", isScore);
       navClassificacaoBtn.classList.toggle("btn-active", isRanking);
       navComparativoBtn.classList.toggle("btn-active", isComparison);
       navJogosReaisBtn.classList.toggle("btn-active", isRealGames);
       navParticipantesBtn.classList.toggle("btn-active", isParticipants);
+      navJogoAJogoBtn.classList.toggle("btn-active", isJogoAJogo);
 
-      const target = isSimulator ? groupPage : isScore ? scorePage : isRanking ? rankingPage : isComparison ? comparisonPage : isRealGames ? realGamesPage : isAdmin ? adminPage : participantsPage;
+      const target = isSimulator ? groupPage : isScore ? scorePage : isJogoAJogo ? jogoAJogoPage : isRanking ? rankingPage : isComparison ? comparisonPage : isRealGames ? realGamesPage : isAdmin ? adminPage : participantsPage;
       target.scrollIntoView({ behavior: "smooth", block: "start" });
     }
 
@@ -3412,6 +3412,10 @@
       return fetchJsonpAction("participantes_resumo", "bolaoParticipantesResumo", {
         grupo: participantsGroupSelect?.value || "GERAL"
       });
+    }
+
+    function fetchAllParticipantsJsonp() {
+      return fetchJsonpAction("listar", "bolaoParticipantesTodos");
     }
 
     function fetchParticipantDetailJsonp(participantId) {
@@ -5072,7 +5076,7 @@
         const selectedGroup = normalizeGroupCode(jogoAJogoGroupSelect?.value || "GERAL");
 
         const [participantsData, realGamesData] = await Promise.all([
-          fetchParticipantsSummaryJsonp(),
+          fetchAllParticipantsJsonp(),
           fetchRealGamesJsonp()
         ]);
 
@@ -5084,7 +5088,6 @@
           throw new Error(realGamesData?.message || "Não foi possível carregar jogos reais.");
         }
 
-        let participantesResumo = participantsData.participantes || [];
         const jogosFinalizados = (realGamesData.jogos || []).filter(isRealGameFinalized);
 
         if (!jogosFinalizados.length) {
@@ -5092,24 +5095,28 @@
           return;
         }
 
-        const detalhes = await Promise.all(participantesResumo.map(async participante => {
-          try {
-            const detalhe = await fetchParticipantDetailJsonp(participante.id_participante);
-            return detalhe && detalhe.status === "sucesso" && detalhe.participante
-              ? detalhe.participante
-              : participante;
-          } catch (error) {
-            console.warn("Não foi possível carregar detalhe do participante.", participante, error);
-            return participante;
-          }
-        }));
+        let participantes = participantsData.participantes || [];
 
-        const participantes = selectedGroup === "GERAL"
-          ? detalhes
-          : detalhes.filter(participante => {
-              const grupos = participante.grupos || [];
-              return grupos.some(grupo => normalizeGroupCode(grupo.codigo || grupo.codigo_grupo || grupo.nome) === selectedGroup);
-            });
+        if (selectedGroup !== "GERAL") {
+          const detalhes = await Promise.all(participantes.map(async participante => {
+            if (participante.grupos) return participante;
+
+            try {
+              const detalhe = await fetchParticipantDetailJsonp(participante.id_participante);
+              return detalhe && detalhe.status === "sucesso" && detalhe.participante
+                ? detalhe.participante
+                : participante;
+            } catch (error) {
+              console.warn("Não foi possível carregar grupos do participante.", participante, error);
+              return participante;
+            }
+          }));
+
+          participantes = detalhes.filter(participante => {
+            const grupos = participante.grupos || [];
+            return grupos.some(grupo => normalizeGroupCode(grupo.codigo || grupo.codigo_grupo || grupo.nome) === selectedGroup);
+          });
+        }
 
         renderJogoAJogo(jogosFinalizados, participantes);
       } catch (error) {
@@ -5995,6 +6002,8 @@
     }
 
     init();
+    showMainMode("ranking");
+    loadRankingData();
   </script>
 </body>
 </html>
