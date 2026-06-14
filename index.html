@@ -1588,6 +1588,145 @@
       }
     }
 
+
+    .game-by-game-section {
+      display: grid;
+      gap: 18px;
+    }
+
+    .game-by-game-list {
+      display: grid;
+      gap: 14px;
+    }
+
+    .game-detail-card {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .game-detail-toggle {
+      width: 100%;
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 10px;
+      align-items: center;
+      text-align: left;
+      background: #fff;
+      border: 0;
+      border-radius: 0;
+      padding: 16px;
+      box-shadow: none !important;
+    }
+
+    .game-detail-toggle:hover {
+      transform: none !important;
+      background: #fbfcfe;
+    }
+
+    .game-detail-title {
+      display: grid;
+      gap: 4px;
+    }
+
+    .game-detail-title strong {
+      font-size: 17px;
+      color: var(--text);
+    }
+
+    .game-detail-title span {
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    .game-detail-pill {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 999px;
+      padding: 6px 10px;
+      background: var(--info-bg);
+      color: var(--info-text);
+      font-weight: 900;
+      font-size: 12px;
+      white-space: nowrap;
+    }
+
+    .game-detail-content {
+      border-top: 1px solid var(--line);
+      padding: 0;
+    }
+
+    .game-detail-content.hidden {
+      display: none;
+    }
+
+    .game-player-row {
+      display: grid;
+      grid-template-columns: minmax(160px, 1.1fr) minmax(220px, 1.5fr) 86px minmax(220px, 1.5fr);
+      gap: 10px;
+      align-items: center;
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--line);
+      font-size: 13px;
+    }
+
+    .game-player-row:last-child {
+      border-bottom: 0;
+    }
+
+    .game-player-row strong {
+      color: var(--text);
+    }
+
+    .game-player-row span {
+      color: var(--muted);
+      line-height: 1.35;
+    }
+
+    .game-player-points {
+      justify-self: center;
+      min-width: 64px;
+      text-align: center;
+      border-radius: 999px;
+      padding: 6px 10px;
+      background: var(--success-bg);
+      color: var(--success-text);
+      font-weight: 900;
+    }
+
+    .game-player-header {
+      background: #fbfcfe;
+      color: var(--muted);
+      font-weight: 900;
+    }
+
+    @media (max-width: 768px) {
+      .game-detail-toggle {
+        grid-template-columns: 1fr;
+      }
+
+      .game-detail-pill {
+        justify-self: start;
+      }
+
+      .game-player-row {
+        grid-template-columns: 1fr;
+        gap: 6px;
+      }
+
+      .game-player-header {
+        display: none;
+      }
+
+      .game-player-points {
+        justify-self: start;
+      }
+    }
+
   </style>
 </head>
 <body>
@@ -1603,6 +1742,7 @@
       <div class="menu-bar">
         <button class="btn-secondary menu-title btn-active" type="button" id="navPalpiteBtn">Fazer palpite</button>
         <button class="btn-secondary menu-title" type="button" id="navParticipantesBtn">Ver participantes</button>
+        <button class="btn-secondary menu-title" type="button" id="navJogoAJogoBtn">Jogo a Jogo</button>
         <button class="btn-secondary menu-title" type="button" id="navClassificacaoBtn">Classificação</button>
         <button class="btn-secondary menu-title" type="button" id="navComparativoBtn">Comparativo</button>
         <button class="btn-secondary menu-title" type="button" id="navJogosReaisBtn">Jogos reais</button>
@@ -1716,6 +1856,30 @@
             </table>
           </div>
         </article>
+      </section>
+    </section>
+
+
+    <section class="page hidden" id="jogoAJogoPage">
+      <section class="game-by-game-section">
+        <div class="score-hero">
+          <h2>Jogo a Jogo</h2>
+          <p>Veja somente os jogos reais já finalizados. Clique em um jogo para abrir os palpites dos participantes e a pontuação de cada um.</p>
+        </div>
+
+        <div class="ranking-filter-card">
+          <label>
+            Ver jogo a jogo por grupo
+            <select id="jogoAJogoGroupSelect">
+              <option value="GERAL">Geral</option>
+            </select>
+          </label>
+          <button class="btn-secondary" type="button" id="refreshJogoAJogoBtn">Atualizar jogo a jogo</button>
+        </div>
+
+        <div class="game-by-game-list" id="jogoAJogoContainer">
+          <div class="viewer-message">Carregando jogos finalizados...</div>
+        </div>
       </section>
     </section>
 
@@ -2171,6 +2335,7 @@
     const navComparativoBtn = document.getElementById("navComparativoBtn");
     const navJogosReaisBtn = document.getElementById("navJogosReaisBtn");
     const navParticipantesBtn = document.getElementById("navParticipantesBtn");
+    const navJogoAJogoBtn = document.getElementById("navJogoAJogoBtn");
     const adminFloatingBtn = document.getElementById("adminFloatingBtn");
     const secretAdminTrigger = document.getElementById("secretAdminTrigger");
     const adminLoginDialog = document.getElementById("adminLoginDialog");
@@ -2195,6 +2360,10 @@
     const comparisonTableBody = document.getElementById("comparisonTableBody");
     const refreshComparisonBtn = document.getElementById("refreshComparisonBtn");
     const comparisonGroupSelect = document.getElementById("comparisonGroupSelect");
+    const jogoAJogoPage = document.getElementById("jogoAJogoPage");
+    const jogoAJogoGroupSelect = document.getElementById("jogoAJogoGroupSelect");
+    const refreshJogoAJogoBtn = document.getElementById("refreshJogoAJogoBtn");
+    const jogoAJogoContainer = document.getElementById("jogoAJogoContainer");
     const rankingPage = document.getElementById("rankingPage");
     const rankingTableBody = document.getElementById("rankingTableBody");
     const rankingSummary = document.getElementById("rankingSummary");
@@ -2338,6 +2507,10 @@
         showMainMode("participants");
         await refreshParticipantsGroupsAndList();
       });
+      navJogoAJogoBtn.addEventListener("click", async () => {
+        showMainMode("jogoAJogo");
+        await refreshJogoAJogoGroupsAndList();
+      });
       refreshParticipantsBtn.addEventListener("click", async () => {
         await refreshParticipantsGroupsAndList(participantsGroupSelect?.value || "GERAL");
       });
@@ -2352,6 +2525,12 @@
       }
       if (refreshComparisonBtn) {
         refreshComparisonBtn.addEventListener("click", loadComparisonData);
+      }
+      if (refreshJogoAJogoBtn) {
+        refreshJogoAJogoBtn.addEventListener("click", () => refreshJogoAJogoGroupsAndList(jogoAJogoGroupSelect?.value || "GERAL"));
+      }
+      if (jogoAJogoGroupSelect) {
+        jogoAJogoGroupSelect.addEventListener("change", loadJogoAJogoData);
       }
       if (rankingGroupSelect) {
         rankingGroupSelect.addEventListener("change", loadRankingData);
@@ -3138,6 +3317,7 @@
       const isComparison = mode === "comparison";
       const isRealGames = mode === "realGames";
       const isParticipants = mode === "participants";
+      const isJogoAJogo = mode === "jogoAJogo";
       const isAdmin = mode === "admin";
 
       groupPage.classList.toggle("hidden", !isSimulator);
@@ -3147,6 +3327,7 @@
       comparisonPage.classList.toggle("hidden", !isComparison);
       realGamesPage.classList.toggle("hidden", !isRealGames);
       participantsPage.classList.toggle("hidden", !isParticipants);
+      jogoAJogoPage.classList.toggle("hidden", !isJogoAJogo);
       adminPage.classList.toggle("hidden", !isAdmin);
       if (floatingSubmitBtn) {
         floatingSubmitBtn.classList.toggle("hidden", !isSimulator);
@@ -3495,6 +3676,10 @@
 
     function loadGroupsForParticipants(preferredValue = null) {
       return loadGroupsForSelect(participantsGroupSelect, true, preferredValue);
+    }
+
+    function loadGroupsForJogoAJogo(preferredValue = null) {
+      return loadGroupsForSelect(jogoAJogoGroupSelect, true, preferredValue);
     }
 
     async function refreshParticipantsGroupsAndList(preferredValue = "GERAL") {
@@ -4859,6 +5044,166 @@
     function formatScoreCell(value) {
       return value === "" || value === null || value === undefined ? "—" : escapeHtml(value);
     }
+
+
+    async function refreshJogoAJogoGroupsAndList(preferredValue = "GERAL") {
+      await loadGroupsForJogoAJogo(preferredValue);
+
+      if (jogoAJogoGroupSelect) {
+        const normalizedPreferred = normalizeGroupCode(preferredValue || "GERAL");
+        const optionExists = [...jogoAJogoGroupSelect.options].some(option => option.value === normalizedPreferred);
+        jogoAJogoGroupSelect.value = optionExists ? normalizedPreferred : "GERAL";
+      }
+
+      await loadJogoAJogoData();
+    }
+
+    async function loadJogoAJogoData() {
+      if (!jogoAJogoContainer) return;
+
+      jogoAJogoContainer.innerHTML = `<div class="viewer-message">Carregando jogos finalizados...</div>`;
+
+      if (refreshJogoAJogoBtn) {
+        refreshJogoAJogoBtn.disabled = true;
+        refreshJogoAJogoBtn.textContent = "Carregando...";
+      }
+
+      try {
+        const selectedGroup = normalizeGroupCode(jogoAJogoGroupSelect?.value || "GERAL");
+
+        const [participantsData, realGamesData] = await Promise.all([
+          fetchParticipantsSummaryJsonp(),
+          fetchRealGamesJsonp()
+        ]);
+
+        if (!participantsData || participantsData.status !== "sucesso") {
+          throw new Error(participantsData?.message || "Não foi possível carregar participantes.");
+        }
+
+        if (!realGamesData || realGamesData.status !== "sucesso") {
+          throw new Error(realGamesData?.message || "Não foi possível carregar jogos reais.");
+        }
+
+        let participantesResumo = participantsData.participantes || [];
+        const jogosFinalizados = (realGamesData.jogos || []).filter(isRealGameFinalized);
+
+        if (!jogosFinalizados.length) {
+          jogoAJogoContainer.innerHTML = `<div class="viewer-message">Ainda não há jogos reais finalizados.</div>`;
+          return;
+        }
+
+        const detalhes = await Promise.all(participantesResumo.map(async participante => {
+          try {
+            const detalhe = await fetchParticipantDetailJsonp(participante.id_participante);
+            return detalhe && detalhe.status === "sucesso" && detalhe.participante
+              ? detalhe.participante
+              : participante;
+          } catch (error) {
+            console.warn("Não foi possível carregar detalhe do participante.", participante, error);
+            return participante;
+          }
+        }));
+
+        const participantes = selectedGroup === "GERAL"
+          ? detalhes
+          : detalhes.filter(participante => {
+              const grupos = participante.grupos || [];
+              return grupos.some(grupo => normalizeGroupCode(grupo.codigo || grupo.codigo_grupo || grupo.nome) === selectedGroup);
+            });
+
+        renderJogoAJogo(jogosFinalizados, participantes);
+      } catch (error) {
+        console.error(error);
+        jogoAJogoContainer.innerHTML = `<div class="viewer-message">Erro ao carregar jogo a jogo: ${escapeHtml(error.message)}</div>`;
+      } finally {
+        if (refreshJogoAJogoBtn) {
+          refreshJogoAJogoBtn.disabled = false;
+          refreshJogoAJogoBtn.textContent = "Atualizar jogo a jogo";
+        }
+      }
+    }
+
+    function renderJogoAJogo(jogosFinalizados, participantes) {
+      if (!participantes.length) {
+        const groupLabel = jogoAJogoGroupSelect?.options[jogoAJogoGroupSelect.selectedIndex]?.textContent || "Geral";
+        jogoAJogoContainer.innerHTML = `<div class="viewer-message">Nenhum participante encontrado em ${escapeHtml(groupLabel)}.</div>`;
+        return;
+      }
+
+      jogoAJogoContainer.innerHTML = jogosFinalizados.map((jogo, index) => {
+        const rows = participantes.map(participante => {
+          const isGroupStage = normalizePhase(jogo.fase) === "fase de grupos";
+          const prediction = isGroupStage
+            ? findPredictionForRealGame(participante, jogo)
+            : (participante.mata_mata || []).find(item => String(item.jogo_id) === String(jogo.jogo_id));
+
+          const detail = isGroupStage
+            ? scoreSingleGroupGameDetailed(prediction, jogo)
+            : scoreSingleKnockoutGameDetailed(prediction, jogo);
+
+          const predictionLabel = prediction
+            ? (isGroupStage ? formatPredictionAgainstRealGame(prediction, jogo) : formatGameLabel(prediction))
+            : "Sem palpite registrado";
+
+          return {
+            nome: participante.nome || "Participante",
+            predictionLabel,
+            points: detail.points,
+            reason: detail.reason
+          };
+        }).sort((a, b) => {
+          if (b.points !== a.points) return b.points - a.points;
+          return String(a.nome || "").localeCompare(String(b.nome || ""), "pt-BR", { sensitivity: "base" });
+        });
+
+        const totalPalpites = rows.filter(row => row.predictionLabel !== "Sem palpite registrado").length;
+        const media = rows.length ? (rows.reduce((sum, row) => sum + row.points, 0) / rows.length).toFixed(1).replace(".", ",") : "0,0";
+        const contentId = `jogo-a-jogo-${index}`;
+
+        return `
+          <article class="game-detail-card">
+            <button class="game-detail-toggle" type="button" onclick="toggleJogoAJogoCard('${contentId}')">
+              <span class="game-detail-title">
+                <strong>${escapeHtml(formatGameLabel(jogo))}</strong>
+                <span>${escapeHtml(jogo.fase || "—")}${jogo.grupo ? ` • Grupo ${escapeHtml(jogo.grupo)}` : ""} • ${totalPalpites} palpites • média ${media} pontos</span>
+              </span>
+              <span class="game-detail-pill">Expandir</span>
+            </button>
+
+            <div class="game-detail-content hidden" id="${contentId}">
+              <div class="game-player-row game-player-header">
+                <strong>Participante</strong>
+                <strong>Palpite</strong>
+                <strong>Pontos</strong>
+                <strong>Motivo</strong>
+              </div>
+              ${rows.map(row => `
+                <div class="game-player-row">
+                  <strong>${escapeHtml(row.nome)}</strong>
+                  <span>${escapeHtml(row.predictionLabel)}</span>
+                  <span class="game-player-points">${row.points}</span>
+                  <span>${escapeHtml(row.reason)}</span>
+                </div>
+              `).join("")}
+            </div>
+          </article>
+        `;
+      }).join("");
+    }
+
+    function toggleJogoAJogoCard(contentId) {
+      const content = document.getElementById(contentId);
+      if (!content) return;
+
+      content.classList.toggle("hidden");
+      const button = content.previousElementSibling;
+      const pill = button?.querySelector(".game-detail-pill");
+
+      if (pill) {
+        pill.textContent = content.classList.contains("hidden") ? "Expandir" : "Recolher";
+      }
+    }
+
 
     function renderParticipantsList() {
       const participantes = [...appState.publicData.participantes].sort((a, b) => {
