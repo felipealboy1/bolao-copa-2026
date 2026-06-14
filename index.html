@@ -5048,16 +5048,58 @@
     }
 
     function getGroupGameScoreDetail(participante, realGame) {
-      const prediction = (participante.palpites || []).find(item => item.jogo_id === realGame.jogo_id);
+      const prediction = findGroupPredictionForRealGame(participante, realGame);
       const detail = scoreSingleGroupGameDetailed(prediction, realGame);
 
       return {
         jogo_id: realGame.jogo_id || "",
         realLabel: formatGameLabel(realGame),
-        predictionLabel: prediction ? formatGameLabel(prediction) : "Sem palpite registrado",
+        predictionLabel: prediction ? formatPredictionLabelForRealGame(prediction, realGame) : "Sem palpite registrado",
         points: detail.points,
         reason: detail.reason
       };
+    }
+
+    function findGroupPredictionForRealGame(participante, realGame) {
+      return (participante.palpites || []).find(prediction => predictionBelongsToRealGame(prediction, realGame));
+    }
+
+    function getPredictionScoresForRealGame(prediction, realGame) {
+      if (!prediction) return null;
+
+      const predictionHome = normalizeComparisonTeamName(prediction.time_casa);
+      const predictionAway = normalizeComparisonTeamName(prediction.time_fora);
+      const realHome = normalizeComparisonTeamName(realGame.time_casa);
+      const realAway = normalizeComparisonTeamName(realGame.time_fora);
+
+      const sameOrder = predictionHome === realHome && predictionAway === realAway;
+      const reversedOrder = predictionHome === realAway && predictionAway === realHome;
+
+      if (sameOrder) {
+        return {
+          home: Number(prediction.gols_casa),
+          away: Number(prediction.gols_fora)
+        };
+      }
+
+      if (reversedOrder) {
+        return {
+          home: Number(prediction.gols_fora),
+          away: Number(prediction.gols_casa)
+        };
+      }
+
+      return null;
+    }
+
+    function formatPredictionLabelForRealGame(prediction, realGame) {
+      const scores = getPredictionScoresForRealGame(prediction, realGame);
+
+      if (!scores) {
+        return formatGameLabel(prediction);
+      }
+
+      return `${realGame.time_casa || "—"} ${scores.home} x ${scores.away} ${realGame.time_fora || "—"}`;
     }
 
     function getKnockoutGameScoreDetail(participante, realGame) {
@@ -5078,8 +5120,14 @@
         return { points: 0, reason: "Sem palpite registrado para este jogo." };
       }
 
-      const predHome = Number(prediction.gols_casa);
-      const predAway = Number(prediction.gols_fora);
+      const normalizedPrediction = getPredictionScoresForRealGame(prediction, realGame);
+
+      if (!normalizedPrediction) {
+        return { points: 0, reason: "O palpite salvo não corresponde a este confronto." };
+      }
+
+      const predHome = normalizedPrediction.home;
+      const predAway = normalizedPrediction.away;
       const realHome = Number(realGame.gols_casa);
       const realAway = Number(realGame.gols_fora);
 
