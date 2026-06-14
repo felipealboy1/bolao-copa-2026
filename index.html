@@ -3917,7 +3917,7 @@
 
     function scoreGroupGames(participante, context) {
       return context.groupGames.reduce((total, realGame) => {
-        const prediction = (participante.palpites || []).find(item => item.jogo_id === realGame.jogo_id);
+        const prediction = findPredictionForRealGame(participante, realGame);
         return total + scoreSingleGroupGame(prediction, realGame);
       }, 0);
     }
@@ -5047,42 +5047,49 @@
       `;
     }
 
-    function getGroupGameScoreDetail(participante, realGame) {
-      const prediction = findGroupPredictionForRealGame(participante, realGame);
-      const detail = scoreSingleGroupGameDetailed(prediction, realGame);
 
-      return {
-        jogo_id: realGame.jogo_id || "",
-        realLabel: formatGameLabel(realGame),
-        predictionLabel: prediction ? formatPredictionLabelForRealGame(prediction, realGame) : "Sem palpite registrado",
-        points: detail.points,
-        reason: detail.reason
-      };
+    function normalizeTeamForMatchup(value) {
+      return String(value || "")
+        .trim()
+        .toLowerCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "");
     }
 
-    function findGroupPredictionForRealGame(participante, realGame) {
-      return (participante.palpites || []).find(prediction => predictionBelongsToRealGame(prediction, realGame));
+    function predictionMatchesRealGame(prediction, realGame) {
+      if (!prediction || !realGame) return false;
+
+      const predictionHome = normalizeTeamForMatchup(prediction.time_casa);
+      const predictionAway = normalizeTeamForMatchup(prediction.time_fora);
+      const realHome = normalizeTeamForMatchup(realGame.time_casa);
+      const realAway = normalizeTeamForMatchup(realGame.time_fora);
+
+      return (
+        (predictionHome === realHome && predictionAway === realAway) ||
+        (predictionHome === realAway && predictionAway === realHome)
+      );
     }
 
-    function getPredictionScoresForRealGame(prediction, realGame) {
-      if (!prediction) return null;
+    function findPredictionForRealGame(participante, realGame) {
+      return (participante.palpites || []).find(prediction => predictionMatchesRealGame(prediction, realGame));
+    }
 
-      const predictionHome = normalizeComparisonTeamName(prediction.time_casa);
-      const predictionAway = normalizeComparisonTeamName(prediction.time_fora);
-      const realHome = normalizeComparisonTeamName(realGame.time_casa);
-      const realAway = normalizeComparisonTeamName(realGame.time_fora);
+    function getPredictionScoreInRealOrder(prediction, realGame) {
+      if (!prediction || !realGame) return null;
 
-      const sameOrder = predictionHome === realHome && predictionAway === realAway;
-      const reversedOrder = predictionHome === realAway && predictionAway === realHome;
+      const predictionHome = normalizeTeamForMatchup(prediction.time_casa);
+      const predictionAway = normalizeTeamForMatchup(prediction.time_fora);
+      const realHome = normalizeTeamForMatchup(realGame.time_casa);
+      const realAway = normalizeTeamForMatchup(realGame.time_fora);
 
-      if (sameOrder) {
+      if (predictionHome === realHome && predictionAway === realAway) {
         return {
           home: Number(prediction.gols_casa),
           away: Number(prediction.gols_fora)
         };
       }
 
-      if (reversedOrder) {
+      if (predictionHome === realAway && predictionAway === realHome) {
         return {
           home: Number(prediction.gols_fora),
           away: Number(prediction.gols_casa)
@@ -5092,24 +5099,24 @@
       return null;
     }
 
-    function formatPredictionLabelForRealGame(prediction, realGame) {
-      const scores = getPredictionScoresForRealGame(prediction, realGame);
+    function formatPredictionAgainstRealGame(prediction, realGame) {
+      const score = getPredictionScoreInRealOrder(prediction, realGame);
 
-      if (!scores) {
-        return formatGameLabel(prediction);
+      if (!score) {
+        return prediction ? formatGameLabel(prediction) : "Sem palpite registrado";
       }
 
-      return `${realGame.time_casa || "—"} ${scores.home} x ${scores.away} ${realGame.time_fora || "—"}`;
+      return `${realGame.time_casa || "—"} ${score.home} x ${score.away} ${realGame.time_fora || "—"}`;
     }
 
-    function getKnockoutGameScoreDetail(participante, realGame) {
-      const prediction = (participante.mata_mata || []).find(item => item.jogo_id === realGame.jogo_id);
-      const detail = scoreSingleKnockoutGameDetailed(prediction, realGame);
+    function getGroupGameScoreDetail(participante, realGame) {
+      const prediction = findPredictionForRealGame(participante, realGame);
+      const detail = scoreSingleGroupGameDetailed(prediction, realGame);
 
       return {
         jogo_id: realGame.jogo_id || "",
         realLabel: formatGameLabel(realGame),
-        predictionLabel: prediction ? formatGameLabel(prediction) : "Sem palpite registrado",
+        predictionLabel: prediction ? formatPredictionAgainstRealGame(prediction, realGame) : "Sem palpite registrado",
         points: detail.points,
         reason: detail.reason
       };
@@ -5120,14 +5127,14 @@
         return { points: 0, reason: "Sem palpite registrado para este jogo." };
       }
 
-      const normalizedPrediction = getPredictionScoresForRealGame(prediction, realGame);
+      const score = getPredictionScoreInRealOrder(prediction, realGame);
 
-      if (!normalizedPrediction) {
+      if (!score) {
         return { points: 0, reason: "O palpite salvo não corresponde a este confronto." };
       }
 
-      const predHome = normalizedPrediction.home;
-      const predAway = normalizedPrediction.away;
+      const predHome = Number(score.home);
+      const predAway = Number(score.away);
       const realHome = Number(realGame.gols_casa);
       const realAway = Number(realGame.gols_fora);
 
@@ -5136,22 +5143,22 @@
       }
 
       const sameOutcome = getOutcome(predHome, predAway) === getOutcome(realHome, realAway);
-      const homeGoals = predHome === realHome;
-      const awayGoals = predAway === realAway;
-      const oneTeamGoals = homeGoals || awayGoals;
+      const hitHomeGoals = predHome === realHome;
+      const hitAwayGoals = predAway === realAway;
+      const hitAnyGoals = hitHomeGoals || hitAwayGoals;
 
-      if (sameOutcome && oneTeamGoals) {
-        const teamName = homeGoals ? realGame.time_casa : realGame.time_fora;
-        return { points: 7, reason: `Acertou o resultado e os gols de ${teamName}.` };
+      if (sameOutcome && hitAnyGoals) {
+        const team = hitHomeGoals ? realGame.time_casa : realGame.time_fora;
+        return { points: 7, reason: `Acertou o resultado e os gols de ${team}.` };
       }
 
       if (sameOutcome) {
         return { points: 5, reason: "Acertou o resultado do jogo, mas não o placar." };
       }
 
-      if (oneTeamGoals) {
-        const teamName = homeGoals ? realGame.time_casa : realGame.time_fora;
-        return { points: 2, reason: `Errou o resultado, mas acertou os gols de ${teamName}.` };
+      if (hitAnyGoals) {
+        const team = hitHomeGoals ? realGame.time_casa : realGame.time_fora;
+        return { points: 2, reason: `Errou o resultado, mas acertou os gols de ${team}.` };
       }
 
       return { points: 0, reason: "Não acertou resultado nem gols de nenhum time." };
