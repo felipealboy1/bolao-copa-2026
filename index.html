@@ -1599,6 +1599,123 @@
       gap: 14px;
     }
 
+    .game-by-game-phase {
+      display: grid;
+      gap: 14px;
+    }
+
+    .game-by-game-phase-title {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-top: 6px;
+      padding: 4px 2px;
+    }
+
+    .game-by-game-phase-title h3 {
+      margin: 0;
+      font-size: 22px;
+      color: var(--text);
+    }
+
+    .game-by-game-phase-title span {
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .game-group-section {
+      display: grid;
+      gap: 0;
+      background: rgba(255, 255, 255, 0.55);
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      overflow: hidden;
+      box-shadow: 0 8px 22px rgba(16, 24, 40, 0.05);
+    }
+
+    .game-group-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      padding: 15px 16px;
+      background: linear-gradient(135deg, #ffffff, #f7fafc);
+      border-bottom: 1px solid var(--line);
+    }
+
+    .game-group-header-text {
+      display: grid;
+      gap: 4px;
+      min-width: 0;
+    }
+
+    .game-group-header h3 {
+      margin: 0;
+      font-size: 19px;
+      color: var(--text);
+    }
+
+    .game-group-header p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.4;
+    }
+
+    .game-group-count {
+      flex: 0 0 auto;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 999px;
+      padding: 6px 10px;
+      background: var(--info-bg);
+      color: var(--info-text);
+      font-size: 12px;
+      font-weight: 900;
+      white-space: nowrap;
+    }
+
+    .game-group-games {
+      display: grid;
+      gap: 10px;
+      padding: 12px;
+    }
+
+    .game-group-games .game-detail-card {
+      border-radius: 14px;
+      box-shadow: none;
+    }
+
+    @media (max-width: 768px) {
+      .game-by-game-phase-title {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 4px;
+      }
+
+      .game-by-game-phase-title h3 {
+        font-size: 20px;
+      }
+
+      .game-group-header {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 9px;
+        padding: 14px;
+      }
+
+      .game-group-count {
+        align-self: flex-start;
+      }
+
+      .game-group-games {
+        padding: 9px;
+      }
+    }
+
     .game-detail-card {
       background: var(--card);
       border: 1px solid var(--line);
@@ -5103,39 +5220,125 @@
         return;
       }
 
-      jogoAJogoContainer.innerHTML = jogos.map((jogo, index) => {
-        const media = Number(jogo.media_pontos || 0).toFixed(1).replace(".", ",");
-        const contentId = `jogo-a-jogo-${index}`;
+      const jogosGrupos = jogos.filter(jogo => normalizePhase(jogo.fase) === "fase de grupos");
+      const jogosMataMata = jogos.filter(jogo => normalizePhase(jogo.fase) !== "fase de grupos");
+      const secoes = [];
 
-        return `
-          <article class="game-detail-card">
-            <button class="game-detail-toggle" type="button" onclick="toggleJogoAJogoCard('${contentId}')">
-              <span class="game-detail-title">
-                <strong>${escapeHtml(jogo.confronto || "—")}</strong>
-                <span>${escapeHtml(jogo.fase || "—")}${jogo.grupo ? ` • Grupo ${escapeHtml(jogo.grupo)}` : ""} • ${jogo.total_palpites || 0} palpites • média ${media} pontos</span>
-              </span>
-              <span class="game-detail-pill">Expandir</span>
-            </button>
-
-            <div class="game-detail-content hidden" id="${contentId}">
-              <div class="game-player-row game-player-header">
-                <strong>Participante</strong>
-                <strong>Palpite</strong>
-                <strong>Pontos</strong>
-                <strong>Motivo</strong>
-              </div>
-              ${(jogo.participantes || []).map(row => `
-                <div class="game-player-row">
-                  <strong>${escapeHtml(row.nome || "Participante")}</strong>
-                  <span>${escapeHtml(row.palpite || "Sem palpite registrado")}</span>
-                  <span class="game-player-points">${escapeHtml(row.pontos ?? 0)}</span>
-                  <span>${escapeHtml(row.motivo || "—")}</span>
-                </div>
-              `).join("")}
+      if (jogosGrupos.length) {
+        secoes.push(`
+          <section class="game-by-game-phase">
+            <div class="game-by-game-phase-title">
+              <h3>Fase de grupos</h3>
+              <span>Jogos separados por grupo da Copa</span>
             </div>
-          </article>
-        `;
-      }).join("");
+
+            ${Object.keys(groups).map(groupKey => {
+              const jogosDoGrupo = jogosGrupos.filter(jogo => String(jogo.grupo || "").toUpperCase() === groupKey);
+              if (!jogosDoGrupo.length) return "";
+
+              return renderJogoAJogoSection(
+                `Grupo ${groupKey}`,
+                (groups[groupKey] || []).join(" • "),
+                jogosDoGrupo,
+                `grupo-${groupKey}`
+              );
+            }).join("")}
+          </section>
+        `);
+      }
+
+      if (jogosMataMata.length) {
+        const ordemFases = [
+          "fase de 32",
+          "oitavas de final",
+          "quartas de final",
+          "semifinais",
+          "decisão de 3º lugar",
+          "final"
+        ];
+
+        secoes.push(`
+          <section class="game-by-game-phase">
+            <div class="game-by-game-phase-title">
+              <h3>Mata-mata</h3>
+              <span>Jogos separados por fase</span>
+            </div>
+
+            ${ordemFases.map((faseNormalizada, phaseIndex) => {
+              const jogosDaFase = jogosMataMata.filter(jogo => normalizePhase(jogo.fase) === faseNormalizada);
+              if (!jogosDaFase.length) return "";
+
+              const tituloFase = jogosDaFase[0].fase || capitalizeFirst(faseNormalizada);
+
+              return renderJogoAJogoSection(
+                tituloFase,
+                "Confrontos finalizados nesta fase",
+                jogosDaFase,
+                `mata-mata-${phaseIndex}`
+              );
+            }).join("")}
+          </section>
+        `);
+      }
+
+      jogoAJogoContainer.innerHTML = secoes.join("");
+    }
+
+    function renderJogoAJogoSection(titulo, subtitulo, jogos, sectionKey) {
+      const quantidade = jogos.length;
+      const textoQuantidade = quantidade === 1
+        ? "1 jogo finalizado"
+        : `${quantidade} jogos finalizados`;
+
+      return `
+        <section class="game-group-section">
+          <header class="game-group-header">
+            <div class="game-group-header-text">
+              <h3>${escapeHtml(titulo)}</h3>
+              <p>${escapeHtml(subtitulo || "")}</p>
+            </div>
+            <span class="game-group-count">${textoQuantidade}</span>
+          </header>
+
+          <div class="game-group-games">
+            ${jogos.map((jogo, index) => renderJogoAJogoCard(jogo, `${sectionKey}-${index}`)).join("")}
+          </div>
+        </section>
+      `;
+    }
+
+    function renderJogoAJogoCard(jogo, uniqueId) {
+      const media = Number(jogo.media_pontos || 0).toFixed(1).replace(".", ",");
+      const contentId = `jogo-a-jogo-${uniqueId}`;
+
+      return `
+        <article class="game-detail-card">
+          <button class="game-detail-toggle" type="button" onclick="toggleJogoAJogoCard('${contentId}')">
+            <span class="game-detail-title">
+              <strong>${escapeHtml(jogo.confronto || "—")}</strong>
+              <span>${jogo.total_palpites || 0} palpites • média ${media} pontos</span>
+            </span>
+            <span class="game-detail-pill">Expandir</span>
+          </button>
+
+          <div class="game-detail-content hidden" id="${contentId}">
+            <div class="game-player-row game-player-header">
+              <strong>Participante</strong>
+              <strong>Palpite</strong>
+              <strong>Pontos</strong>
+              <strong>Motivo</strong>
+            </div>
+            ${(jogo.participantes || []).map(row => `
+              <div class="game-player-row">
+                <strong>${escapeHtml(row.nome || "Participante")}</strong>
+                <span>${escapeHtml(row.palpite || "Sem palpite registrado")}</span>
+                <span class="game-player-points">${escapeHtml(row.pontos ?? 0)}</span>
+                <span>${escapeHtml(row.motivo || "—")}</span>
+              </div>
+            `).join("")}
+          </div>
+        </article>
+      `;
     }
 
     function toggleJogoAJogoCard(contentId) {
