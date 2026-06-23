@@ -771,6 +771,23 @@
       border-bottom: 0;
     }
 
+    .real-thirds-card {
+      grid-column: 1 / -1;
+    }
+
+    .real-thirds-card .summary-note {
+      padding-top: 12px;
+      margin: 0;
+    }
+
+    .real-third-qualified-row {
+      background: rgba(236, 253, 243, 0.45);
+    }
+
+    .real-third-cut-line td {
+      border-top: 2px solid #f59e0b;
+    }
+
     .score-card td:first-child, .score-card th:first-child {
       text-align: left;
       white-space: normal;
@@ -4842,14 +4859,117 @@
         return renderRealGamesPhaseCard(fase, jogosDaFase);
       }).join("");
 
+      const realThirdPlacesHtml = renderRealThirdPlacesCard(groupGames);
+
       realGamesContainer.innerHTML = `
         ${groupHtml}
+        ${realThirdPlacesHtml}
         <article class="summary-card" style="grid-column: 1 / -1;">
           <h2>Mata-mata real</h2>
           <p class="summary-note"></p>
         </article>
         ${knockoutHtml || `<div class="viewer-message">Nenhum jogo de mata-mata preenchido ainda.</div>`}
       `;
+    }
+
+    function renderRealThirdPlacesCard(groupGames) {
+      const thirdPlaces = calculateRealThirdPlaces(groupGames);
+      const completedGroups = Object.keys(groups).filter(groupKey => {
+        const finalized = groupGames.filter(jogo =>
+          String(jogo.grupo || "").toUpperCase() === groupKey && isRealGameFinalized(jogo)
+        );
+        return finalized.length === 6;
+      }).length;
+
+      const groupStageComplete = completedGroups === Object.keys(groups).length;
+
+      if (!thirdPlaces.length) {
+        return `
+          <article class="summary-card real-thirds-card">
+            <h2>Classificação dos terceiros colocados</h2>
+            <p class="summary-note">Ainda não há jogos finalizados suficientes para montar a classificação dos terceiros.</p>
+          </article>
+        `;
+      }
+
+      const note = groupStageComplete
+        ? "Os oito melhores terceiros estão classificados para a fase de 32."
+        : "Classificação provisória considerando apenas os jogos finalizados. Os oito primeiros estariam avançando neste momento.";
+
+      return `
+        <article class="summary-card real-thirds-card">
+          <h2>Classificação dos terceiros colocados</h2>
+          <p class="summary-note">${note}</p>
+
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Pos.</th>
+                  <th class="team">Seleção</th>
+                  <th>Grupo</th>
+                  <th>Pts</th>
+                  <th>J</th>
+                  <th>V</th>
+                  <th>E</th>
+                  <th>D</th>
+                  <th>GP</th>
+                  <th>GC</th>
+                  <th>SG</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${thirdPlaces.map((team, index) => {
+                  const qualifies = index < 8;
+                  const status = qualifies
+                    ? `<span class="tag tag-qualified">${groupStageComplete ? "Avança" : "Avança agora"}</span>`
+                    : `<span class="tag tag-out">${groupStageComplete ? "Fora" : "Fora agora"}</span>`;
+
+                  const rowClasses = [
+                    qualifies ? "real-third-qualified-row" : "",
+                    index === 8 ? "real-third-cut-line" : ""
+                  ].filter(Boolean).join(" ");
+
+                  return `
+                    <tr class="${rowClasses}">
+                      <td>${index + 1}</td>
+                      <td class="team">${escapeHtml(team.selecao)}</td>
+                      <td>${escapeHtml(team.grupo)}</td>
+                      <td>${team.pontos}</td>
+                      <td>${team.jogos}</td>
+                      <td>${team.vitorias}</td>
+                      <td>${team.empates}</td>
+                      <td>${team.derrotas}</td>
+                      <td>${team.gols_pro}</td>
+                      <td>${team.gols_contra}</td>
+                      <td>${team.saldo_gols}</td>
+                      <td>${status}</td>
+                    </tr>
+                  `;
+                }).join("")}
+              </tbody>
+            </table>
+          </div>
+        </article>
+      `;
+    }
+
+    function calculateRealThirdPlaces(groupGames) {
+      const thirdPlaces = Object.keys(groups)
+        .map(groupKey => {
+          const finalizedGames = groupGames.filter(jogo =>
+            String(jogo.grupo || "").toUpperCase() === groupKey && isRealGameFinalized(jogo)
+          );
+
+          if (!finalizedGames.length) return null;
+
+          const standings = calculateStandingsFromRealGames(groupKey, finalizedGames);
+          return standings.find(team => Number(team.posicao) === 3) || null;
+        })
+        .filter(Boolean);
+
+      return sortThirdPlaces(thirdPlaces);
     }
 
     function renderRealGroupCard(groupKey, jogosDoGrupo) {
