@@ -1706,6 +1706,187 @@
       box-shadow: none;
     }
 
+    .group-classification-section {
+      display: grid;
+      gap: 14px;
+    }
+
+    .group-classification-intro {
+      display: grid;
+      gap: 5px;
+    }
+
+    .group-classification-intro h3 {
+      margin: 0;
+      font-size: 22px;
+      color: var(--text);
+    }
+
+    .group-classification-intro p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    .classification-group-card {
+      overflow: hidden;
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      box-shadow: 0 8px 22px rgba(16, 24, 40, 0.05);
+    }
+
+    .classification-group-toggle {
+      width: 100%;
+      border: 0;
+      background: transparent;
+      padding: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      text-align: left;
+      cursor: pointer;
+    }
+
+    .classification-group-title {
+      display: grid;
+      gap: 4px;
+      min-width: 0;
+    }
+
+    .classification-group-title strong {
+      color: var(--text);
+      font-size: 18px;
+    }
+
+    .classification-group-title span {
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.45;
+    }
+
+    .classification-participant-list {
+      display: grid;
+      gap: 10px;
+      padding: 12px;
+      border-top: 1px solid var(--line);
+      background: #f8fafc;
+    }
+
+    .classification-participant-card {
+      display: grid;
+      gap: 12px;
+      padding: 14px;
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+    }
+
+    .classification-participant-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .classification-participant-name {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-width: 0;
+      color: var(--text);
+      font-weight: 900;
+    }
+
+    .classification-rank {
+      flex: 0 0 auto;
+      min-width: 30px;
+      height: 30px;
+      padding: 0 7px;
+      border-radius: 999px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--info-bg);
+      color: var(--info-text);
+      font-size: 12px;
+      font-weight: 900;
+    }
+
+    .classification-total {
+      flex: 0 0 auto;
+      min-width: 72px;
+      border-radius: 999px;
+      padding: 7px 10px;
+      background: var(--success-bg);
+      color: var(--success-text);
+      text-align: center;
+      font-size: 13px;
+      font-weight: 900;
+      white-space: nowrap;
+    }
+
+    .classification-breakdown {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 8px;
+    }
+
+    .classification-rule {
+      display: grid;
+      gap: 4px;
+      min-height: 66px;
+      padding: 9px;
+      border-radius: 11px;
+      background: #f8fafc;
+      border: 1px solid var(--line);
+    }
+
+    .classification-rule span {
+      color: var(--muted);
+      font-size: 11px;
+      line-height: 1.3;
+    }
+
+    .classification-rule strong {
+      color: var(--text);
+      font-size: 15px;
+    }
+
+    .classification-rule.pending {
+      background: #fffaf0;
+    }
+
+    .classification-rule.pending strong {
+      color: #b45309;
+      font-size: 12px;
+    }
+
+    @media (max-width: 768px) {
+      .group-classification-intro h3 {
+        font-size: 20px;
+      }
+
+      .classification-group-toggle {
+        align-items: flex-start;
+        padding: 14px;
+      }
+
+      .classification-participant-header {
+        align-items: flex-start;
+      }
+
+      .classification-breakdown {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .classification-rule:last-child {
+        grid-column: 1 / -1;
+      }
+    }
+
     @media (max-width: 768px) {
       .game-by-game-phase-title {
         align-items: flex-start;
@@ -5322,7 +5503,7 @@
           throw new Error(data?.message || "Não foi possível carregar o jogo a jogo.");
         }
 
-        renderJogoAJogo(data.jogos || []);
+        renderJogoAJogo(data.jogos || [], data.classificacao_grupos || [], !!data.todos_grupos_concluidos);
       } catch (error) {
         console.error(error);
         jogoAJogoContainer.innerHTML = `<div class="viewer-message">Erro ao carregar jogo a jogo: ${escapeHtml(error.message)}</div>`;
@@ -5334,7 +5515,7 @@
       }
     }
 
-    function renderJogoAJogo(jogos) {
+    function renderJogoAJogo(jogos, classificacaoGrupos = [], todosGruposConcluidos = false) {
       if (!jogos.length) {
         jogoAJogoContainer.innerHTML = `<div class="viewer-message">Ainda não há jogos reais finalizados para o grupo selecionado.</div>`;
         return;
@@ -5365,6 +5546,13 @@
             }).join("")}
           </section>
         `);
+      }
+
+      if (classificacaoGrupos.length) {
+        secoes.push(renderGroupClassificationSection(
+          classificacaoGrupos,
+          todosGruposConcluidos
+        ));
       }
 
       if (jogosMataMata.length) {
@@ -5402,6 +5590,113 @@
       }
 
       jogoAJogoContainer.innerHTML = secoes.join("");
+    }
+
+    function renderGroupClassificationSection(classificacaoGrupos, todosGruposConcluidos) {
+      const subtitle = todosGruposConcluidos
+        ? "Pontuação definitiva, incluindo o acerto do terceiro colocado que avançou."
+        : "Os grupos aparecem quando os 6 jogos terminam. O bônus de melhor terceiro será definido após o fim de todos os grupos.";
+
+      return `
+        <section class="group-classification-section">
+          <div class="group-classification-intro">
+            <h3>Pontuação da classificação dos grupos</h3>
+            <p>${escapeHtml(subtitle)}</p>
+          </div>
+
+          ${classificacaoGrupos.map(item => renderGroupClassificationCard(item)).join("")}
+        </section>
+      `;
+    }
+
+    function renderGroupClassificationCard(item) {
+      const groupKey = String(item.grupo || "").toUpperCase();
+      const contentId = `classificacao-grupo-${groupKey}`;
+      const participantes = item.participantes || [];
+      const lider = participantes[0];
+      const classificacaoReal = (item.classificacao_real || [])
+        .map(time => `${time.posicao}º ${time.selecao}`)
+        .join(" • ");
+
+      const leaderText = lider
+        ? `Líder: ${lider.nome} com ${lider.total} pontos`
+        : "Nenhum participante encontrado";
+
+      return `
+        <article class="classification-group-card">
+          <button
+            class="classification-group-toggle"
+            type="button"
+            onclick="toggleGroupClassificationCard('${contentId}')"
+          >
+            <span class="classification-group-title">
+              <strong>Grupo ${escapeHtml(groupKey)}</strong>
+              <span>${escapeHtml(classificacaoReal)}<br>${escapeHtml(leaderText)}</span>
+            </span>
+            <span class="game-detail-pill">Expandir</span>
+          </button>
+
+          <div class="classification-participant-list hidden" id="${contentId}">
+            ${participantes.map((participante, index) =>
+              renderGroupClassificationParticipant(participante, index + 1)
+            ).join("")}
+          </div>
+        </article>
+      `;
+    }
+
+    function renderGroupClassificationParticipant(participante, position) {
+      const bestThirdContent = participante.melhor_terceiro_pendente
+        ? `<div class="classification-rule pending">
+             <span>Melhor terceiro</span>
+             <strong>Aguardando definição</strong>
+           </div>`
+        : renderGroupClassificationRule("Melhor terceiro", participante.melhor_terceiro);
+
+      return `
+        <article class="classification-participant-card">
+          <div class="classification-participant-header">
+            <div class="classification-participant-name">
+              <span class="classification-rank">${position}º</span>
+              <span>${escapeHtml(participante.nome || "Participante")}</span>
+            </div>
+            <span class="classification-total">${Number(participante.total || 0)} pts</span>
+          </div>
+
+          <div class="classification-breakdown">
+            ${renderGroupClassificationRule("1º colocado exato", participante.primeiro_exato)}
+            ${renderGroupClassificationRule("2º colocado exato", participante.segundo_exato)}
+            ${renderGroupClassificationRule("Top 2 em posição trocada", participante.top2_trocado)}
+            ${renderGroupClassificationRule("3º colocado exato", participante.terceiro_exato)}
+            ${bestThirdContent}
+          </div>
+        </article>
+      `;
+    }
+
+    function renderGroupClassificationRule(label, points) {
+      const value = Number(points || 0);
+
+      return `
+        <div class="classification-rule">
+          <span>${escapeHtml(label)}</span>
+          <strong>${value > 0 ? `+${value}` : "0"}</strong>
+        </div>
+      `;
+    }
+
+    function toggleGroupClassificationCard(contentId) {
+      const content = document.getElementById(contentId);
+      if (!content) return;
+
+      content.classList.toggle("hidden");
+
+      const button = content.previousElementSibling;
+      const pill = button?.querySelector(".game-detail-pill");
+
+      if (pill) {
+        pill.textContent = content.classList.contains("hidden") ? "Expandir" : "Recolher";
+      }
     }
 
     function renderJogoAJogoSection(titulo, subtitulo, jogos, sectionKey) {
@@ -5985,288 +6280,4 @@
         } else if (filledAnything) {
           alert("Resultados aleatórios preenchidos com sucesso");
         } else {
-          alert("Não havia resultados pendentes para preencher.");
-        }
-
-        knockoutPage.scrollIntoView({ behavior: "smooth", block: "start" });
-      } catch (error) {
-        console.error(error);
-        alert(`Erro ao preencher resultados aleatórios: ${error.message}`);
-      }
-    }
-
-    function syncGroupInputsFromState() {
-      appState.matches.forEach(match => {
-        const homeInput = document.querySelector(`input[data-match-id="${match.jogo_id}"][data-side="home"]`);
-        const awayInput = document.querySelector(`input[data-match-id="${match.jogo_id}"][data-side="away"]`);
-
-        if (homeInput) homeInput.value = match.gols_casa;
-        if (awayInput) awayInput.value = match.gols_fora;
-      });
-    }
-
-    function fillStageRandomResults(stage) {
-      const matches = appState.knockout[stage] || [];
-      let changed = false;
-
-      matches.forEach(match => {
-        if (!match.time_casa || !match.time_fora) return;
-
-        const homeWasEmpty = match.gols_casa === "";
-        const awayWasEmpty = match.gols_fora === "";
-
-        if (!homeWasEmpty && !awayWasEmpty) {
-          updateMatchWinner(match);
-          return;
-        }
-
-        const score = randomKnockoutScoreForMissing(match.gols_casa, match.gols_fora);
-
-        if (homeWasEmpty) {
-          match.gols_casa = String(score.home);
-          changed = true;
-        }
-
-        if (awayWasEmpty) {
-          match.gols_fora = String(score.away);
-          changed = true;
-        }
-
-        updateMatchWinner(match);
-      });
-
-      return changed;
-    }
-
-    function randomKnockoutScoreForMissing(currentHome, currentAway) {
-      const homeEmpty = currentHome === "";
-      const awayEmpty = currentAway === "";
-
-      if (homeEmpty && awayEmpty) {
-        return randomKnockoutScore();
-      }
-
-      if (homeEmpty) {
-        const away = Number(currentAway);
-        let home = randomGroupGoals();
-
-        if (home === away) {
-          const options = [0, 1, 2].filter(value => value !== away);
-          home = options[Math.floor(Math.random() * options.length)];
-        }
-
-        return { home, away };
-      }
-
-      if (awayEmpty) {
-        const home = Number(currentHome);
-        let away = randomGroupGoals();
-
-        if (away === home) {
-          const options = [0, 1, 2].filter(value => value !== home);
-          away = options[Math.floor(Math.random() * options.length)];
-        }
-
-        return { home, away };
-      }
-
-      return {
-        home: Number(currentHome),
-        away: Number(currentAway)
-      };
-    }
-
-    function randomGroupGoals() {
-      return Math.floor(Math.random() * 3);
-    }
-
-    function randomKnockoutScore() {
-      let home = Math.floor(Math.random() * 3);
-      let away = Math.floor(Math.random() * 3);
-
-      while (home === away) {
-        away = Math.floor(Math.random() * 3);
-      }
-
-      return { home, away };
-    }
-
-    function resetKnockoutOnly() {
-      appState.knockoutGenerated = false;
-      appState.knockout = {
-        R32: [],
-        R16: [],
-        QF: [],
-        SF: [],
-        FINAL: [],
-        THIRD: []
-      };
-      knockoutContainer.innerHTML = "";
-    }
-
-    function resetAll() {
-      appState.matches.forEach(match => {
-        match.gols_casa = "";
-        match.gols_fora = "";
-      });
-
-      document.querySelectorAll("input[data-match-id]").forEach(input => {
-        input.value = "";
-      });
-
-      resetKnockoutOnly();
-      calculateAll();
-      groupPage.scrollIntoView({ behavior: "smooth", block: "start" });
-    }
-
-    function getPalpitesPayload() {
-      return appState.matches.map(match => ({
-        grupo: match.grupo,
-        jogo_id: match.jogo_id,
-        time_casa: match.time_casa,
-        gols_casa: Number(match.gols_casa),
-        gols_fora: Number(match.gols_fora),
-        time_fora: match.time_fora
-      }));
-    }
-
-    function getClassificacaoPayload() {
-      return Object.values(appState.standingsByGroup)
-        .flat()
-        .map(team => ({
-          grupo: team.grupo,
-          posicao: team.posicao,
-          selecao: team.selecao,
-          pontos: team.pontos,
-          jogos: team.jogos,
-          vitorias: team.vitorias,
-          empates: team.empates,
-          derrotas: team.derrotas,
-          gols_pro: team.gols_pro,
-          gols_contra: team.gols_contra,
-          saldo_gols: team.saldo_gols
-        }));
-    }
-
-    function getMataMataPayload() {
-      return Object.values(appState.knockout)
-        .flat()
-        .map(match => ({
-          fase: match.fase,
-          jogo_id: match.jogo_id,
-          time_casa: match.time_casa,
-          gols_casa: Number(match.gols_casa),
-          gols_fora: Number(match.gols_fora),
-          time_fora: match.time_fora,
-          vencedor: match.vencedor
-        }));
-    }
-
-    function getResumoFinalPayload() {
-      const finalMatch = appState.knockout.FINAL[0];
-      const thirdMatch = appState.knockout.THIRD[0];
-
-      return {
-        campeao: finalMatch?.vencedor || "",
-        vice: finalMatch?.vencedor ? getLoser(finalMatch) : "",
-        terceiro: thirdMatch?.vencedor || "",
-        quarto: thirdMatch?.vencedor ? getLoser(thirdMatch) : ""
-      };
-    }
-
-    async function handleSubmit(event) {
-      event.preventDefault();
-      clearModalMessage();
-
-      const validation = validateKnockoutComplete();
-      if (!validation.ok) {
-        showModalMessage("Complete todo o mata-mata antes de enviar.", "error");
-        return;
-      }
-
-      const primeiroNome = document.getElementById("nome").value.trim();
-      const sobrenome = document.getElementById("sobrenome").value.trim();
-      const nomeCompleto = [primeiroNome, sobrenome].filter(Boolean).join(" ");
-
-      const participante = {
-        nome: nomeCompleto,
-        primeiro_nome: primeiroNome,
-        sobrenome: sobrenome,
-        email: document.getElementById("email").value.trim(),
-        telefone: document.getElementById("telefone").value.trim()
-      };
-
-      if (!participante.primeiro_nome || !participante.sobrenome) {
-        showModalMessage("Preencha nome e sobrenome.", "error");
-        return;
-      }
-
-      if (!document.getElementById("consentimento").checked) {
-        showModalMessage("Você precisa aceitar o uso dos dados para enviar.", "error");
-        return;
-      }
-
-      const payload = {
-        participante,
-        palpites: getPalpitesPayload(),
-        classificacao: getClassificacaoPayload(),
-        mata_mata: getMataMataPayload(),
-        resumo_final: getResumoFinalPayload(),
-        grupos: getSubmissionGroups()
-      };
-
-      sendBtn.disabled = true;
-      sendBtn.textContent = "Enviando...";
-
-      try {
-        await fetch(SCRIPT_URL, {
-          method: "POST",
-          mode: "no-cors",
-          headers: {
-            "Content-Type": "text/plain;charset=utf-8"
-          },
-          body: JSON.stringify(payload)
-        });
-
-        showModalMessage("Palpite completo enviado! Abrindo a lista de participantes...", "success");
-        submitForm.reset();
-        pendingCreatedGroups = [];
-        if (existingGroupsCheckboxes) {
-          existingGroupsCheckboxes.innerHTML = `<div class="group-empty-message">Carregando grupos...</div>`;
-        }
-        if (createGroupMessage) createGroupMessage.textContent = "";
-        if (enterGroupPanel) enterGroupPanel.classList.add("hidden");
-        if (createGroupPanel) createGroupPanel.classList.add("hidden");
-        updateSubmitGroupsPreview();
-        submitDialog.close();
-        showMainMode("participants");
-        await refreshParticipantsGroupsAndList("GERAL");
-
-        if (appState.publicData.participantes.length > 0) {
-          selectParticipant(appState.publicData.participantes[0].id_participante);
-        }
-      } catch (error) {
-        console.error(error);
-        showModalMessage("Não foi possível enviar. Confira a publicação do Apps Script e tente novamente.", "error");
-      } finally {
-        sendBtn.disabled = false;
-        sendBtn.textContent = "Confirmar envio";
-      }
-    }
-
-    function showModalMessage(text, type) {
-      modalMessage.textContent = text;
-      modalMessage.className = `message ${type}`;
-    }
-
-    function clearModalMessage() {
-      modalMessage.textContent = "";
-      modalMessage.className = "message";
-    }
-
-    init();
-    showMainMode("ranking");
-    loadRankingData();
-  </script>
-</body>
-</html>
+          alert("Não havia resultados pe
