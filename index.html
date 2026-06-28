@@ -2042,6 +2042,236 @@
       }
     }
 
+
+    /* Página estática de análise do bolão */
+    .analysis-section {
+      display: grid;
+      gap: 18px;
+    }
+
+    .analysis-kpis {
+      display: grid;
+      grid-template-columns: repeat(6, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .analysis-kpi,
+    .analysis-card,
+    .analysis-highlight,
+    .analysis-zebra-card {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      box-shadow: var(--shadow);
+    }
+
+    .analysis-kpi {
+      padding: 15px;
+      display: grid;
+      gap: 5px;
+    }
+
+    .analysis-kpi strong {
+      font-size: 25px;
+      line-height: 1;
+      color: var(--text);
+    }
+
+    .analysis-kpi span {
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.35;
+    }
+
+    .analysis-card {
+      overflow: hidden;
+    }
+
+    .analysis-card-header {
+      padding: 17px 18px;
+      border-bottom: 1px solid var(--line);
+      display: grid;
+      gap: 5px;
+      background: linear-gradient(135deg, #ffffff, #f8fafc);
+    }
+
+    .analysis-card-header h3 {
+      margin: 0;
+      font-size: 21px;
+    }
+
+    .analysis-card-header p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.45;
+    }
+
+    .analysis-card-body {
+      padding: 18px;
+      color: var(--text);
+      line-height: 1.6;
+    }
+
+    .analysis-card-body p {
+      margin: 0 0 12px;
+    }
+
+    .analysis-card-body p:last-child {
+      margin-bottom: 0;
+    }
+
+    .analysis-highlight-grid,
+    .analysis-zebra-grid,
+    .analysis-two-columns {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .analysis-highlight {
+      padding: 16px;
+      display: grid;
+      gap: 7px;
+      box-shadow: none;
+    }
+
+    .analysis-highlight strong {
+      font-size: 16px;
+    }
+
+    .analysis-highlight p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    .analysis-zebra-card {
+      padding: 16px;
+      display: grid;
+      gap: 9px;
+      box-shadow: none;
+      border-left: 4px solid #f59e0b;
+    }
+
+    .analysis-zebra-top {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .analysis-zebra-top strong {
+      font-size: 16px;
+    }
+
+    .analysis-zebra-card p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    .analysis-badge {
+      display: inline-flex;
+      align-items: center;
+      width: fit-content;
+      border-radius: 999px;
+      padding: 5px 9px;
+      background: var(--warning-bg);
+      color: var(--warning-text);
+      font-size: 11px;
+      font-weight: 900;
+    }
+
+    .analysis-callout {
+      padding: 16px 18px;
+      border-radius: 16px;
+      background: var(--info-bg);
+      color: var(--info-text);
+      line-height: 1.55;
+      font-size: 14px;
+      font-weight: 700;
+    }
+
+    .analysis-note {
+      padding: 14px 18px;
+      background: #fbfcfe;
+      border-top: 1px solid var(--line);
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.45;
+    }
+
+    .analysis-list {
+      margin: 0;
+      padding-left: 20px;
+      display: grid;
+      gap: 9px;
+    }
+
+    .analysis-list li {
+      color: var(--muted);
+      line-height: 1.5;
+    }
+
+    .analysis-list strong {
+      color: var(--text);
+    }
+
+    .analysis-conclusion {
+      padding: 20px;
+      border-radius: 18px;
+      border: 1px solid #b7ead5;
+      background: linear-gradient(135deg, #ffffff, #ecfdf3);
+      box-shadow: var(--shadow);
+      line-height: 1.6;
+    }
+
+    .analysis-conclusion h3 {
+      margin: 0 0 8px;
+      font-size: 22px;
+    }
+
+    .analysis-conclusion p {
+      margin: 0;
+      color: var(--muted);
+    }
+
+    @media (max-width: 1000px) {
+      .analysis-kpis {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+    }
+
+    @media (max-width: 768px) {
+      .analysis-kpis,
+      .analysis-highlight-grid,
+      .analysis-zebra-grid,
+      .analysis-two-columns {
+        grid-template-columns: 1fr;
+      }
+
+      .analysis-kpi,
+      .analysis-card,
+      .analysis-highlight,
+      .analysis-zebra-card,
+      .analysis-conclusion {
+        border-radius: 16px;
+      }
+
+      .analysis-card-header,
+      .analysis-card-body {
+        padding: 14px;
+      }
+
+      .analysis-card-header h3 {
+        font-size: 19px;
+      }
+    }
+
   </style>
 </head>
 <body>
@@ -2059,7 +2289,7 @@
         <button class="btn-secondary menu-title" type="button" id="navJogoAJogoBtn">Jogo a Jogo</button>
         <button class="btn-secondary menu-title" type="button" id="navPontuacoesEspeciaisBtn">Pontuações especiais</button>
         <button class="btn-secondary menu-title btn-active" type="button" id="navClassificacaoBtn">Classificação</button>
-        <button class="btn-secondary menu-title" type="button" id="navComparativoBtn">Comparativo</button>
+        <button class="btn-secondary menu-title" type="button" id="navAnaliseBtn">Análise</button>
         <button class="btn-secondary menu-title" type="button" id="navJogosReaisBtn">Jogos reais</button>
         <button class="btn-secondary menu-title" type="button" id="navPontuacaoBtn">Regras de Pontuação</button>
       </div>
@@ -2132,48 +2362,235 @@
       </section>
     </section>
 
-    <section class="page hidden" id="comparisonPage">
-      <section class="comparison-section">
+    <section class="page hidden" id="analysisPage">
+      <section class="analysis-section">
         <div class="score-hero">
-          <h2>Comparativo dos palpites</h2>
-          <p>Veja, jogo a jogo, como os participantes apostaram: vitória do time da casa, empate ou vitória do time de fora. Quando o jogo real estiver finalizado, a página também mostra qual grupo de apostas acertou.</p>
+          <h2>Análise completa do bolão</h2>
+          <p>Uma leitura estática e imparcial dos 72 jogos da fase de grupos, dos palpites dos 16 participantes e dos confrontos já definidos para a Fase de 32. A análise considera o placar corrigido de Uruguai 2 x 2 Cabo Verde.</p>
         </div>
 
-        <div class="ranking-filter-card">
-          <label>
-            Ver comparativo por grupo
-            <select id="comparisonGroupSelect">
-              <option value="GERAL">Geral</option>
-            </select>
-          </label>
-          <button class="btn-secondary" type="button" id="refreshComparisonBtn">Atualizar comparativo</button>
+        <div class="analysis-kpis">
+          <div class="analysis-kpi"><strong>16</strong><span>participantes analisados</span></div>
+          <div class="analysis-kpi"><strong>72</strong><span>jogos finalizados na fase de grupos</span></div>
+          <div class="analysis-kpi"><strong>48,8%</strong><span>dos palpites acertaram vencedor ou empate</span></div>
+          <div class="analysis-kpi"><strong>9,8%</strong><span>dos palpites acertaram o placar exato</span></div>
+          <div class="analysis-kpi"><strong>20</strong><span>empates reais na fase de grupos</span></div>
+          <div class="analysis-kpi"><strong>215</strong><span>gols marcados nos 72 jogos</span></div>
         </div>
 
-        <article class="comparison-card">
-          <h3>Estatísticas por jogo</h3>
+        <div class="analysis-callout">
+          No total, foram 1.152 palpites de placar. Houve 562 acertos de resultado e 113 placares exatos. Em média, cada participante acertou aproximadamente 35 dos 72 resultados e 7 placares exatos.
+        </div>
+
+        <article class="analysis-card">
+          <div class="analysis-card-header">
+            <h3>Desempenho dos participantes</h3>
+            <p>Cada coluna observa um aspecto diferente: jogos individuais, placares exatos, leitura completa dos grupos, seleções classificadas e montagem dos confrontos.</p>
+          </div>
           <div class="table-wrap">
             <table>
               <thead>
                 <tr>
-                  <th>Jogo</th>
-                  <th class="team">Confronto</th>
-                  <th>Resultado real</th>
-                  <th>Apostas casa</th>
-                  <th>Empate</th>
-                  <th>Apostas fora</th>
-                  <th>Mais apostado</th>
-                  <th>Acertaram resultado</th>
+                  <th class="team">Participante</th>
+                  <th>Resultados certos</th>
+                  <th>Placares exatos</th>
+                  <th>Grupos inteiros</th>
+                  <th>Classificados</th>
+                  <th>Confrontos da Fase de 32</th>
                 </tr>
               </thead>
-              <tbody id="comparisonTableBody">
-                <tr><td colspan="8" class="viewer-message">Clique em “Atualizar comparativo” para carregar as estatísticas.</td></tr>
+              <tbody>
+                <tr><td class="team">Guilherme Dias</td><td><strong>47</strong></td><td>9</td><td><strong>7</strong></td><td>26/32</td><td>3</td></tr>
+                <tr><td class="team">Vinícius Derêncio</td><td>45</td><td>7</td><td>5</td><td>27/32</td><td>4</td></tr>
+                <tr><td class="team">Eric Kawakame</td><td>44</td><td><strong>11</strong></td><td>5</td><td>24/32</td><td>0</td></tr>
+                <tr><td class="team">Renan Amorim</td><td>42</td><td>8</td><td>6</td><td><strong>28/32</strong></td><td>3</td></tr>
+                <tr><td class="team">Felipe Alboy</td><td>41</td><td>7</td><td>4</td><td>26/32</td><td>0</td></tr>
+                <tr><td class="team">Paulo Apolinário</td><td>41</td><td>6</td><td>5</td><td>27/32</td><td>2</td></tr>
+                <tr><td class="team">Gabriel Jamami</td><td>41</td><td>6</td><td>2</td><td>26/32</td><td>1</td></tr>
+                <tr><td class="team">Fábio Ponce</td><td>39</td><td>6</td><td>4</td><td>27/32</td><td>3</td></tr>
+                <tr><td class="team">Bruno Prado</td><td>38</td><td>10</td><td>6</td><td>26/32</td><td>2</td></tr>
+                <tr><td class="team">Richard Homma</td><td>34</td><td>6</td><td>3</td><td>21/32</td><td><strong>5</strong></td></tr>
+                <tr><td class="team">Giovanna Sabino</td><td>28</td><td>4</td><td>2</td><td>25/32</td><td>1</td></tr>
+                <tr><td class="team">Any Carneiro</td><td>27</td><td>9</td><td>0</td><td>19/32</td><td>0</td></tr>
+                <tr><td class="team">Vanessa Rodrigues</td><td>26</td><td>9</td><td>0</td><td>21/32</td><td>0</td></tr>
+                <tr><td class="team">Theo Yuji</td><td>25</td><td>7</td><td>1</td><td>23/32</td><td>0</td></tr>
+                <tr><td class="team">Juliana Fernandes</td><td>22</td><td>4</td><td>3</td><td>21/32</td><td>1</td></tr>
+                <tr><td class="team">Daniel Scamilhe</td><td>22</td><td>4</td><td>0</td><td>19/32</td><td>0</td></tr>
               </tbody>
             </table>
           </div>
+          <div class="analysis-note">Esta tabela não substitui a classificação oficial do bolão. As categorias possuem pesos diferentes nas regras de pontuação, portanto o participante com mais acertos simples não necessariamente terá a maior pontuação total.</div>
         </article>
+
+        <article class="analysis-card">
+          <div class="analysis-card-header">
+            <h3>Os principais destaques</h3>
+            <p>Os melhores desempenhos apareceram de formas diferentes.</p>
+          </div>
+          <div class="analysis-card-body">
+            <div class="analysis-highlight-grid">
+              <div class="analysis-highlight"><strong>Guilherme: maior consistência</strong><p>Liderou os acertos de resultado, com 47, e acertou a ordem completa de 7 dos 12 grupos. Foi o desempenho mais sólido entre jogos individuais e leitura da tabela.</p></div>
+              <div class="analysis-highlight"><strong>Vinícius: desempenho mais equilibrado</strong><p>Terminou em segundo nos resultados, acertou 27 classificados e montou corretamente quatro confrontos completos da Fase de 32.</p></div>
+              <div class="analysis-highlight"><strong>Eric: especialista em placares exatos</strong><p>Foi o único a chegar a 11 placares exatos. Em compensação, não encaixou nenhum confronto completo da Fase de 32.</p></div>
+              <div class="analysis-highlight"><strong>Renan: melhor leitura dos classificados</strong><p>Acertou 28 das 32 seleções que avançaram, além de seis grupos inteiros e três confrontos completos.</p></div>
+              <div class="analysis-highlight"><strong>Richard: especialista no chaveamento</strong><p>Mesmo com 34 resultados certos e 21 classificados, foi quem mais aproximou sua chave da realidade: cinco confrontos completos.</p></div>
+              <div class="analysis-highlight"><strong>Bruno: poucos erros, muitos acertos valiosos</strong><p>Teve 10 placares exatos e seis grupos completos. Seus acertos foram menos frequentes que os dos líderes, mas muitas vezes mais precisos.</p></div>
+            </div>
+          </div>
+        </article>
+
+        <article class="analysis-card">
+          <div class="analysis-card-header">
+            <h3>As maiores zebras da fase de grupos</h3>
+            <p>Nesta análise, “zebra” significa um resultado que contrariou fortemente a opinião dos participantes.</p>
+          </div>
+          <div class="analysis-card-body">
+            <div class="analysis-zebra-grid">
+              <div class="analysis-zebra-card">
+                <div class="analysis-zebra-top"><strong>África do Sul 1 x 0 Coreia do Sul</strong><span class="analysis-badge">1 acerto em 16</span></div>
+                <p>Onze pessoas apostaram na Coreia do Sul e quatro no empate. Somente Giovanna Sabino previu a vitória sul-africana. Ninguém acertou o placar exato.</p>
+              </div>
+              <div class="analysis-zebra-card">
+                <div class="analysis-zebra-top"><strong>Catar 1 x 1 Suíça</strong><span class="analysis-badge">1 acerto em 16</span></div>
+                <p>Doze participantes apostaram na Suíça. Any Carneiro foi a única a prever o empate e ainda acertou exatamente o placar de 1 x 1.</p>
+              </div>
+              <div class="analysis-zebra-card">
+                <div class="analysis-zebra-top"><strong>Espanha 0 x 0 Cabo Verde</strong><span class="analysis-badge">1 acerto em 16</span></div>
+                <p>Treze pessoas apostaram na Espanha. Daniel Scamilhe foi o único a prever empate, embora não tenha acertado o 0 x 0.</p>
+              </div>
+              <div class="analysis-zebra-card">
+                <div class="analysis-zebra-top"><strong>Uruguai 2 x 2 Cabo Verde</strong><span class="analysis-badge">1 acerto em 16</span></div>
+                <p>Quatorze participantes apostaram no Uruguai. Richard Homma foi o único a prever empate, com um palpite de 1 x 1. Ninguém marcou o 2 x 2 exato.</p>
+              </div>
+              <div class="analysis-zebra-card">
+                <div class="analysis-zebra-top"><strong>Equador 2 x 1 Alemanha</strong><span class="analysis-badge">2 acertos em 16</span></div>
+                <p>Dez pessoas apostaram na Alemanha e quatro no empate. Somente Giovanna Sabino e Juliana Fernandes escolheram o Equador.</p>
+              </div>
+              <div class="analysis-zebra-card">
+                <div class="analysis-zebra-top"><strong>Austrália 2 x 0 Turquia</strong><span class="analysis-badge">2 acertos em 16</span></div>
+                <p>Daniel Scamilhe e Any Carneiro foram os únicos a apostar na Austrália. Daniel também acertou o placar exato de 2 x 0.</p>
+              </div>
+            </div>
+          </div>
+        </article>
+
+        <div class="analysis-two-columns">
+          <article class="analysis-card">
+            <div class="analysis-card-header">
+              <h3>Caçadores de zebras</h3>
+              <p>Acertos em jogos nos quais no máximo quatro participantes escolheram o resultado correto.</p>
+            </div>
+            <div class="analysis-card-body">
+              <ul class="analysis-list">
+                <li><strong>Any Carneiro:</strong> 6 resultados raros, o maior número do bolão.</li>
+                <li><strong>Juliana Fernandes:</strong> 5 resultados raros, incluindo o Equador contra a Alemanha.</li>
+                <li><strong>Giovanna Sabino:</strong> 4 resultados raros e o único acerto na vitória da África do Sul.</li>
+                <li><strong>Theo Yuji, Bruno Prado e Vanessa Rodrigues:</strong> 4 resultados raros cada.</li>
+                <li><strong>Daniel Scamilhe:</strong> 3 resultados raros, com dois placares exatos em jogos muito improváveis.</li>
+              </ul>
+            </div>
+          </article>
+
+          <article class="analysis-card">
+            <div class="analysis-card-header">
+              <h3>O perfil dos acertos</h3>
+              <p>Quantidade e dificuldade nem sempre caminharam juntas.</p>
+            </div>
+            <div class="analysis-card-body">
+              <p>Os participantes que lideraram em resultados foram mais fortes na regularidade. Já vários participantes da metade inferior da tabela tiveram menos acertos, mas foram responsáveis pelas previsões mais difíceis.</p>
+              <p>Any, Juliana, Giovanna e Daniel são os melhores exemplos: não aparecem no topo em quantidade de resultados certos, porém identificaram algumas das maiores surpresas da competição.</p>
+            </div>
+          </article>
+        </div>
+
+        <article class="analysis-card">
+          <div class="analysis-card-header">
+            <h3>As seleções que mais surpreenderam</h3>
+            <p>Campanhas que ficaram bem acima do que o grupo esperava antes do início.</p>
+          </div>
+          <div class="analysis-card-body">
+            <div class="analysis-highlight-grid">
+              <div class="analysis-highlight"><strong>Cabo Verde: a história mais improvável</strong><p>Terminou em segundo no Grupo H com três empates: 0 x 0 com Espanha, 2 x 2 com Uruguai e 0 x 0 com Arábia Saudita. Marcou 2 gols e sofreu 2. Apenas Giovanna, Vanessa e Juliana colocaram a seleção na Fase de 32; somente Juliana previu exatamente o segundo lugar.</p></div>
+              <div class="analysis-highlight"><strong>África do Sul</strong><p>Terminou em segundo no Grupo A, à frente de Coreia do Sul e Tchéquia. Apenas seis participantes previram sua classificação. Giovanna, Renan e Daniel acertaram exatamente o vice-liderato.</p></div>
+              <div class="analysis-highlight"><strong>Estados Unidos</strong><p>Venceram o Grupo D. Somente Juliana Fernandes e Vinícius Derêncio colocaram a seleção em primeiro. Juliana foi a única a acertar o grupo completo, com Austrália em segundo.</p></div>
+              <div class="analysis-highlight"><strong>Países Baixos</strong><p>A liderança do Grupo F foi prevista por somente Guilherme Dias, Richard Homma, Daniel Scamilhe e Vinícius Derêncio.</p></div>
+              <div class="analysis-highlight"><strong>Colômbia</strong><p>A primeira posição do Grupo K foi prevista por apenas cinco pessoas: Fábio Ponce, Vanessa Rodrigues, Juliana Fernandes, Vinícius Derêncio e Any Carneiro.</p></div>
+              <div class="analysis-highlight"><strong>Austrália</strong><p>Além de vencer a Turquia quando quase ninguém acreditava, ficou em segundo no Grupo D e avançou para enfrentar o Egito.</p></div>
+            </div>
+          </div>
+        </article>
+
+        <article class="analysis-card">
+          <div class="analysis-card-header">
+            <h3>As maiores decepções</h3>
+            <p>Seleções muito escolhidas para avançar, mas eliminadas ainda na primeira fase.</p>
+          </div>
+          <div class="analysis-card-body">
+            <ul class="analysis-list">
+              <li><strong>Uruguai:</strong> 15 dos 16 participantes previram sua classificação. A seleção terminou em terceiro no Grupo H, com dois pontos, e ficou fora da Fase de 32.</li>
+              <li><strong>Coreia do Sul:</strong> apareceu entre os classificados de 14 participantes, mas terminou atrás da África do Sul.</li>
+              <li><strong>Escócia:</strong> foi colocada na Fase de 32 por 12 pessoas, mas encerrou o Grupo C com apenas uma vitória.</li>
+              <li><strong>Turquia e Tchéquia:</strong> cada uma aparecia entre os classificados de 11 participantes. As duas terminaram na última posição de seus grupos.</li>
+            </ul>
+          </div>
+        </article>
+
+        <article class="analysis-card">
+          <div class="analysis-card-header">
+            <h3>Os grupos que mais destruíram palpites</h3>
+            <p>Comparação entre o resultado real e a escolha mais frequente dos participantes em cada partida.</p>
+          </div>
+          <div class="analysis-card-body">
+            <div class="analysis-highlight-grid">
+              <div class="analysis-highlight"><strong>Grupo H: o grupo do caos</strong><p>Em cinco dos seis jogos, o resultado real contrariou a aposta mais frequente. Os três empates de Cabo Verde e a eliminação do Uruguai fizeram deste o grupo mais imprevisível.</p></div>
+              <div class="analysis-highlight"><strong>Grupos D e G</strong><p>Em cada um deles, a escolha mais frequente errou quatro dos seis resultados. Estados Unidos, Austrália e a sequência de empates do Grupo G confundiram quase todo mundo.</p></div>
+              <div class="analysis-highlight"><strong>Grupo E</strong><p>A maioria errou três dos seis jogos, principalmente a vitória da Costa do Marfim sobre o Equador, o empate de Curaçao e o triunfo equatoriano contra a Alemanha.</p></div>
+              <div class="analysis-highlight"><strong>Grupos I e J: os mais comportados</strong><p>Nos 12 jogos somados desses grupos, o resultado real nunca contrariou a opção mais escolhida pelos participantes.</p></div>
+            </div>
+          </div>
+        </article>
+
+        <article class="analysis-card">
+          <div class="analysis-card-header">
+            <h3>A montagem da Fase de 32</h3>
+            <p>Acertar as seleções classificadas é diferente de colocá-las na posição certa da chave.</p>
+          </div>
+          <div class="analysis-card-body">
+            <p><strong>Renan Amorim</strong> teve a melhor seleção de classificados, com 28 dos 32 times. Vinícius Derêncio, Fábio Ponce e Paulo Apolinário acertaram 27; Guilherme Dias, Bruno Prado, Gabriel Jamami e Felipe Alboy acertaram 26.</p>
+            <p>Nos confrontos completos, <strong>Richard Homma</strong> liderou com cinco, seguido por Vinícius com quatro. Guilherme, Fábio e Renan acertaram três cada.</p>
+            <div class="analysis-highlight-grid" style="margin-top:14px;">
+              <div class="analysis-highlight"><strong>Richard Homma — 5 confrontos</strong><p>Países Baixos x Marrocos; Brasil x Japão; França x Suécia; Costa do Marfim x Noruega; Espanha x Áustria.</p></div>
+              <div class="analysis-highlight"><strong>Vinícius Derêncio — 4 confrontos</strong><p>Países Baixos x Marrocos; Brasil x Japão; Portugal x Croácia; Colômbia x Gana.</p></div>
+            </div>
+            <p style="margin-top:14px;"><strong>Espanha x Áustria</strong> foi o confronto mais previsível, acertado por sete participantes. Sete confrontos não foram previstos corretamente por ninguém: Alemanha x Paraguai, México x Equador, Estados Unidos x Bósnia e Herzegovina, Bélgica x Senegal, Suíça x Argélia, Argentina x Cabo Verde e Austrália x Egito.</p>
+          </div>
+        </article>
+
+        <article class="analysis-card">
+          <div class="analysis-card-header">
+            <h3>Palpites de campeão e Top 4</h3>
+            <p>Todos os campeões escolhidos continuam vivos na competição.</p>
+          </div>
+          <div class="analysis-card-body">
+            <p>As escolhas de campeão ficaram distribuídas assim: <strong>França, 5 participantes; Portugal, 4; Brasil, 2; Espanha, Alemanha, Costa do Marfim, Áustria e Países Baixos, 1 cada.</strong></p>
+            <p>Onze dos 16 participantes ainda possuem todos os quatro integrantes de seu Top 4 na competição. Cinco já sofreram perdas:</p>
+            <ul class="analysis-list">
+              <li><strong>Felipe Alboy:</strong> Uruguai.</li>
+              <li><strong>Vanessa Rodrigues:</strong> Uruguai.</li>
+              <li><strong>Juliana Fernandes:</strong> Catar.</li>
+              <li><strong>Any Carneiro:</strong> Nova Zelândia e Tchéquia.</li>
+              <li><strong>Daniel Scamilhe:</strong> Curaçao e Nova Zelândia.</li>
+            </ul>
+            <p style="margin-top:14px;">As apostas de campeão mais ousadas ainda vivas são Costa do Marfim, de Vanessa Rodrigues, e Áustria, de Juliana Fernandes.</p>
+          </div>
+        </article>
+
+        <div class="analysis-conclusion">
+          <h3>Leitura final</h3>
+          <p>Guilherme apresentou a melhor leitura geral da fase de grupos, enquanto Vinícius e Renan combinaram regularidade com uma forte previsão dos classificados. Eric e Bruno se destacaram pela precisão dos placares. Richard foi o nome mais forte na montagem da chave. Ao mesmo tempo, participantes como Any, Juliana, Giovanna e Daniel mostraram maior capacidade de identificar resultados improváveis. A Fase de 32 ainda pode mudar bastante a disputa, porque confrontos, campanha das seleções e posições finais possuem peso importante na pontuação.</p>
+        </div>
       </section>
     </section>
-
 
     <section class="page hidden" id="jogoAJogoPage">
       <section class="game-by-game-section">
@@ -2677,7 +3094,7 @@
     const navPalpiteBtn = document.getElementById("navPalpiteBtn");
     const navPontuacaoBtn = document.getElementById("navPontuacaoBtn");
     const navClassificacaoBtn = document.getElementById("navClassificacaoBtn");
-    const navComparativoBtn = document.getElementById("navComparativoBtn");
+    const navAnaliseBtn = document.getElementById("navAnaliseBtn");
     const navJogosReaisBtn = document.getElementById("navJogosReaisBtn");
     const navParticipantesBtn = document.getElementById("navParticipantesBtn");
     const navJogoAJogoBtn = document.getElementById("navJogoAJogoBtn");
@@ -2702,7 +3119,7 @@
     const clearBtn = document.getElementById("clearBtn");
     const groupPage = document.getElementById("groupPage");
     const knockoutPage = document.getElementById("knockoutPage");
-    const comparisonPage = document.getElementById("comparisonPage");
+    const analysisPage = document.getElementById("analysisPage");
     const comparisonTableBody = document.getElementById("comparisonTableBody");
     const refreshComparisonBtn = document.getElementById("refreshComparisonBtn");
     const comparisonGroupSelect = document.getElementById("comparisonGroupSelect");
@@ -2846,10 +3263,8 @@
         loadGroupsForRanking();
         loadRankingData();
       });
-      navComparativoBtn.addEventListener("click", () => {
-        showMainMode("comparison");
-        loadGroupsForComparison();
-        loadComparisonData();
+      navAnaliseBtn.addEventListener("click", () => {
+        showMainMode("analysis");
       });
       navJogosReaisBtn.addEventListener("click", () => {
         showMainMode("realGames");
@@ -3676,7 +4091,7 @@
       const isSimulator = mode === "simulator";
       const isScore = mode === "score";
       const isRanking = mode === "ranking";
-      const isComparison = mode === "comparison";
+      const isAnalysis = mode === "analysis";
       const isRealGames = mode === "realGames";
       const isParticipants = mode === "participants";
       const isJogoAJogo = mode === "jogoAJogo";
@@ -3687,7 +4102,7 @@
       knockoutPage.classList.toggle("hidden", !isSimulator);
       scorePage.classList.toggle("hidden", !isScore);
       rankingPage.classList.toggle("hidden", !isRanking);
-      comparisonPage.classList.toggle("hidden", !isComparison);
+      analysisPage.classList.toggle("hidden", !isAnalysis);
       realGamesPage.classList.toggle("hidden", !isRealGames);
       participantsPage.classList.toggle("hidden", !isParticipants);
       jogoAJogoPage.classList.toggle("hidden", !isJogoAJogo);
@@ -3700,7 +4115,7 @@
       if (navPalpiteBtn) navPalpiteBtn.classList.toggle("btn-active", isSimulator);
       navPontuacaoBtn.classList.toggle("btn-active", isScore);
       navClassificacaoBtn.classList.toggle("btn-active", isRanking);
-      navComparativoBtn.classList.toggle("btn-active", isComparison);
+      navAnaliseBtn.classList.toggle("btn-active", isAnalysis);
       navJogosReaisBtn.classList.toggle("btn-active", isRealGames);
       navParticipantesBtn.classList.toggle("btn-active", isParticipants);
       navJogoAJogoBtn.classList.toggle("btn-active", isJogoAJogo);
@@ -3716,8 +4131,8 @@
               ? specialScoresPage
               : isRanking
                 ? rankingPage
-                : isComparison
-                  ? comparisonPage
+                : isAnalysis
+                  ? analysisPage
                   : isRealGames
                     ? realGamesPage
                     : isAdmin
