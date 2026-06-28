@@ -2200,7 +2200,7 @@
       <section class="admin-section">
         <div class="score-hero">
           <h2>Admin — Jogos reais</h2>
-          <p>Preencha ou edite os resultados reais aqui. Ao salvar, os dados ficam gravados na aba <strong>JogosReais</strong> da planilha.</p>
+          <p>Os confrontos do mata-mata são sincronizados a partir dos resultados reais. Nas fases seguintes, vencedores e perdedores avançam quando o jogo anterior estiver como <strong>Finalizado</strong>.</p>
         </div>
 
         <article class="admin-card">
@@ -2208,7 +2208,7 @@
             <p>Você pode ajustar os nomes dos times no mata-mata, os placares, o vencedor e o status.</p>
             <div class="actions">
               <button class="btn-secondary" type="button" id="adminLoadGamesBtn">Carregar jogos</button>
-              <button class="btn-secondary" type="button" id="adminAutoResolveBtn">Preencher mata-mata automático</button>
+              <button class="btn-secondary" type="button" id="adminAutoResolveBtn">Sincronizar mata-mata</button>
               <button class="btn-primary" type="button" id="adminSaveGamesBtn">Salvar jogos reais</button>
             </div>
           </div>
@@ -3558,8 +3558,10 @@
       });
     }
 
-    function fetchRealGamesJsonp() {
-      return fetchJsonpAction("jogos_reais", "bolaoJogosReais");
+    function fetchRealGamesJsonp(fresh = false) {
+      return fetchJsonpAction("jogos_reais", "bolaoJogosReais", {
+        fresh: fresh ? "1" : ""
+      });
     }
 
     function fetchRankingJsonp() {
@@ -4618,7 +4620,7 @@
       adminGamesBody.innerHTML = `<tr><td colspan="9" class="viewer-message">Carregando jogos reais...</td></tr>`;
 
       try {
-        const data = await fetchRealGamesJsonp();
+        const data = await fetchRealGamesJsonp(true);
 
         if (!data || data.status !== "sucesso") {
           throw new Error(data?.message || "Não foi possível carregar jogos reais.");
@@ -4649,7 +4651,7 @@
           <td><input class="admin-input" type="number" min="0" max="99" data-field="gols_casa" value="${escapeHtml(jogo.gols_casa ?? "")}" /></td>
           <td><input class="admin-input" type="number" min="0" max="99" data-field="gols_fora" value="${escapeHtml(jogo.gols_fora ?? "")}" /></td>
           <td><input class="admin-team-input" data-field="time_fora" value="${escapeHtml(getAdminTeamInputValue(jogo, "time_fora"))}" /></td>
-          <td><input class="admin-team-input" data-field="vencedor" value="${escapeHtml(hasRealScoreFilled(jogo) ? (jogo.vencedor || "") : "")}" /></td>
+          <td><input class="admin-team-input" data-field="vencedor" value="${escapeHtml(jogo.vencedor || "")}" /></td>
           <td>
             <select class="admin-select" data-field="status">
               <option value="Pendente" ${String(jogo.status || "Pendente") === "Pendente" ? "selected" : ""}>Pendente</option>
@@ -4666,41 +4668,46 @@
       return resolved || original;
     }
 
-    function autoResolveAdminKnockoutTeams() {
+    async function autoResolveAdminKnockoutTeams() {
       if (!appState.adminLoggedIn) {
         openAdminLogin();
         return;
       }
 
-      const jogos = getAdminGamesPayload();
-      appState.publicData.jogosReais = jogos;
+      adminAutoResolveBtn.disabled = true;
+      adminAutoResolveBtn.textContent = "Sincronizando...";
+      adminStatusMessage.textContent = "Sincronizando o mata-mata na planilha...";
 
-      const rows = [...adminGamesBody.querySelectorAll("tr[data-admin-row]")];
-      let changedCount = 0;
-
-      rows.forEach(row => {
-        const index = Number(row.dataset.adminRow);
-        const jogo = jogos[index] || {};
-        const isGroupStage = normalizePhase(jogo.fase) === "fase de grupos";
-        if (isGroupStage || !hasRealScoreFilled(jogo)) return;
-
-        ["time_casa", "time_fora"].forEach(field => {
-          const input = row.querySelector(`[data-field="${field}"]`);
-          if (!input) return;
-
-          const before = input.value.trim();
-          const after = resolveRealTeamName(before);
-
-          if (after && after !== before) {
-            input.value = after;
-            changedCount += 1;
-          }
+      try {
+        await fetch(SCRIPT_URL, {
+          method: "POST",
+          mode: "no-cors",
+          headers: {
+            "Content-Type": "text/plain;charset=utf-8"
+          },
+          body: JSON.stringify({
+            action: "sincronizar_mata_mata",
+            admin: {
+              login: appState.adminCredentials?.login || "",
+              senha: appState.adminCredentials?.senha || ""
+            }
+          })
         });
-      });
 
-      adminStatusMessage.textContent = changedCount > 0
-        ? `${changedCount} campo(s) do mata-mata foram preenchidos automaticamente. Revise e clique em Salvar jogos reais.`
-        : "Nenhum campo novo foi alterado. Talvez os grupos/jogos anteriores ainda não estejam finalizados ou os nomes já estejam preenchidos.";
+        await waitForRealGamesWrite();
+        await loadAdminGames();
+        adminStatusMessage.textContent = "Mata-mata sincronizado e recarregado diretamente da planilha.";
+      } catch (error) {
+        console.error(error);
+        adminStatusMessage.textContent = `Erro ao sincronizar mata-mata: ${error.message}`;
+      } finally {
+        adminAutoResolveBtn.disabled = false;
+        adminAutoResolveBtn.textContent = "Sincronizar mata-mata";
+      }
+    }
+
+    function waitForRealGamesWrite(milliseconds = 1600) {
+      return new Promise(resolve => setTimeout(resolve, milliseconds));
     }
 
     function getAdminGamesPayload() {
@@ -4734,7 +4741,7 @@
       const jogos = getAdminGamesPayload();
       adminSaveGamesBtn.disabled = true;
       adminSaveGamesBtn.textContent = "Salvando...";
-      adminStatusMessage.textContent = "Salvando jogos reais na planilha...";
+      adminStatusMessage.textContent = "Salvando jogos reais e sincronizando o mata-mata...";
 
       try {
         await fetch(SCRIPT_URL, {
@@ -4755,8 +4762,17 @@
           })
         });
 
-        appState.publicData.jogosReais = jogos;
-        adminStatusMessage.textContent = "Jogos enviados para salvar. Abra Jogos reais e clique em Atualizar jogos reais para conferir.";
+        await waitForRealGamesWrite();
+
+        const data = await fetchRealGamesJsonp(true);
+
+        if (!data || data.status !== "sucesso") {
+          throw new Error(data?.message || "Não foi possível recarregar a planilha.");
+        }
+
+        appState.publicData.jogosReais = data.jogos || [];
+        renderAdminGames(appState.publicData.jogosReais);
+        adminStatusMessage.textContent = "Jogos enviados, sincronizados e recarregados da planilha.";
       } catch (error) {
         console.error(error);
         adminStatusMessage.textContent = `Erro ao salvar jogos reais: ${error.message}`;
@@ -4820,7 +4836,7 @@
       }
 
       try {
-        const data = await fetchRealGamesJsonp();
+        const data = await fetchRealGamesJsonp(true);
 
         if (!data || data.status !== "sucesso") {
           throw new Error(data?.message || "Não foi possível carregar os jogos reais.");
@@ -5138,14 +5154,28 @@
         return jogo?.[field] || "";
       }
 
-      const placeholders = getRealKnockoutPlaceholders(jogo.jogo_id);
-      const placeholder = field === "time_casa" ? placeholders?.home : placeholders?.away;
+      const storedValue = String(jogo?.[field] || "").trim();
 
-      if (!hasRealScoreFilled(jogo)) {
-        return placeholder || jogo?.[field] || "";
+      if (storedValue && !isRealKnockoutPlaceholder(storedValue)) {
+        return storedValue;
       }
 
-      return resolveRealTeamName(placeholder || jogo?.[field] || "");
+      const placeholders = getRealKnockoutPlaceholders(jogo.jogo_id);
+      const placeholder = field === "time_casa" ? placeholders?.home : placeholders?.away;
+      const candidate = storedValue || placeholder || "";
+
+      return resolveRealTeamName(candidate) || candidate;
+    }
+
+    function isRealKnockoutPlaceholder(value) {
+      const text = String(value || "").trim().toLowerCase();
+
+      return /^[12][a-l]$/.test(text)
+        || text.startsWith("3º de ")
+        || text.startsWith("3o de ")
+        || text.startsWith("3 de ")
+        || text.startsWith("vencedor m")
+        || text.startsWith("perdedor m");
     }
 
     function getRealGameWinnerForDisplay(jogo) {
@@ -5170,21 +5200,12 @@
     }
 
     function normalizeAdminKnockoutPayloadBeforeSave(jogo) {
-      if (!isRealKnockoutGame(jogo)) return jogo;
-
-      const placeholders = getRealKnockoutPlaceholders(jogo.jogo_id);
-
-      if (!hasRealScoreFilled(jogo) && placeholders) {
-        return {
-          ...jogo,
-          time_casa: placeholders.home,
-          time_fora: placeholders.away,
-          vencedor: "",
-          status: "Pendente"
-        };
-      }
-
-      return jogo;
+      return {
+        ...jogo,
+        time_casa: String(jogo.time_casa || "").trim(),
+        time_fora: String(jogo.time_fora || "").trim(),
+        vencedor: String(jogo.vencedor || "").trim()
+      };
     }
 
     function getAdminTeamInputValue(jogo, field) {
