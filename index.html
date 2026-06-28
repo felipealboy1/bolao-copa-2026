@@ -1861,6 +1861,187 @@
       }
     }
 
+
+    .special-scores-section {
+      display: grid;
+      gap: 18px;
+    }
+
+    .special-scores-list {
+      display: grid;
+      gap: 14px;
+    }
+
+    .special-score-card {
+      overflow: hidden;
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      box-shadow: var(--shadow);
+    }
+
+    .special-score-toggle {
+      width: 100%;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      align-items: center;
+      gap: 14px;
+      padding: 16px;
+      border: 0;
+      border-radius: 0;
+      background: #fff;
+      text-align: left;
+      box-shadow: none !important;
+    }
+
+    .special-score-toggle:hover {
+      transform: none !important;
+      background: #fbfcfe;
+    }
+
+    .special-score-participant {
+      display: grid;
+      gap: 8px;
+      min-width: 0;
+    }
+
+    .special-score-participant strong {
+      font-size: 18px;
+      color: var(--text);
+    }
+
+    .special-score-category-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .special-score-chip {
+      display: inline-flex;
+      align-items: center;
+      border-radius: 999px;
+      padding: 5px 9px;
+      background: #f2f4f7;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 800;
+    }
+
+    .special-score-total {
+      min-width: 92px;
+      border-radius: 999px;
+      padding: 9px 12px;
+      background: var(--success-bg);
+      color: var(--success-text);
+      text-align: center;
+      font-size: 14px;
+      font-weight: 900;
+      white-space: nowrap;
+    }
+
+    .special-score-content {
+      display: grid;
+      gap: 12px;
+      padding: 12px;
+      border-top: 1px solid var(--line);
+      background: #f8fafc;
+    }
+
+    .special-category-card {
+      overflow: hidden;
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+    }
+
+    .special-category-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 12px 14px;
+      background: #fbfcfe;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .special-category-header strong {
+      color: var(--text);
+      font-size: 15px;
+    }
+
+    .special-category-total {
+      flex: 0 0 auto;
+      border-radius: 999px;
+      padding: 5px 9px;
+      background: var(--info-bg);
+      color: var(--info-text);
+      font-size: 12px;
+      font-weight: 900;
+    }
+
+    .special-category-items {
+      display: grid;
+    }
+
+    .special-category-item {
+      display: grid;
+      grid-template-columns: minmax(150px, .8fr) minmax(220px, 2fr) auto;
+      gap: 12px;
+      align-items: center;
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--line);
+      font-size: 13px;
+    }
+
+    .special-category-item:last-child {
+      border-bottom: 0;
+    }
+
+    .special-category-item strong {
+      color: var(--text);
+    }
+
+    .special-category-item span {
+      color: var(--muted);
+      line-height: 1.4;
+    }
+
+    .special-item-points {
+      min-width: 58px;
+      border-radius: 999px;
+      padding: 6px 9px;
+      background: var(--success-bg);
+      color: var(--success-text) !important;
+      text-align: center;
+      font-weight: 900;
+      white-space: nowrap;
+    }
+
+    .special-empty {
+      padding: 13px 14px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    @media (max-width: 768px) {
+      .special-score-toggle {
+        grid-template-columns: 1fr;
+      }
+
+      .special-score-total {
+        justify-self: start;
+      }
+
+      .special-category-item {
+        grid-template-columns: 1fr;
+        gap: 6px;
+      }
+
+      .special-item-points {
+        justify-self: start;
+      }
+    }
+
   </style>
 </head>
 <body>
@@ -1876,6 +2057,7 @@
       <div class="menu-bar">
         <button class="btn-secondary menu-title" type="button" id="navParticipantesBtn">Ver participantes</button>
         <button class="btn-secondary menu-title" type="button" id="navJogoAJogoBtn">Jogo a Jogo</button>
+        <button class="btn-secondary menu-title" type="button" id="navPontuacoesEspeciaisBtn">Pontuações especiais</button>
         <button class="btn-secondary menu-title btn-active" type="button" id="navClassificacaoBtn">Classificação</button>
         <button class="btn-secondary menu-title" type="button" id="navComparativoBtn">Comparativo</button>
         <button class="btn-secondary menu-title" type="button" id="navJogosReaisBtn">Jogos reais</button>
@@ -2012,6 +2194,36 @@
 
         <div class="game-by-game-list" id="jogoAJogoContainer">
           <div class="viewer-message">Carregando jogos finalizados...</div>
+        </div>
+      </section>
+    </section>
+
+    <section class="page hidden" id="specialScoresPage">
+      <section class="special-scores-section">
+        <div class="score-hero">
+          <h2>Pontuações especiais</h2>
+          <p>Veja onde cada participante pontuou nas categorias Grupos, Mata-mata, Campanha, Finais e Bônus. Os pontos de placares da fase de grupos continuam detalhados na aba Jogo a Jogo.</p>
+        </div>
+
+        <div class="ranking-filter-card">
+          <label>
+            Ver pontuações por grupo
+            <select id="specialScoresGroupSelect">
+              <option value="GERAL">Geral</option>
+            </select>
+          </label>
+          <button class="btn-secondary" type="button" id="refreshSpecialScoresBtn">Atualizar pontuações</button>
+        </div>
+
+        <div class="ranking-summary" id="specialScoresSummary">
+          <div class="ranking-stat"><strong>—</strong><span>Participantes</span></div>
+          <div class="ranking-stat"><strong>—</strong><span>Pontos especiais distribuídos</span></div>
+          <div class="ranking-stat"><strong>—</strong><span>Líder em pontos especiais</span></div>
+          <div class="ranking-stat"><strong>—</strong><span>Maior pontuação especial</span></div>
+        </div>
+
+        <div class="special-scores-list" id="specialScoresContainer">
+          <div class="viewer-message">Clique em “Atualizar pontuações” para carregar os detalhes.</div>
         </div>
       </section>
     </section>
@@ -2469,6 +2681,7 @@
     const navJogosReaisBtn = document.getElementById("navJogosReaisBtn");
     const navParticipantesBtn = document.getElementById("navParticipantesBtn");
     const navJogoAJogoBtn = document.getElementById("navJogoAJogoBtn");
+    const navPontuacoesEspeciaisBtn = document.getElementById("navPontuacoesEspeciaisBtn");
     const adminFloatingBtn = document.getElementById("adminFloatingBtn");
     const secretAdminTrigger = document.getElementById("secretAdminTrigger");
     const adminLoginDialog = document.getElementById("adminLoginDialog");
@@ -2497,6 +2710,11 @@
     const jogoAJogoGroupSelect = document.getElementById("jogoAJogoGroupSelect");
     const refreshJogoAJogoBtn = document.getElementById("refreshJogoAJogoBtn");
     const jogoAJogoContainer = document.getElementById("jogoAJogoContainer");
+    const specialScoresPage = document.getElementById("specialScoresPage");
+    const specialScoresGroupSelect = document.getElementById("specialScoresGroupSelect");
+    const refreshSpecialScoresBtn = document.getElementById("refreshSpecialScoresBtn");
+    const specialScoresSummary = document.getElementById("specialScoresSummary");
+    const specialScoresContainer = document.getElementById("specialScoresContainer");
     const rankingPage = document.getElementById("rankingPage");
     const rankingTableBody = document.getElementById("rankingTableBody");
     const rankingSummary = document.getElementById("rankingSummary");
@@ -2542,6 +2760,7 @@
       bindEvents();
       loadGroupsForRanking();
       loadGroupsForComparison();
+      loadGroupsForSpecialScores();
       updateSubmitGroupsPreview();
       updatePageControls();
       if (floatingSubmitBtn) {
@@ -2644,6 +2863,10 @@
         showMainMode("jogoAJogo");
         await refreshJogoAJogoGroupsAndList();
       });
+      navPontuacoesEspeciaisBtn.addEventListener("click", async () => {
+        showMainMode("specialScores");
+        await refreshSpecialScoresGroupsAndList();
+      });
       refreshParticipantsBtn.addEventListener("click", async () => {
         await refreshParticipantsGroupsAndList(participantsGroupSelect?.value || "GERAL");
       });
@@ -2664,6 +2887,12 @@
       }
       if (jogoAJogoGroupSelect) {
         jogoAJogoGroupSelect.addEventListener("change", loadJogoAJogoData);
+      }
+      if (refreshSpecialScoresBtn) {
+        refreshSpecialScoresBtn.addEventListener("click", loadSpecialScoresData);
+      }
+      if (specialScoresGroupSelect) {
+        specialScoresGroupSelect.addEventListener("change", loadSpecialScoresData);
       }
       if (rankingGroupSelect) {
         rankingGroupSelect.addEventListener("change", loadRankingData);
@@ -3451,6 +3680,7 @@
       const isRealGames = mode === "realGames";
       const isParticipants = mode === "participants";
       const isJogoAJogo = mode === "jogoAJogo";
+      const isSpecialScores = mode === "specialScores";
       const isAdmin = mode === "admin";
 
       groupPage.classList.toggle("hidden", !isSimulator);
@@ -3461,6 +3691,7 @@
       realGamesPage.classList.toggle("hidden", !isRealGames);
       participantsPage.classList.toggle("hidden", !isParticipants);
       jogoAJogoPage.classList.toggle("hidden", !isJogoAJogo);
+      specialScoresPage.classList.toggle("hidden", !isSpecialScores);
       adminPage.classList.toggle("hidden", !isAdmin);
       if (floatingSubmitBtn) {
         floatingSubmitBtn.classList.toggle("hidden", !isSimulator);
@@ -3473,8 +3704,25 @@
       navJogosReaisBtn.classList.toggle("btn-active", isRealGames);
       navParticipantesBtn.classList.toggle("btn-active", isParticipants);
       navJogoAJogoBtn.classList.toggle("btn-active", isJogoAJogo);
+      navPontuacoesEspeciaisBtn.classList.toggle("btn-active", isSpecialScores);
 
-      const target = isSimulator ? groupPage : isScore ? scorePage : isJogoAJogo ? jogoAJogoPage : isRanking ? rankingPage : isComparison ? comparisonPage : isRealGames ? realGamesPage : isAdmin ? adminPage : participantsPage;
+      const target = isSimulator
+        ? groupPage
+        : isScore
+          ? scorePage
+          : isJogoAJogo
+            ? jogoAJogoPage
+            : isSpecialScores
+              ? specialScoresPage
+              : isRanking
+                ? rankingPage
+                : isComparison
+                  ? comparisonPage
+                  : isRealGames
+                    ? realGamesPage
+                    : isAdmin
+                      ? adminPage
+                      : participantsPage;
       target.scrollIntoView({ behavior: "smooth", block: "start" });
     }
 
@@ -3579,6 +3827,12 @@
     function fetchJogoAJogoJsonp() {
       return fetchJsonpAction("jogo_a_jogo", "bolaoJogoAJogo", {
         grupo: jogoAJogoGroupSelect?.value || "GERAL"
+      });
+    }
+
+    function fetchSpecialScoresJsonp() {
+      return fetchJsonpAction("pontuacoes_especiais", "bolaoPontuacoesEspeciais", {
+        grupo: specialScoresGroupSelect?.value || "GERAL"
       });
     }
 
@@ -3828,6 +4082,26 @@
       return loadGroupsForSelect(jogoAJogoGroupSelect, true, preferredValue);
     }
 
+    function loadGroupsForSpecialScores(preferredValue = null) {
+      return loadGroupsForSelect(specialScoresGroupSelect, true, preferredValue);
+    }
+
+    async function refreshSpecialScoresGroupsAndList(preferredValue = "GERAL") {
+      await loadGroupsForSpecialScores(preferredValue);
+
+      if (specialScoresGroupSelect) {
+        const normalizedPreferred = normalizeGroupCode(preferredValue || "GERAL");
+        const optionExists = [...specialScoresGroupSelect.options]
+          .some(option => option.value === normalizedPreferred);
+
+        specialScoresGroupSelect.value = optionExists
+          ? normalizedPreferred
+          : "GERAL";
+      }
+
+      await loadSpecialScoresData();
+    }
+
     async function refreshParticipantsGroupsAndList(preferredValue = "GERAL") {
       await loadGroupsForParticipants(preferredValue);
 
@@ -4021,6 +4295,153 @@
         const suffix = group.codigo && group.codigo !== "GERAL" ? ` • ${escapeHtml(group.codigo)}` : "";
         return `<span class="group-chip">${escapeHtml(group.nome)}${suffix}</span>`;
       }).join("");
+    }
+
+
+    async function loadSpecialScoresData() {
+      if (!specialScoresContainer) return;
+
+      specialScoresContainer.innerHTML = `<div class="viewer-message">Calculando pontuações especiais...</div>`;
+
+      if (refreshSpecialScoresBtn) {
+        refreshSpecialScoresBtn.disabled = true;
+        refreshSpecialScoresBtn.textContent = "Calculando...";
+      }
+
+      try {
+        const data = await fetchSpecialScoresJsonp();
+
+        if (!data || data.status !== "sucesso") {
+          throw new Error(data?.message || "Não foi possível carregar as pontuações especiais.");
+        }
+
+        renderSpecialScores(data.participantes || []);
+      } catch (error) {
+        console.error(error);
+        specialScoresContainer.innerHTML = `
+          <div class="viewer-message">
+            Erro ao carregar pontuações especiais: ${escapeHtml(error.message)}
+          </div>
+        `;
+      } finally {
+        if (refreshSpecialScoresBtn) {
+          refreshSpecialScoresBtn.disabled = false;
+          refreshSpecialScoresBtn.textContent = "Atualizar pontuações";
+        }
+      }
+    }
+
+    function renderSpecialScores(participantes) {
+      const leader = participantes[0];
+      const totalDistributed = participantes.reduce(
+        (sum, item) => sum + Number(item.total_especial || 0),
+        0
+      );
+
+      specialScoresSummary.innerHTML = `
+        <div class="ranking-stat">
+          <strong>${participantes.length}</strong>
+          <span>Participantes</span>
+        </div>
+        <div class="ranking-stat">
+          <strong>${totalDistributed}</strong>
+          <span>Pontos especiais distribuídos</span>
+        </div>
+        <div class="ranking-stat">
+          <strong>${escapeHtml(leader?.nome || "—")}</strong>
+          <span>Líder em pontos especiais</span>
+        </div>
+        <div class="ranking-stat">
+          <strong>${leader ? Number(leader.total_especial || 0) : "—"}</strong>
+          <span>Maior pontuação especial</span>
+        </div>
+      `;
+
+      if (!participantes.length) {
+        specialScoresContainer.innerHTML = `
+          <div class="viewer-message">Nenhum participante encontrado.</div>
+        `;
+        return;
+      }
+
+      specialScoresContainer.innerHTML = participantes.map((item, index) => {
+        const contentId = `special-score-${index}`;
+        const totals = item.totais || {};
+
+        return `
+          <article class="special-score-card">
+            <button
+              class="special-score-toggle"
+              type="button"
+              onclick="toggleSpecialScoreCard('${contentId}')"
+            >
+              <span class="special-score-participant">
+                <strong>${index + 1}º — ${escapeHtml(item.nome || "Participante")}</strong>
+                <span class="special-score-category-chips">
+                  ${renderSpecialScoreChip("Grupos", totals.grupos)}
+                  ${renderSpecialScoreChip("Mata-mata", totals.mataMata)}
+                  ${renderSpecialScoreChip("Campanha", totals.campanha)}
+                  ${renderSpecialScoreChip("Finais", totals.finais)}
+                  ${renderSpecialScoreChip("Bônus", totals.bonus)}
+                </span>
+              </span>
+
+              <span class="special-score-total">
+                ${Number(item.total_especial || 0)} pts
+              </span>
+            </button>
+
+            <div class="special-score-content hidden" id="${contentId}">
+              ${renderSpecialCategory("Grupos", totals.grupos, item.detalhes?.grupos)}
+              ${renderSpecialCategory("Mata-mata", totals.mataMata, item.detalhes?.mataMata)}
+              ${renderSpecialCategory("Campanha", totals.campanha, item.detalhes?.campanha)}
+              ${renderSpecialCategory("Finais", totals.finais, item.detalhes?.finais)}
+              ${renderSpecialCategory("Bônus", totals.bonus, item.detalhes?.bonus)}
+            </div>
+          </article>
+        `;
+      }).join("");
+    }
+
+    function renderSpecialScoreChip(label, points) {
+      return `
+        <span class="special-score-chip">
+          ${escapeHtml(label)}: ${Number(points || 0)}
+        </span>
+      `;
+    }
+
+    function renderSpecialCategory(label, total, items = []) {
+      const safeItems = Array.isArray(items) ? items : [];
+
+      return `
+        <section class="special-category-card">
+          <header class="special-category-header">
+            <strong>${escapeHtml(label)}</strong>
+            <span class="special-category-total">${Number(total || 0)} pts</span>
+          </header>
+
+          <div class="special-category-items">
+            ${safeItems.length
+              ? safeItems.map(item => `
+                  <div class="special-category-item">
+                    <strong>${escapeHtml(item.titulo || "Pontuação")}</strong>
+                    <span>${escapeHtml(item.descricao || "—")}</span>
+                    <span class="special-item-points">+${Number(item.pontos || 0)}</span>
+                  </div>
+                `).join("")
+              : `<div class="special-empty">Nenhum ponto nesta categoria até o momento.</div>`
+            }
+          </div>
+        </section>
+      `;
+    }
+
+    function toggleSpecialScoreCard(contentId) {
+      const content = document.getElementById(contentId);
+      if (!content) return;
+
+      content.classList.toggle("hidden");
     }
 
     async function loadRankingData() {
